@@ -37,6 +37,28 @@
       padding: 0;
     }
 
+    .top-banner {
+      background-color: #0a66c2;
+      color: white;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+
+    .top-banner a {
+      color: white;
+      text-decoration: none;
+      margin-left: 12px;
+      font-weight: bold;
+      transition: text-decoration 0.3s ease;
+    }
+
+    .top-banner a:hover {
+      text-decoration: underline;
+    }
+
     header {
       background-color: #0a66c2;
       color: white;
@@ -163,13 +185,16 @@
 </head>
 <body>
 
+  <div class="top-banner">
+    🔙 <a href="../index.html">Retour au portail</a>
+  </div>
+
   <header>
     📬 Réponse automatique multilingue
     <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
   </header>
 
   <main>
-    <!-- FORMULAIRE -->
     <div class="form">
       <label for="date">📅 Date de retour :</label>
       <input type="date" id="date" onchange="updateMessages()" />
@@ -184,7 +209,6 @@
       <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
     </div>
 
-    <!-- APERCU -->
     <div class="preview">
       <div class="preview-header">
         <h3>📄 Message généré</h3>
