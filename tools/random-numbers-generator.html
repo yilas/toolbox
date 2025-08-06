@@ -151,7 +151,7 @@
   <main>
     <div class="form-group">
       <label for="length">🔢 Longueur du mot de passe : <span id="lengthValue">16</span> caractères</label>
-      <input type="range" id="length" min="4" max="128" value="16" oninput="updateLengthLabel()" />
+      <input type="range" id="length" min="4" max="128" value="16" oninput="updateLengthLabel(); generatePassword()" />
     </div>
 
     <div class="form-group">
