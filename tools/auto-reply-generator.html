@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Language" content="fr-FR" />
+  <title>Réponse automatique multilingue</title>
+  <style>
+    :root {
+      --bg-color: #f3f4f7;
+      --text-color: #000;
+      --panel-bg: #fff;
+      --panel-border: #ccc;
+      --textarea-bg: #fafafa;
+      --btn-bg: #0a66c2;
+      --btn-text: #fff;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #f3f3f3;
+      --panel-bg: #1e1e1e;
+      --panel-border: #444;
+      --textarea-bg: #2a2a2a;
+      --btn-bg: #0a66c2;
+      --btn-text: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #0a66c2;
+      color: white;
+      padding: 20px 40px;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      font-size: 20px;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    main {
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
+      padding: 40px;
+    }
+
+    .form {
+      flex: 1;
+      max-width: 400px;
+      background: var(--panel-bg);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--panel-border);
+    }
+
+    .form label {
+      font-weight: bold;
+      display: block;
+      margin-top: 20px;
+    }
+
+    .form input {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: var(--textarea-bg);
+      color: var(--text-color);
+    }
+
+    .preset-buttons {
+      margin-top: 15px;
+    }
+
+    .preset-buttons button {
+      margin-right: 10px;
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .preview {
+      flex: 2;
+      background: var(--panel-bg);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      height: auto;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .preview textarea {
+      width: 100%;
+      height: 600px;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: var(--textarea-bg);
+      color: var(--text-color);
+      white-space: pre-wrap;
+      resize: vertical;
+    }
+
+    button.copy-btn {
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button.copy-btn:hover {
+      opacity: 0.9;
+    }
+
+    @media screen and (max-width: 900px) {
+      main {
+        flex-direction: column;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    📬 Réponse automatique multilingue
+    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+  </header>
+
+  <main>
+    <!-- FORMULAIRE -->
+    <div class="form">
+      <label for="date">📅 Date de retour :</label>
+      <input type="date" id="date" onchange="updateMessages()" />
+
+      <div class="preset-buttons">
+        <button onclick="setDateOffset(7)">+7 jours</button>
+        <button onclick="setDateOffset(14)">+14 jours</button>
+        <button onclick="setNextMonday()">Prochain lundi</button>
+      </div>
+
+      <label for="contact">👤 Nom du contact :</label>
+      <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
+    </div>
+
+    <!-- APERCU -->
+    <div class="preview">
+      <div class="preview-header">
+        <h3>📄 Message généré</h3>
+        <button class="copy-btn" onclick="copyToClipboard()">📋 Copier</button>
+      </div>
+      <textarea id="output" readonly></textarea>
+    </div>
+  </main>
+
+  <script>
+    function formatDate(date, locale) {
+      const fallbackLocale = 'fr-FR';
+      const supported = Intl.DateTimeFormat.supportedLocalesOf(locale);
+      const finalLocale = supported.length > 0 ? locale : fallbackLocale;
+      return new Intl.DateTimeFormat(finalLocale, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    function updateMessages() {
+      let rawDate = document.getElementById("date").value;
+      const contactName = document.getElementById("contact").value || "votre contact";
+
+      if (!rawDate) {
+        const now = new Date();
+        now.setDate(now.getDate() + 14);
+        rawDate = now.toISOString().split("T")[0];
+        document.getElementById("date").value = rawDate;
+      }
+
+      const date = new Date(rawDate);
+
+      const messages = [
+`Bonjour,
+
+Je suis actuellement absent du bureau et ne pourrai pas répondre à vos e-mails avant le ${formatDate(date, 'fr-FR')}.
+
+En cas d'urgence, veuillez contacter ${contactName}.
+
+Je vous répondrai dès mon retour.
+
+Merci de votre compréhension`,
+
+`Moien,
+
+Ech sinn de Moment net am Büro an ech kann net op Är E-Mailen äntweren, bis de ${formatDate(date, 'lb-LU')}.
+
+Am Noutfall kënnt Dir w.e.g. den ${contactName} kontaktéieren.
+
+Ech ginn Iech esou séier wéi méiglech nom Retour äntweren.
+
+Merci fir Äert Verständnis`,
+
+`Hello,
+
+I am currently out of the office and will not be able to respond to emails until ${formatDate(date, 'en-US')}.
+
+For urgent matters, please contact ${contactName}.
+
+I will get back to you as soon as I return.
+
+Thank you for your understanding`,
+
+`Guten Tag,
+
+Ich bin derzeit nicht im Büro und kann Ihre E-Mails bis zum ${formatDate(date, 'de-DE')} nicht beantworten.
+
+In dringenden Fällen wenden Sie sich bitte an ${contactName}.
+
+Ich werde Ihnen nach meiner Rückkehr so bald wie möglich antworten.
+
+Vielen Dank für Ihr Verständnis`
+      ];
+
+      document.getElementById("output").value = messages.join("\n\n---\n\n");
+    }
+
+    function copyToClipboard() {
+      const output = document.getElementById("output");
+      const button = document.querySelector(".copy-btn");
+
+      navigator.clipboard.writeText(output.value).then(() => {
+        const originalText = button.textContent;
+        button.textContent = "Copié !";
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 2000);
+      });
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.querySelector('.theme-toggle');
+      body.classList.toggle('dark');
+      btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
+    }
+
+    function setDateOffset(days) {
+      const date = new Date();
+      date.setDate(date.getDate() + days);
+      document.getElementById("date").value = date.toISOString().split("T")[0];
+      updateMessages();
+    }
+
+    function setNextMonday() {
+      const date = new Date();
+      const day = date.getDay();
+      const daysToAdd = day === 0 ? 1 : 8 - day;
+      date.setDate(date.getDate() + daysToAdd);
+      document.getElementById("date").value = date.toISOString().split("T")[0];
+      updateMessages();
+    }
+
+    updateMessages();
+  </script>
+</body>
+</html>
