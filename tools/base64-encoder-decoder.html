@@ -142,6 +142,8 @@
       <button onclick="copyOutput()">📋 Copier le résultat</button>
     </div>
 
+    <div id="message" style="margin-top:10px; color:crimson; font-size:14px; min-height:1.2em;"></div>
+
     <section>
       <label for="output">📄 Résultat :</label>
       <textarea id="output" readonly></textarea>
@@ -156,13 +158,25 @@
       btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
     }
 
+    function showMessage(msg, isError = true) {
+      const messageEl = document.getElementById("message");
+      messageEl.textContent = msg;
+      messageEl.style.color = isError ? "crimson" : "green";
+      if (msg) {
+        setTimeout(() => {
+          messageEl.textContent = "";
+        }, 3000);
+      }
+    }
+
     function encodeBase64() {
       const input = document.getElementById("input").value;
       try {
         const encoded = btoa(unescape(encodeURIComponent(input)));
         document.getElementById("output").value = encoded;
+        showMessage("✅ Texte encodé avec succès", false);
       } catch (e) {
-        alert("❌ Erreur lors de l'encodage : texte invalide.");
+        showMessage("❌ Erreur : texte invalide pour l'encodage.");
       }
     }
 
@@ -171,8 +185,9 @@
       try {
         const decoded = decodeURIComponent(escape(atob(input)));
         document.getElementById("output").value = decoded;
+        showMessage("✅ Texte décodé avec succès", false);
       } catch (e) {
-        alert("❌ Erreur lors du décodage : texte Base64 invalide.");
+        showMessage("❌ Erreur : chaîne Base64 invalide.");
       }
     }
 
@@ -181,11 +196,12 @@
       const button = document.querySelector('button[onclick="copyOutput()"]');
 
       navigator.clipboard.writeText(output.value).then(() => {
-        const originalText = button.textContent;
+        const original = button.textContent;
         button.textContent = "✅ Copié !";
+        showMessage("✅ Résultat copié dans le presse-papiers", false);
         setTimeout(() => {
-          button.textContent = originalText;
-        }, 4000);
+          button.textContent = original;
+        }, 2000);
       });
     }
   </script>
