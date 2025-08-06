@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>🔐 Générateur de mot de passe</title>
+  <style>
+    :root {
+      --bg-color: #f3f4f7;
+      --text-color: #000;
+      --panel-bg: #fff;
+      --panel-border: #ccc;
+      --textarea-bg: #fafafa;
+      --btn-bg: #0a66c2;
+      --btn-text: #fff;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #f3f3f3;
+      --panel-bg: #1e1e1e;
+      --panel-border: #444;
+      --textarea-bg: #2a2a2a;
+      --btn-bg: #0a66c2;
+      --btn-text: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    .top-banner {
+      background-color: #0a66c2;
+      color: white;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+
+    .top-banner a {
+      color: white;
+      text-decoration: none;
+      margin-left: 12px;
+      font-weight: bold;
+    }
+
+    header {
+      background-color: #0a66c2;
+      color: white;
+      padding: 20px 40px;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      font-size: 20px;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 40px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 16px;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 20px;
+      display: block;
+    }
+
+    input[type="range"] {
+      width: 300px;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 6px;
+    }
+
+    .output {
+      font-family: monospace;
+      font-size: 20px;
+      background: var(--textarea-bg);
+      padding: 12px;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      min-height: 60px;
+      white-space: break-word;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-size: 14px;
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-banner">
+    🔙 <a href="../index.html">Retour au portail</a>
+  </div>
+
+  <header>
+    🔐 Générateur de mot de passe
+    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+  </header>
+
+  <main>
+    <div class="form-group">
+      <label for="length">🔢 Longueur du mot de passe : <span id="lengthValue">16</span> caractères</label>
+      <input type="range" id="length" min="4" max="128" value="16" oninput="updateLengthLabel(); generatePassword()" />
+    </div>
+
+    <div class="form-group">
+      <label><input type="checkbox" id="includeUpper" checked /> Majuscules (A-Z)</label><br />
+      <label><input type="checkbox" id="includeLower" checked /> Minuscules (a-z)</label><br />
+      <label><input type="checkbox" id="includeDigits" checked /> Chiffres (0-9)</label><br />
+      <label><input type="checkbox" id="includeSymbols" /> Symboles (!@#...)</label>
+    </div>
+
+    <div class="actions">
+      <button onclick="generatePassword()">🎲 Générer</button>
+      <button onclick="copyPassword()">📋 Copier</button>
+    </div>
+
+    <div id="message"></div>
+
+    <div class="output" id="password"></div>
+
+    <div id="entropyInfo" style="margin-top: 10px; font-size: 14px;">
+      🔒 Entropie estimée : <strong id="entropyValue">0</strong> bits (<span id="strengthLabel">–</span>)
+      <div style="margin-top: 6px; height: 10px; width: 100%; background: #ccc; border-radius: 5px;">
+        <div id="strengthBar" style="height: 100%; width: 0%; background: green; border-radius: 5px;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.querySelector('.theme-toggle');
+      body.classList.toggle('dark');
+      btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
+    }
+
+    function updateLengthLabel() {
+      const slider = document.getElementById("length");
+      const label = document.getElementById("lengthValue");
+      label.textContent = slider.value;
+    }
+
+    function showMessage(msg, isError = true) {
+      const messageEl = document.getElementById("message");
+      messageEl.textContent = msg;
+      messageEl.style.color = isError ? "crimson" : "green";
+      if (msg) {
+        setTimeout(() => {
+          messageEl.textContent = "";
+        }, 3000);
+      }
+    }
+
+    function generatePassword() {
+      const length = parseInt(document.getElementById("length").value);
+      const useUpper = document.getElementById("includeUpper").checked;
+      const useLower = document.getElementById("includeLower").checked;
+      const useDigits = document.getElementById("includeDigits").checked;
+      const useSymbols = document.getElementById("includeSymbols").checked;
+
+      const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const lower = "abcdefghijklmnopqrstuvwxyz";
+      const digits = "0123456789";
+      const symbols = "!@#$%^&*()-_=+[]{}|;:,.<>?/";
+
+      let allChars = "";
+      if (useUpper) allChars += upper;
+      if (useLower) allChars += lower;
+      if (useDigits) allChars += digits;
+      if (useSymbols) allChars += symbols;
+
+      if (!allChars) {
+        showMessage("❌ Sélectionnez au moins un type de caractère.");
+        return;
+      }
+
+      let password = "";
+      for (let i = 0; i < length; i++) {
+        const index = Math.floor(Math.random() * allChars.length);
+        password += allChars.charAt(index);
+      }
+
+      document.getElementById("password").textContent = password;
+      showMessage("✅ Mot de passe généré", false);
+
+      updateEntropy(length, allChars.length);
+    }
+
+    function copyPassword() {
+      const pwd = document.getElementById("password").textContent;
+      if (!pwd) {
+        showMessage("❌ Rien à copier.");
+        return;
+      }
+
+      navigator.clipboard.writeText(pwd).then(() => {
+        showMessage("📋 Mot de passe copié !", false);
+      });
+    }
+
+    function updateEntropy(length, alphabetSize) {
+      const entropy = Math.round(length * Math.log2(alphabetSize));
+      const entropyLabel = document.getElementById("entropyValue");
+      const strengthLabel = document.getElementById("strengthLabel");
+      const strengthBar = document.getElementById("strengthBar");
+
+      entropyLabel.textContent = entropy;
+
+      let strength = "";
+      let barColor = "";
+      let barWidth = 0;
+
+      if (entropy < 40) {
+        strength = "Très faible";
+        barColor = "red";
+        barWidth = "25%";
+      } else if (entropy < 60) {
+        strength = "Moyenne";
+        barColor = "orange";
+        barWidth = "50%";
+      } else if (entropy < 80) {
+        strength = "Bonne";
+        barColor = "gold";
+        barWidth = "75%";
+      } else {
+        strength = "Excellente";
+        barColor = "green";
+        barWidth = "100%";
+      }
+
+      strengthLabel.textContent = strength;
+      strengthBar.style.backgroundColor = barColor;
+      strengthBar.style.width = barWidth;
+    }
+
+    updateLengthLabel();
+  </script>
+
+</body>
+</html>
