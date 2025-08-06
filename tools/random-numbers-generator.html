@@ -106,14 +106,8 @@
       display: block;
     }
 
-    input[type="number"] {
-      width: 60px;
-      padding: 6px;
-      font-size: 14px;
-      border: 1px solid var(--panel-border);
-      border-radius: 4px;
-      background: var(--textarea-bg);
-      color: var(--text-color);
+    input[type="range"] {
+      width: 300px;
     }
 
     input[type="checkbox"] {
@@ -156,8 +150,8 @@
 
   <main>
     <div class="form-group">
-      <label for="length">🔢 Longueur du mot de passe :</label>
-      <input type="number" id="length" min="4" max="128" value="16" />
+      <label for="length">🔢 Longueur du mot de passe : <span id="lengthValue">16</span> caractères</label>
+      <input type="range" id="length" min="4" max="128" value="16" oninput="updateLengthLabel()" />
     </div>
 
     <div class="form-group">
@@ -183,6 +177,12 @@
       const btn = document.querySelector('.theme-toggle');
       body.classList.toggle('dark');
       btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
+    }
+
+    function updateLengthLabel() {
+      const slider = document.getElementById("length");
+      const label = document.getElementById("lengthValue");
+      label.textContent = slider.value;
     }
 
     function showMessage(msg, isError = true) {
@@ -240,6 +240,9 @@
         showMessage("📋 Mot de passe copié !", false);
       });
     }
+
+    // Init slider label
+    updateLengthLabel();
   </script>
 
 </body>
