@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧰 Portail Outils Perso</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #0a66c2;
+      color: white;
+      padding: 30px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 40px;
+    }
+    .tool-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-left: 6px solid #0a66c2;
+      transition: transform 0.2s ease;
+    }
+    .tool-card:hover {
+      transform: scale(1.02);
+    }
+    .tool-card h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .tool-card p {
+      flex-grow: 1;
+      color: #333;
+      font-size: 14px;
+    }
+    .tool-card a {
+      margin-top: 20px;
+      text-decoration: none;
+      background: #0a66c2;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    🧰 Portail personnel – Outils pratiques
+  </header>
+
+  <main>
+    <div class="tool-card">
+      <h2>📬 Générateur de message d'absence</h2>
+      <p>Crée rapidement un message d'absence multilingue avec une date personnalisée et un contact en cas d'urgence.</p>
+      <a href="tools/auto-reply-generator.html">Accéder</a>
+    </div>
+
+    <div class="tool-card">
+      <h2>🔐 Générateur de mot de passe</h2>
+      <p>Génère des mots de passe robustes, personnalisables avec options (longueur, symboles, etc).</p>
+      <a href="#">À venir</a>
+    </div>
+
+    <div class="tool-card">
+      <h2>📅 Générateur de changelog AKS</h2>
+      <p>Remplit automatiquement une fiche de change-request pour mise à jour AKS à partir de quelques champs clés.</p>
+      <a href="#">À venir</a>
+    </div>
+
+    <div class="tool-card">
+      <h2>📆 Convertisseur de date ISO</h2>
+      <p>Convertit une date ISO ou timestamp en format lisible et localisé (FR, EN, etc).</p>
+      <a href="#">À venir</a>
+    </div>
+
+    <div class="tool-card">
+      <h2>🔎 Analyseur d'e-mails suspects</h2>
+      <p>Copiez/collez un e-mail brut pour détecter s'il s'agit d'un phishing ou d'une tentative frauduleuse.</p>
+      <a href="#">À venir</a>
+    </div>
+  </main>
+
+  <footer>
+    © 2025 Yann ILAS – GitHub Pages Portal
+  </footer>
+</body>
+</html>
