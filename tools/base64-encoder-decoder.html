@@ -178,8 +178,14 @@
 
     function copyOutput() {
       const output = document.getElementById("output");
+      const button = document.querySelector('button[onclick="copyOutput()"]');
+
       navigator.clipboard.writeText(output.value).then(() => {
-        alert("✅ Résultat copié dans le presse-papiers !");
+        const originalText = button.textContent;
+        button.textContent = "✅ Copié !";
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 4000);
       });
     }
   </script>
