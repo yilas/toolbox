@@ -169,6 +169,13 @@
     <div id="message"></div>
 
     <div class="output" id="password"></div>
+
+    <div id="entropyInfo" style="margin-top: 10px; font-size: 14px;">
+      🔒 Entropie estimée : <strong id="entropyValue">0</strong> bits (<span id="strengthLabel">–</span>)
+      <div style="margin-top: 6px; height: 10px; width: 100%; background: #ccc; border-radius: 5px;">
+        <div id="strengthBar" style="height: 100%; width: 0%; background: green; border-radius: 5px;"></div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -227,6 +234,8 @@
 
       document.getElementById("password").textContent = password;
       showMessage("✅ Mot de passe généré", false);
+
+      updateEntropy(length, allChars.length);
     }
 
     function copyPassword() {
@@ -241,7 +250,41 @@
       });
     }
 
-    // Init slider label
+    function updateEntropy(length, alphabetSize) {
+      const entropy = Math.round(length * Math.log2(alphabetSize));
+      const entropyLabel = document.getElementById("entropyValue");
+      const strengthLabel = document.getElementById("strengthLabel");
+      const strengthBar = document.getElementById("strengthBar");
+
+      entropyLabel.textContent = entropy;
+
+      let strength = "";
+      let barColor = "";
+      let barWidth = 0;
+
+      if (entropy < 40) {
+        strength = "Très faible";
+        barColor = "red";
+        barWidth = "25%";
+      } else if (entropy < 60) {
+        strength = "Moyenne";
+        barColor = "orange";
+        barWidth = "50%";
+      } else if (entropy < 80) {
+        strength = "Bonne";
+        barColor = "gold";
+        barWidth = "75%";
+      } else {
+        strength = "Excellente";
+        barColor = "green";
+        barWidth = "100%";
+      }
+
+      strengthLabel.textContent = strength;
+      strengthBar.style.backgroundColor = barColor;
+      strengthBar.style.width = barWidth;
+    }
+
     updateLengthLabel();
   </script>
 
