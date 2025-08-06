@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Encodeur/Décodeur Base64</title>
+  <style>
+    :root {
+      --bg-color: #f3f4f7;
+      --text-color: #000;
+      --panel-bg: #fff;
+      --panel-border: #ccc;
+      --textarea-bg: #fafafa;
+      --btn-bg: #0a66c2;
+      --btn-text: #fff;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #f3f3f3;
+      --panel-bg: #1e1e1e;
+      --panel-border: #444;
+      --textarea-bg: #2a2a2a;
+      --btn-bg: #0a66c2;
+      --btn-text: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    .top-banner {
+      background-color: #0a66c2;
+      color: white;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+
+    .top-banner a {
+      color: white;
+      text-decoration: none;
+      margin-left: 12px;
+      font-weight: bold;
+    }
+
+    header {
+      background-color: #0a66c2;
+      color: white;
+      padding: 20px 40px;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      font-size: 20px;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 40px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 12px;
+      font-size: 14px;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      background: var(--textarea-bg);
+      color: var(--text-color);
+      resize: vertical;
+      font-family: monospace;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 16px;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 20px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-banner">
+    🔙 <a href="../index.html">Retour au portail</a>
+  </div>
+
+  <header>
+    🔐 Encodeur/Décodeur Base64
+    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+  </header>
+
+  <main>
+    <section>
+      <label for="input">🔤 Texte à traiter :</label>
+      <textarea id="input" placeholder="Entrez ici le texte brut ou en base64..."></textarea>
+    </section>
+
+    <div class="actions">
+      <button onclick="encodeBase64()">🔼 Encoder</button>
+      <button onclick="decodeBase64()">🔽 Décoder</button>
+      <button onclick="copyOutput()">📋 Copier le résultat</button>
+    </div>
+
+    <section>
+      <label for="output">📄 Résultat :</label>
+      <textarea id="output" readonly></textarea>
+    </section>
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.querySelector('.theme-toggle');
+      body.classList.toggle('dark');
+      btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
+    }
+
+    function encodeBase64() {
+      const input = document.getElementById("input").value;
+      try {
+        const encoded = btoa(unescape(encodeURIComponent(input)));
+        document.getElementById("output").value = encoded;
+      } catch (e) {
+        alert("❌ Erreur lors de l'encodage : texte invalide.");
+      }
+    }
+
+    function decodeBase64() {
+      const input = document.getElementById("input").value;
+      try {
+        const decoded = decodeURIComponent(escape(atob(input)));
+        document.getElementById("output").value = decoded;
+      } catch (e) {
+        alert("❌ Erreur lors du décodage : texte Base64 invalide.");
+      }
+    }
+
+    function copyOutput() {
+      const output = document.getElementById("output");
+      navigator.clipboard.writeText(output.value).then(() => {
+        alert("✅ Résultat copié dans le presse-papiers !");
+      });
+    }
+  </script>
+
+</body>
+</html>
