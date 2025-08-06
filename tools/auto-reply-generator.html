@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -14,7 +15,6 @@
       --btn-bg: #0a66c2;
       --btn-text: #fff;
     }
-
     body.dark {
       --bg-color: #121212;
       --text-color: #f3f3f3;
@@ -24,11 +24,9 @@
       --btn-bg: #0a66c2;
       --btn-text: #fff;
     }
-
     * {
       box-sizing: border-box;
     }
-
     body {
       font-family: "Segoe UI", sans-serif;
       background-color: var(--bg-color);
@@ -36,7 +34,6 @@
       margin: 0;
       padding: 0;
     }
-
     .top-banner {
       background-color: #0a66c2;
       color: white;
@@ -46,7 +43,6 @@
       display: flex;
       align-items: center;
     }
-
     .top-banner a {
       color: white;
       text-decoration: none;
@@ -54,11 +50,9 @@
       font-weight: bold;
       transition: text-decoration 0.3s ease;
     }
-
     .top-banner a:hover {
       text-decoration: underline;
     }
-
     header {
       background-color: #0a66c2;
       color: white;
@@ -69,7 +63,6 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .theme-toggle {
       font-size: 20px;
       background: none;
@@ -77,14 +70,12 @@
       color: white;
       cursor: pointer;
     }
-
     main {
       display: flex;
       flex-direction: row;
       gap: 30px;
       padding: 40px;
     }
-
     .form {
       flex: 1;
       max-width: 400px;
@@ -94,14 +85,13 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       border: 1px solid var(--panel-border);
     }
-
     .form label {
       font-weight: bold;
       display: block;
       margin-top: 20px;
     }
-
-    .form input {
+    .form input[type="text"],
+    .form input[type="date"] {
       width: 100%;
       padding: 12px;
       font-size: 15px;
@@ -111,11 +101,16 @@
       background: var(--textarea-bg);
       color: var(--text-color);
     }
-
+    .checkboxes {
+      margin-top: 20px;
+    }
+    .checkboxes label {
+      display: block;
+      margin-top: 10px;
+    }
     .preset-buttons {
       margin-top: 15px;
     }
-
     .preset-buttons button {
       margin-right: 10px;
       margin-top: 8px;
@@ -127,7 +122,6 @@
       border-radius: 6px;
       cursor: pointer;
     }
-
     .preview {
       flex: 2;
       background: var(--panel-bg);
@@ -137,16 +131,13 @@
       border: 1px solid var(--panel-border);
       display: flex;
       flex-direction: column;
-      height: auto;
     }
-
     .preview-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
     }
-
     .preview textarea {
       width: 100%;
       height: 600px;
@@ -160,7 +151,6 @@
       white-space: pre-wrap;
       resize: vertical;
     }
-
     button.copy-btn {
       background-color: var(--btn-bg);
       color: var(--btn-text);
@@ -170,11 +160,9 @@
       font-size: 14px;
       cursor: pointer;
     }
-
     button.copy-btn:hover {
       opacity: 0.9;
     }
-
     @media screen and (max-width: 900px) {
       main {
         flex-direction: column;
@@ -186,7 +174,7 @@
 <body>
 
   <div class="top-banner">
-    🔙 <a href="../index.html">Retour au portail</a>
+    🔙 <a href="../index.html">Retour à la page principale</a>
   </div>
 
   <header>
@@ -207,6 +195,13 @@
 
       <label for="contact">👤 Nom du contact :</label>
       <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
+
+      <div class="checkboxes">
+        <label><input type="checkbox" id="lang-fr" checked onchange="updateMessages()"> Français 🇫🇷</label>
+        <label><input type="checkbox" id="lang-lb" checked onchange="updateMessages()"> Luxembourgeois 🇱🇺</label>
+        <label><input type="checkbox" id="lang-en" checked onchange="updateMessages()"> Anglais 🇬🇧</label>
+        <label><input type="checkbox" id="lang-de" checked onchange="updateMessages()"> Allemand 🇩🇪</label>
+      </div>
     </div>
 
     <div class="preview">
@@ -231,20 +226,14 @@
     }
 
     function updateMessages() {
-      let rawDate = document.getElementById("date").value;
+      const rawDate = document.getElementById("date").value || new Date().toISOString().split("T")[0];
       const contactName = document.getElementById("contact").value || "votre contact";
-
-      if (!rawDate) {
-        const now = new Date();
-        now.setDate(now.getDate() + 14);
-        rawDate = now.toISOString().split("T")[0];
-        document.getElementById("date").value = rawDate;
-      }
-
       const date = new Date(rawDate);
 
-      const messages = [
-`Bonjour,
+      const langs = {
+        "fr": {
+          checked: document.getElementById("lang-fr").checked,
+          message: `Bonjour,
 
 Je suis actuellement absent du bureau et ne pourrai pas répondre à vos e-mails avant le ${formatDate(date, 'fr-FR')}.
 
@@ -252,9 +241,11 @@ En cas d'urgence, veuillez contacter ${contactName}.
 
 Je vous répondrai dès mon retour.
 
-Merci de votre compréhension`,
-
-`Moien,
+Merci de votre compréhension`
+        },
+        "lb": {
+          checked: document.getElementById("lang-lb").checked,
+          message: `Moien,
 
 Ech sinn de Moment net am Büro an ech kann net op Är E-Mailen äntweren, bis de ${formatDate(date, 'lb-LU')}.
 
@@ -262,9 +253,11 @@ Am Noutfall kënnt Dir w.e.g. den ${contactName} kontaktéieren.
 
 Ech ginn Iech esou séier wéi méiglech nom Retour äntweren.
 
-Merci fir Äert Verständnis`,
-
-`Hello,
+Merci fir Äert Verständnis`
+        },
+        "en": {
+          checked: document.getElementById("lang-en").checked,
+          message: `Hello,
 
 I am currently out of the office and will not be able to respond to emails until ${formatDate(date, 'en-US')}.
 
@@ -272,9 +265,11 @@ For urgent matters, please contact ${contactName}.
 
 I will get back to you as soon as I return.
 
-Thank you for your understanding`,
-
-`Guten Tag,
+Thank you for your understanding`
+        },
+        "de": {
+          checked: document.getElementById("lang-de").checked,
+          message: `Guten Tag,
 
 Ich bin derzeit nicht im Büro und kann Ihre E-Mails bis zum ${formatDate(date, 'de-DE')} nicht beantworten.
 
@@ -283,9 +278,15 @@ In dringenden Fällen wenden Sie sich bitte an ${contactName}.
 Ich werde Ihnen nach meiner Rückkehr so bald wie möglich antworten.
 
 Vielen Dank für Ihr Verständnis`
-      ];
+        }
+      };
 
-      document.getElementById("output").value = messages.join("\n\n---\n\n");
+      const selectedMessages = Object.values(langs)
+        .filter(lang => lang.checked)
+        .map(lang => lang.message)
+        .join("\n\n---\n\n");
+
+      document.getElementById("output").value = selectedMessages;
     }
 
     function copyToClipboard() {
@@ -297,7 +298,7 @@ Vielen Dank für Ihr Verständnis`
         button.textContent = "Copié ! ✌️";
         setTimeout(() => {
           button.textContent = originalText;
-        }, 5000);
+        }, 3000);
       });
     }
 
@@ -324,7 +325,9 @@ Vielen Dank für Ihr Verständnis`
       updateMessages();
     }
 
-    updateMessages();
+    // Initial rendering
+    window.onload = updateMessages;
   </script>
+
 </body>
 </html>
