@@ -164,9 +164,11 @@
     <div class="actions">
       <button onclick="generatePassword()">🎲 Générer</button>
       <button onclick="copyPassword()">📋 Copier</button>
+      <button id="chaosBtn" onclick="toggleChaosMode()">⚡ Activer le mode Chaos</button>
     </div>
 
     <div id="message"></div>
+    <div id="chaosInfo" style="font-size:13px; color:#666; min-height:1.2em;"></div>
 
     <div class="output" id="password"></div>
 
@@ -179,11 +181,60 @@
   </main>
 
   <script>
+    let chaosMode = false;
+    let entropyPool = 0;
+    let sources = new Set();
+
+    // Entropie souris
+    document.addEventListener("mousemove", e => {
+      if (chaosMode) {
+        entropyPool ^= (e.screenX + e.screenY + Date.now());
+        sources.add("souris");
+        updateChaosInfo();
+      }
+    });
+
+    // Entropie clavier
+    document.addEventListener("keydown", e => {
+      if (chaosMode) {
+        entropyPool ^= (e.keyCode + Date.now());
+        sources.add("clavier");
+        updateChaosInfo();
+      }
+    });
+
     function toggleTheme() {
       const body = document.body;
       const btn = document.querySelector('.theme-toggle');
       body.classList.toggle('dark');
       btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
+    }
+
+    function toggleChaosMode() {
+      chaosMode = !chaosMode;
+      const btn = document.getElementById("chaosBtn");
+      sources.clear();
+      updateChaosInfo();
+      if (chaosMode) {
+        btn.textContent = "⚡ Mode Chaos activé";
+        showMessage("⚡ Mode Chaos activé : entropie renforcée", false);
+      } else {
+        btn.textContent = "⚡ Activer le mode Chaos";
+        showMessage("🔒 Mode Chaos désactivé", false);
+      }
+    }
+
+    function updateChaosInfo() {
+      const chaosInfo = document.getElementById("chaosInfo");
+      if (!chaosMode) {
+        chaosInfo.textContent = "";
+        return;
+      }
+      if (sources.size === 0) {
+        chaosInfo.textContent = "⚡ Mode Chaos actif – en attente d'événements…";
+      } else {
+        chaosInfo.textContent = "⚡ Mode Chaos actif – Entropie captée : " + Array.from(sources).join(", ");
+      }
     }
 
     function updateLengthLabel() {
@@ -201,6 +252,16 @@
           messageEl.textContent = "";
         }, 3000);
       }
+    }
+
+    function getRandomInt(max) {
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      let val = array[0];
+      if (chaosMode) {
+        val ^= entropyPool;
+      }
+      return Math.abs(val) % max;
     }
 
     function generatePassword() {
@@ -228,7 +289,7 @@
 
       let password = "";
       for (let i = 0; i < length; i++) {
-        const index = Math.floor(Math.random() * allChars.length);
+        const index = getRandomInt(allChars.length);
         password += allChars.charAt(index);
       }
 
@@ -285,7 +346,9 @@
       strengthBar.style.width = barWidth;
     }
 
+    // Init
     updateLengthLabel();
+    generatePassword();
   </script>
 
 </body>
