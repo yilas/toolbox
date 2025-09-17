@@ -24,117 +24,84 @@
       --btn-text: #fff;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: "Segoe UI", sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
     }
 
     .top-banner {
-      background-color: #0a66c2;
-      color: white;
-      padding: 16px 32px;
-      font-size: 16px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
+      background-color: #0a66c2; color: white;
+      padding: 16px 32px; font-size: 16px; font-weight: bold;
+      display: flex; align-items: center;
     }
 
-    .top-banner a {
-      color: white;
-      text-decoration: none;
-      margin-left: 12px;
-      font-weight: bold;
-    }
+    .top-banner a { color: white; text-decoration: none; margin-left: 12px; font-weight: bold; }
 
     header {
-      background-color: #0a66c2;
-      color: white;
-      padding: 20px 40px;
-      font-size: 24px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background-color: #0a66c2; color: white;
+      padding: 20px 40px; font-size: 24px; font-weight: bold;
+      display: flex; justify-content: space-between; align-items: center;
     }
 
     .theme-toggle {
-      font-size: 20px;
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
+      font-size: 20px; background: none; border: none;
+      color: white; cursor: pointer;
     }
 
-    main {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      padding: 40px;
-    }
+    main { display: flex; flex-direction: column; gap: 20px; padding: 40px; }
 
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 
     button {
-      padding: 10px 16px;
-      background-color: var(--btn-bg);
-      color: var(--btn-text);
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
+      padding: 10px 16px; background-color: var(--btn-bg); color: var(--btn-text);
+      border: none; border-radius: 6px; cursor: pointer; font-size: 14px;
     }
+    button:hover { opacity: 0.9; }
 
-    button:hover {
-      opacity: 0.9;
-    }
+    label { font-weight: bold; margin-top: 20px; display: block; }
 
-    label {
-      font-weight: bold;
-      margin-top: 20px;
-      display: block;
-    }
-
-    input[type="range"] {
-      width: 300px;
-    }
-
-    input[type="checkbox"] {
-      transform: scale(1.2);
-      margin-right: 6px;
-    }
+    input[type="range"] { width: 300px; }
+    input[type="checkbox"] { transform: scale(1.2); margin-right: 6px; }
 
     .output {
-      font-family: monospace;
-      font-size: 20px;
-      background: var(--textarea-bg);
-      padding: 12px;
-      border: 1px solid var(--panel-border);
-      border-radius: 8px;
-      min-height: 60px;
-      white-space: break-word;
+      font-family: monospace; font-size: 20px;
+      background: var(--textarea-bg); padding: 12px;
+      border: 1px solid var(--panel-border); border-radius: 8px;
+      min-height: 60px; white-space: break-word;
     }
 
-    .form-group {
-      margin-bottom: 10px;
-    }
+    .form-group { margin-bottom: 10px; }
+    #message { margin-top: 10px; font-size: 14px; min-height: 1.2em; }
 
-    #message {
-      margin-top: 10px;
-      font-size: 14px;
-      min-height: 1.2em;
+    /* Switch Chaos */
+    .switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc; transition: .4s; border-radius: 34px;
     }
+    .slider:before {
+      position: absolute; content: "";
+      height: 22px; width: 22px; left: 4px; bottom: 4px;
+      background-color: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #0a66c2; }
+    input:checked + .slider:before { transform: translateX(28px); }
+
+    #chaosPanel {
+      display: none;
+      border: 1px dashed #0a66c2;
+      background: #eef5ff;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      white-space: pre-line;
+    }
+    #chaosSources { margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -164,11 +131,16 @@
     <div class="actions">
       <button onclick="generatePassword()">🎲 Générer</button>
       <button onclick="copyPassword()">📋 Copier</button>
-      <button id="chaosBtn" onclick="toggleChaosMode()">⚡ Activer le mode Chaos</button>
+
+      <!-- Switch Chaos -->
+      <label class="switch">
+        <input type="checkbox" id="chaosSwitch" onchange="toggleChaosMode()" />
+        <span class="slider"></span>
+      </label>
+      <span style="align-self: center;">⚡ Mode Chaos</span>
     </div>
 
     <div id="message"></div>
-    <div id="chaosInfo" style="font-size:13px; color:#666; min-height:1.2em;"></div>
 
     <div class="output" id="password"></div>
 
@@ -178,18 +150,27 @@
         <div id="strengthBar" style="height: 100%; width: 0%; background: green; border-radius: 5px;"></div>
       </div>
     </div>
+
+    <div id="chaosPanel">
+      <strong>⚡ Mode Chaos actif</strong><br/>
+      Vos mouvements et frappes clavier renforcent l’aléa.<br/>
+      <div id="chaosSources">En attente d'événements…</div>
+    </div>
   </main>
 
   <script>
     let chaosMode = false;
     let entropyPool = 0;
     let sources = new Set();
+    let lastMouse = null;
+    let lastKey = null;
 
     // Entropie souris
     document.addEventListener("mousemove", e => {
       if (chaosMode) {
         entropyPool ^= (e.screenX + e.screenY + Date.now());
-        sources.add("souris");
+        sources.add("🖱️ Souris");
+        lastMouse = { x: e.screenX, y: e.screenY, t: new Date().toLocaleTimeString() };
         updateChaosInfo();
       }
     });
@@ -198,7 +179,8 @@
     document.addEventListener("keydown", e => {
       if (chaosMode) {
         entropyPool ^= (e.keyCode + Date.now());
-        sources.add("clavier");
+        sources.add("⌨️ Clavier");
+        lastKey = { key: e.key, t: new Date().toLocaleTimeString() };
         updateChaosInfo();
       }
     });
@@ -211,30 +193,43 @@
     }
 
     function toggleChaosMode() {
-      chaosMode = !chaosMode;
-      const btn = document.getElementById("chaosBtn");
+      chaosMode = document.getElementById("chaosSwitch").checked;
       sources.clear();
+      lastMouse = null;
+      lastKey = null;
       updateChaosInfo();
+      const panel = document.getElementById("chaosPanel");
+      panel.style.display = chaosMode ? "block" : "none";
       if (chaosMode) {
-        btn.textContent = "⚡ Mode Chaos activé";
         showMessage("⚡ Mode Chaos activé : entropie renforcée", false);
       } else {
-        btn.textContent = "⚡ Activer le mode Chaos";
         showMessage("🔒 Mode Chaos désactivé", false);
       }
     }
 
     function updateChaosInfo() {
-      const chaosInfo = document.getElementById("chaosInfo");
+      const chaosSources = document.getElementById("chaosSources");
       if (!chaosMode) {
-        chaosInfo.textContent = "";
+        chaosSources.textContent = "";
         return;
       }
+
+      let text = "";
       if (sources.size === 0) {
-        chaosInfo.textContent = "⚡ Mode Chaos actif – en attente d'événements…";
+        text = "En attente d'événements…";
       } else {
-        chaosInfo.textContent = "⚡ Mode Chaos actif – Entropie captée : " + Array.from(sources).join(", ");
+        text = "Entropie captée : " + Array.from(sources).join(", ");
       }
+
+      // Détails supplémentaires
+      if (lastMouse) {
+        text += `\nDernier mouvement souris → X=${lastMouse.x}, Y=${lastMouse.y} (${lastMouse.t})`;
+      }
+      if (lastKey) {
+        text += `\nDernière touche pressée → "${lastKey.key}" (${lastKey.t})`;
+      }
+
+      chaosSources.textContent = text;
     }
 
     function updateLengthLabel() {
@@ -248,9 +243,7 @@
       messageEl.textContent = msg;
       messageEl.style.color = isError ? "crimson" : "green";
       if (msg) {
-        setTimeout(() => {
-          messageEl.textContent = "";
-        }, 3000);
+        setTimeout(() => { messageEl.textContent = ""; }, 3000);
       }
     }
 
@@ -305,7 +298,6 @@
         showMessage("❌ Rien à copier.");
         return;
       }
-
       navigator.clipboard.writeText(pwd).then(() => {
         showMessage("📋 Mot de passe copié !", false);
       });
@@ -319,27 +311,11 @@
 
       entropyLabel.textContent = entropy;
 
-      let strength = "";
-      let barColor = "";
-      let barWidth = 0;
-
-      if (entropy < 40) {
-        strength = "Très faible";
-        barColor = "red";
-        barWidth = "25%";
-      } else if (entropy < 60) {
-        strength = "Moyenne";
-        barColor = "orange";
-        barWidth = "50%";
-      } else if (entropy < 80) {
-        strength = "Bonne";
-        barColor = "gold";
-        barWidth = "75%";
-      } else {
-        strength = "Excellente";
-        barColor = "green";
-        barWidth = "100%";
-      }
+      let strength = "", barColor = "", barWidth = 0;
+      if (entropy < 40) { strength = "Très faible"; barColor = "red"; barWidth = "25%"; }
+      else if (entropy < 60) { strength = "Moyenne"; barColor = "orange"; barWidth = "50%"; }
+      else if (entropy < 80) { strength = "Bonne"; barColor = "gold"; barWidth = "75%"; }
+      else { strength = "Excellente"; barColor = "green"; barWidth = "100%"; }
 
       strengthLabel.textContent = strength;
       strengthBar.style.backgroundColor = barColor;
