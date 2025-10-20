@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>⏱️ Calculateur de temps de travail</title>
+    <style>
+      :root {
+        --bg-color: #f3f4f7;
+        --text-color: #000;
+        --panel-bg: #fff;
+        --panel-border: #ccc;
+        --textarea-bg: #fafafa;
+        --btn-bg: #0a66c2;
+        --btn-text: #fff;
+      }
+
+      .entry-pair.dragging {
+        opacity: 0.4;
+      }
+
+      .entry-pair.over {
+        outline: 2px dashed #0a66c2;
+      }
+
+      body.dark {
+        --bg-color: #121212;
+        --text-color: #f3f3f3;
+        --panel-bg: #1e1e1e;
+        --panel-border: #444;
+        --textarea-bg: #2a2a2a;
+        --btn-bg: #0a66c2;
+        --btn-text: #fff;
+      }
+
+      .time-block {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .time-block label {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 4px;
+      }
+
+      .time-block input[type="time"] {
+        padding: 10px;
+        font-size: 15px;
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        background: var(--panel-bg);
+        color: var(--text-color);
+        width: 120px;
+      }
+
+      .time-input {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: var(--textarea-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        color: var(--text-color);
+        font-size: 15px;
+      }
+
+      .time-input input[type="time"] {
+        background: transparent;
+        border: none;
+        color: inherit;
+        font-family: inherit;
+        font-size: 15px;
+        outline: none;
+        width: 80px;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      .time-input label {
+        font-weight: normal;
+        font-size: 14px;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+      }
+
+      .top-banner {
+        background-color: #0a66c2;
+        color: white;
+        padding: 16px 32px;
+        font-size: 16px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+      }
+
+      .top-banner a {
+        color: white;
+        text-decoration: none;
+        margin-left: 12px;
+        font-weight: bold;
+      }
+
+      header {
+        background-color: #0a66c2;
+        color: white;
+        padding: 20px 40px;
+        font-size: 24px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .theme-toggle {
+        font-size: 20px;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+      }
+
+      main {
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .section {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        padding: 30px;
+      }
+
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 6px;
+        margin-top: 16px;
+      }
+
+      input[type="time"] {
+        padding: 8px;
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        background: var(--textarea-bg);
+        color: var(--text-color);
+        font-size: 15px;
+        margin-right: 10px;
+      }
+
+      button {
+        margin-top: 20px;
+        padding: 10px 16px;
+        background-color: var(--btn-bg);
+        color: var(--btn-text);
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      button:hover {
+        opacity: 0.9;
+      }
+
+      .entry-pair {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        background: var(--textarea-bg);
+      }
+
+      .entry-pair .duration {
+        font-family: monospace;
+        font-size: 14px;
+        color: var(--text-color);
+        min-width: 120px;
+      }
+
+      .entry-pair button {
+        background: #d9534f;
+      }
+
+      .result {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      .summary {
+        font-family: monospace;
+        margin-top: 15px;
+        white-space: pre-line;
+        font-size: 15px;
+      }
+
+      .delta {
+        margin-top: 8px;
+        font-weight: normal;
+        font-size: 16px;
+      }
+
+      .drag-handle {
+        cursor: grab;
+        font-size: 20px;
+        user-select: none;
+        margin-right: 10px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        transition: background 0.2s;
+      }
+      .drag-handle:hover {
+        background: #d0dff6;
+      }
+      .drag-handle:active {
+        cursor: grabbing;
+      }
+
+      .entry-pair.dragging {
+        opacity: 0.5;
+        transform: scale(1.01);
+        transition: transform 0.15s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-banner">
+      🔙 <a href="../index.html">Retour au portail</a>
+    </div>
+
+    <header>
+      ⏱️ Calculateur de temps de travail
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </header>
+
+    <main>
+      <div class="section">
+        <h2>🕒 Heures de travail</h2>
+        <div id="entries"></div>
+        <button onclick="addEntry()">➕ Ajouter une plage horaire</button>
+      </div>
+
+      <div class="section">
+        <button onclick="calculateTime()">
+          🧮 Calculer le temps de travail
+        </button>
+        <div class="result" id="result">Temps total : 0h 00min</div>
+        <div class="summary" id="summary"></div>
+      </div>
+    </main>
+
+    <script>
+      const TARGET_MINUTES = 8 * 60;
+
+      function toggleTheme() {
+        const body = document.body;
+        const btn = document.querySelector(".theme-toggle");
+        body.classList.toggle("dark");
+        btn.textContent = body.classList.contains("dark") ? "🌞" : "🌙";
+      }
+
+      function addEntry(entry = { start: "", end: "" }) {
+        const container = document.getElementById("entries");
+        const div = document.createElement("div");
+        div.className = "entry-pair";
+
+        div.innerHTML = `
+    <div class="drag-handle" title="Déplacer" draggable="true">☰</div>
+    <div class="time-block">
+      <label>Entrée</label>
+      <input type="time" class="start" lang="fr" inputmode="numeric" value="${entry.start}" />
+    </div>
+    <div class="time-block">
+      <label>Sortie</label>
+      <input type="time" class="end" lang="fr" inputmode="numeric" value="${entry.end}" />
+    </div>
+    <span class="duration">⏱ 0h00</span>
+    <button onclick="this.parentElement.remove(); saveEntries();" title="Supprimer" style="background:#d9534f;padding:8px 12px;border-radius:6px;color:#fff;">🗑️</button>
+  `;
+
+        const handle = div.querySelector(".drag-handle");
+
+        handle.addEventListener("dragstart", () => {
+          div.classList.add("dragging");
+        });
+
+        handle.addEventListener("dragend", () => {
+          div.classList.remove("dragging");
+          saveEntries();
+        });
+
+        // Sauvegarder quand les champs changent
+        div.querySelector(".start").addEventListener("change", saveEntries);
+        div.querySelector(".end").addEventListener("change", saveEntries);
+
+        container.appendChild(div);
+      }
+
+      function timeToMinutes(t) {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+      }
+
+      function formatDuration(mins) {
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return `${h}h${m.toString().padStart(2, "0")}`;
+      }
+
+      function calculateTime() {
+        const starts = document.querySelectorAll(".start");
+        const ends = document.querySelectorAll(".end");
+        const durations = document.querySelectorAll(".duration");
+
+        let total = 0;
+        let summary = [];
+
+        for (let i = 0; i < starts.length; i++) {
+          const start = starts[i].value;
+          const end = ends[i].value;
+
+          let line = "";
+          let diff = 0;
+
+          if (start && end) {
+            diff = timeToMinutes(end) - timeToMinutes(start);
+            if (diff > 0) {
+              total += diff;
+              line = `${start} → ${end} ⏱ ${formatDuration(diff)}`;
+            }
+          }
+
+          durations[i].textContent =
+            diff > 0 ? `⏱ ${formatDuration(diff)}` : "⏱ 0h00";
+          if (line) summary.push(line);
+        }
+
+        const hours = Math.floor(total / 60);
+        const minutes = total % 60;
+
+        const delta = total - TARGET_MINUTES;
+        let deltaText = "";
+        if (delta === 0) {
+          deltaText = "✅ Objectif atteint (8h)";
+        } else {
+          const sign = delta > 0 ? "+" : "-";
+          const absDelta = Math.abs(delta);
+          const dh = Math.floor(absDelta / 60);
+          const dm = absDelta % 60;
+          deltaText = `${sign}${dh}h${dm.toString().padStart(2, "0")} ${
+            delta > 0 ? "au-delà" : "en dessous"
+          } de la cible`;
+        }
+
+        document.getElementById(
+          "result"
+        ).textContent = `Temps total : ${hours}h ${minutes
+          .toString()
+          .padStart(2, "0")}min`;
+        document.getElementById("summary").textContent =
+          summary.join("\n") + `\n\n📊 ${deltaText}`;
+      }
+
+      window.onload = () => {
+        loadEntries();
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById("entries");
+
+        container.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          const dragging = container.querySelector(".dragging");
+          const afterElement = getDragAfterElement(container, e.clientY);
+          if (afterElement == null) {
+            container.appendChild(dragging);
+          } else {
+            container.insertBefore(dragging, afterElement);
+          }
+        });
+
+        container.addEventListener("drop", saveEntries);
+      });
+
+      function getDragAfterElement(container, y) {
+        const draggableElements = [
+          ...container.querySelectorAll(".entry-pair:not(.dragging)"),
+        ];
+
+        return draggableElements.reduce(
+          (closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+              return { offset: offset, element: child };
+            } else {
+              return closest;
+            }
+          },
+          { offset: Number.NEGATIVE_INFINITY }
+        ).element;
+      }
+
+      function saveEntries() {
+        const entries = [...document.querySelectorAll(".entry-pair")].map(
+          (div) => {
+            return {
+              start: div.querySelector(".start").value,
+              end: div.querySelector(".end").value,
+            };
+          }
+        );
+        localStorage.setItem("worktime_entries", JSON.stringify(entries));
+      }
+
+      function loadEntries() {
+        const saved = localStorage.getItem("worktime_entries");
+        if (saved) {
+          const data = JSON.parse(saved);
+          data.forEach((e) => addEntry(e));
+        } else {
+          addEntry();
+        }
+      }
+    </script>
+  </body>
+</html>
