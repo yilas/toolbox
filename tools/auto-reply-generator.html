@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -326,7 +325,55 @@ Vielen Dank für Ihr Verständnis`
     }
 
     // Initial rendering
-    window.onload = updateMessages;
+    function saveToLocal() {
+      const state = {
+        date: document.getElementById("date").value,
+        contact: document.getElementById("contact").value,
+        langs: {
+          fr: document.getElementById("lang-fr").checked,
+          lb: document.getElementById("lang-lb").checked,
+          en: document.getElementById("lang-en").checked,
+          de: document.getElementById("lang-de").checked
+        },
+        theme: document.body.classList.contains('dark') ? 'dark' : 'light'
+      };
+      localStorage.setItem('autoReply_settings', JSON.stringify(state));
+    }
+
+    function loadFromLocal() {
+      const saved = JSON.parse(localStorage.getItem('autoReply_settings') || '{}');
+      if (saved.date) document.getElementById("date").value = saved.date;
+      if (saved.contact) document.getElementById("contact").value = saved.contact;
+      if (saved.langs) {
+        document.getElementById("lang-fr").checked = saved.langs.fr ?? true;
+        document.getElementById("lang-lb").checked = saved.langs.lb ?? true;
+        document.getElementById("lang-en").checked = saved.langs.en ?? true;
+        document.getElementById("lang-de").checked = saved.langs.de ?? true;
+      }
+      if (saved.theme === 'dark') {
+        document.body.classList.add('dark');
+        document.querySelector('.theme-toggle').textContent = '🌞';
+      }
+    }
+
+    // Modification : on intègre saveToLocal dans updateMessages et toggleTheme
+    const originalUpdateMessages = updateMessages;
+    updateMessages = function() {
+      originalUpdateMessages();
+      saveToLocal();
+    };
+
+    const originalToggleTheme = toggleTheme;
+    toggleTheme = function() {
+      originalToggleTheme();
+      saveToLocal();
+    };
+
+    // Charger les données au démarrage
+    window.onload = function() {
+      loadFromLocal();
+      updateMessages();
+    };
   </script>
 
 </body>
