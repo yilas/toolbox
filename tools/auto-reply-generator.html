@@ -337,11 +337,11 @@ Vielen Dank für Ihr Verständnis`
         },
         theme: document.body.classList.contains('dark') ? 'dark' : 'light'
       };
-      localStorage.setItem('autoReply_settings', JSON.stringify(state));
+      localStorage.setItem('auto-reply-generator_settings', JSON.stringify(state));
     }
 
     function loadFromLocal() {
-      const saved = JSON.parse(localStorage.getItem('autoReply_settings') || '{}');
+      const saved = JSON.parse(localStorage.getItem('auto-reply-generator_settings') || '{}');
       if (saved.date) document.getElementById("date").value = saved.date;
       if (saved.contact) document.getElementById("contact").value = saved.contact;
       if (saved.langs) {
