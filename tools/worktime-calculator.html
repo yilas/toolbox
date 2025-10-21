@@ -433,11 +433,11 @@
             };
           }
         );
-        localStorage.setItem("worktime_entries", JSON.stringify(entries));
+        localStorage.setItem("worktime-calculator_settings", JSON.stringify(entries));
       }
 
       function loadEntries() {
-        const saved = localStorage.getItem("worktime_entries");
+        const saved = localStorage.getItem("worktime-calculator_settings");
         if (saved) {
           const data = JSON.parse(saved);
           data.forEach((e) => addEntry(e));
