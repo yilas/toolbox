@@ -17,6 +17,7 @@
         --danger: #b91c1c;
         --success: #166534;
         --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        --accent: #0a66c2;
       }
       body.dark {
         --bg-color: #121212;
@@ -28,36 +29,38 @@
         --danger: #ef4444;
         --success: #22c55e;
         --shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+        --accent: #4ea0ff;
       }
       * {
         box-sizing: border-box;
       }
       body {
         font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-        background-color: var(--bg-color);
+        background: var(--bg-color);
         color: var(--text-color);
         margin: 0;
-        padding: 0;
-        transition: background-color 0.25s ease, color 0.25s ease;
+        transition: background 0.25s ease, color 0.25s ease;
       }
+
       .top-banner {
-        background-color: #0a66c2;
-        color: white;
+        background: #0a66c2;
+        color: #fff;
         padding: 12px 24px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
         font-size: 15px;
         font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
       }
       .top-banner a {
-        color: white;
+        color: #fff;
         text-decoration: none;
         font-weight: 700;
       }
+
       header {
-        background-color: #0a66c2;
-        color: white;
+        background: #0a66c2;
+        color: #fff;
         padding: 18px 28px;
         font-size: 22px;
         font-weight: 700;
@@ -66,21 +69,21 @@
         align-items: center;
       }
       .theme-toggle {
-        font-size: 20px;
         background: none;
         border: none;
-        color: white;
+        color: #fff;
+        font-size: 20px;
         cursor: pointer;
-        transition: transform 0.15s ease;
+        transition: transform 0.15s;
       }
       .theme-toggle:hover {
         transform: scale(1.08);
       }
 
-      /* Layout principal */
+      /* Layout principal à deux colonnes (70% / 30%) */
       .wrap {
         display: grid;
-        grid-template-columns: 1fr 360px;
+        grid-template-columns: 70% 30%;
         gap: 24px;
         padding: 24px;
         align-items: start;
@@ -93,6 +96,7 @@
           order: 2;
         }
       }
+
       main,
       aside {
         background: var(--panel-bg);
@@ -100,15 +104,69 @@
         border-radius: 12px;
         box-shadow: var(--shadow);
       }
+
+      /* Séparation visuelle claire côté droit */
+      aside {
+        border-left: 3px solid var(--panel-border);
+      }
+
       main {
         padding: 24px;
       }
       aside {
-        padding: 16px;
-        max-height: calc(100vh - 200px);
-        overflow: hidden;
         display: flex;
         flex-direction: column;
+        min-height: 60vh;
+      }
+
+      /* En-tête sticky du panneau historique */
+      .aside-head {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--panel-bg);
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--panel-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
+      .aside-title {
+        font-weight: 800;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .aside-tools {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-color);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .btn-ghost.danger {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+
+      /* Liste historique scrollable */
+      .history-list {
+        padding: 12px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
       }
 
       textarea {
@@ -124,42 +182,35 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
           "Liberation Mono", monospace;
       }
-
+      label {
+        display: block;
+        font-weight: 700;
+        margin: 12px 0 8px;
+      }
       .actions {
         display: flex;
         gap: 10px;
-        margin-top: 12px;
         flex-wrap: wrap;
+        margin-top: 12px;
       }
       button {
         padding: 10px 14px;
-        background-color: var(--btn-bg);
+        background: var(--btn-bg);
         color: var(--btn-text);
         border: none;
         border-radius: 8px;
         cursor: pointer;
         font-size: 14px;
-        transition: opacity 0.2s ease, transform 0.1s ease;
+        transition: opacity 0.2s, transform 0.1s;
       }
       button:hover {
         opacity: 0.95;
         transform: translateY(-1px);
       }
-
-      .btn-ghost {
+      .btn-outline {
         background: transparent;
         color: var(--text-color);
         border: 1px solid var(--panel-border);
-      }
-      .btn-ghost.danger {
-        color: var(--danger);
-        border-color: var(--danger);
-      }
-
-      label {
-        font-weight: 700;
-        margin: 12px 0 8px;
-        display: block;
       }
       #message {
         min-height: 1.2em;
@@ -167,66 +218,18 @@
         font-size: 14px;
       }
 
-      /* Aside Historique */
-      .aside-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 4px 4px 12px;
-        border-bottom: 1px solid var(--panel-border);
-        margin-bottom: 8px;
-        gap: 8px;
-      }
-      .aside-title {
-        font-weight: 800;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .aside-tools {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .clear-all,
-      .debug-view {
-        background: transparent;
-        border-radius: 8px;
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-      .clear-all {
-        color: var(--danger);
-        border: 1px solid var(--danger);
-      }
-      .debug-view {
-        color: var(--text-color);
-        border: 1px solid var(--panel-border);
-      }
-
-      .history-list {
-        overflow: auto;
-        padding: 4px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
+      /* Items d'historique */
       .history-item {
         border: 1px solid var(--panel-border);
         border-radius: 10px;
-        padding: 10px;
         background: var(--textarea-bg);
+        padding: 10px;
         display: grid;
         grid-template-columns: 1fr auto;
         gap: 6px 10px;
-
-        /* Animation suppression */
         max-height: 300px;
-        transition: max-height 0.25s ease, opacity 0.2s ease,
-          transform 0.2s ease, margin 0.25s ease, padding 0.25s ease,
-          border-width 0.25s ease;
+        transition: max-height 0.25s, opacity 0.2s, transform 0.2s, margin 0.25s,
+          padding 0.25s, border-width 0.25s;
       }
       .history-item.removing {
         opacity: 0;
@@ -236,34 +239,13 @@
         padding: 0;
         border-width: 0;
       }
-
       .history-meta {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
         font-size: 12px;
         color: var(--muted);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        grid-column: 1 / -1;
-      }
-      .history-line {
-        font-size: 13px;
-        background: var(--panel-bg);
-        border: 1px solid var(--panel-border);
-        border-radius: 8px;
-        padding: 8px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        line-clamp: 2;
-        grid-column: 1 / -1;
-      }
-      .history-actions {
-        display: flex;
-        gap: 6px;
-        grid-column: 2 / 3;
-        align-items: start;
       }
       .chip {
         font-size: 11px;
@@ -274,6 +256,28 @@
       }
       .muted {
         color: var(--muted);
+      }
+      .history-line {
+        grid-column: 1 / -1;
+        font-size: 13px;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .history-actions {
+        grid-column: 2 / 3;
+        display: flex;
+        gap: 6px;
+      }
+      .btn-ghost.small {
+        padding: 6px 8px;
+        font-size: 12px;
       }
 
       /* Modals */
@@ -298,9 +302,7 @@
         padding: 16px;
       }
       .modal header {
-        background: transparent;
-        color: var(--text-color);
-        padding: 0 0 10px 0;
+        padding: 0 0 10px;
         border-bottom: 1px solid var(--panel-border);
         font-size: 18px;
       }
@@ -309,7 +311,6 @@
         border: 1px solid var(--panel-border);
         border-radius: 10px;
         padding: 12px;
-        overflow: auto;
         white-space: pre-wrap;
         word-wrap: break-word;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
@@ -318,8 +319,8 @@
       }
       .modal .modal-actions {
         display: flex;
-        gap: 8px;
         justify-content: flex-end;
+        gap: 8px;
         margin-top: 10px;
       }
     </style>
@@ -341,7 +342,7 @@
     </header>
 
     <div class="wrap">
-      <!-- Zone principale -->
+      <!-- Colonne principale (70%) -->
       <main>
         <section>
           <label for="input">🔤 Texte à traiter :</label>
@@ -355,7 +356,9 @@
           <button onclick="encodeBase64()">🔼 Encoder</button>
           <button onclick="decodeBase64()">🔽 Décoder</button>
           <button onclick="copyOutput()">📋 Copier le résultat</button>
-          <button class="btn-ghost" onclick="clearFields()">🧹 Effacer</button>
+          <button class="btn-outline" onclick="clearFields()">
+            🧹 Effacer
+          </button>
         </div>
 
         <div id="message"></div>
@@ -366,15 +369,23 @@
         </section>
       </main>
 
-      <!-- Historique latéral -->
+      <!-- Panneau historique fixe (30%) -->
       <aside>
         <div class="aside-head">
           <div class="aside-title">🕘 Historique</div>
           <div class="aside-tools">
-            <button class="debug-view" onclick="openStateModal()">
+            <button
+              class="btn-ghost"
+              onclick="openStateModal()"
+              title="Voir l'état JSON"
+            >
               🔧 Voir état
             </button>
-            <button class="clear-all" onclick="clearHistory()">
+            <button
+              class="btn-ghost danger"
+              onclick="clearHistory()"
+              title="Tout effacer"
+            >
               🗑 Tout effacer
             </button>
           </div>
@@ -383,18 +394,10 @@
       </aside>
     </div>
 
-    <!-- Modal détail entrée -->
-    <div
-      id="modalBackdrop"
-      class="modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-hidden="true"
-    >
+    <!-- Modal détail d'entrée -->
+    <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
       <div class="modal">
-        <header>
-          <strong id="modalTitle">Détail</strong>
-        </header>
+        <header><strong id="modalTitle">Détail</strong></header>
         <section>
           <p class="muted"><span id="modalMeta"></span></p>
           <label class="muted">Texte original</label>
@@ -409,21 +412,13 @@
       </div>
     </div>
 
-    <!-- Modal debug état localStorage -->
-    <div
-      id="stateBackdrop"
-      class="modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-hidden="true"
-    >
+    <!-- Modal debug état -->
+    <div id="stateBackdrop" class="modal-backdrop" aria-hidden="true">
       <div class="modal">
         <header>
           <strong>État localStorage (base64-encoder-decoder)</strong>
         </header>
-        <section>
-          <pre id="stateJson"></pre>
-        </section>
+        <section><pre id="stateJson"></pre></section>
         <div class="modal-actions">
           <button class="btn-ghost" onclick="closeStateModal()">Fermer</button>
           <button onclick="copyState()">📋 Copier JSON</button>
@@ -434,7 +429,6 @@
     <script>
       // ---------- Stockage unifié ----------
       const LS_KEY = "base64-encoder-decoder";
-
       function loadState() {
         try {
           const raw = localStorage.getItem(LS_KEY);
@@ -448,7 +442,6 @@
           return { theme: "light", history: [] };
         }
       }
-
       function saveState(state) {
         localStorage.setItem(LS_KEY, JSON.stringify(state));
       }
@@ -456,13 +449,10 @@
       // ---------- Init ----------
       window.addEventListener("load", () => {
         const state = loadState();
-        // Appliquer thème
-        const btn = document.querySelector(".theme-toggle");
         if (state.theme === "dark") {
           document.body.classList.add("dark");
-          btn.textContent = "🌞";
+          document.querySelector(".theme-toggle").textContent = "🌞";
         }
-        // Afficher historique
         renderHistory(state.history);
       });
 
@@ -472,14 +462,13 @@
         const isDark = !(state.theme === "dark");
         state.theme = isDark ? "dark" : "light";
         saveState(state);
-
-        const body = document.body;
-        const btn = document.querySelector(".theme-toggle");
-        body.classList.toggle("dark", isDark);
-        btn.textContent = isDark ? "🌞" : "🌙";
+        document.body.classList.toggle("dark", isDark);
+        document.querySelector(".theme-toggle").textContent = isDark
+          ? "🌞"
+          : "🌙";
       }
 
-      // ---------- Helpers UI ----------
+      // ---------- Helpers ----------
       function showMessage(msg, isError = true) {
         const el = document.getElementById("message");
         el.textContent = msg;
@@ -491,13 +480,11 @@
         showMessage("🧹 Champs effacés", false);
       }
       function nowStamp() {
-        const d = new Date();
-        const pad = (n) => String(n).padStart(2, "0");
-        return `${pad(d.getDate())}/${pad(
-          d.getMonth() + 1
-        )}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(
-          d.getSeconds()
-        )}`;
+        const d = new Date(),
+          p = (n) => String(n).padStart(2, "0");
+        return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(
+          d.getHours()
+        )}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
       }
 
       // ---------- Base64 (UTF-8 safe) ----------
@@ -551,23 +538,33 @@
         }
       }
       function copyOutput() {
-        const output = document.getElementById("output");
-        if (!output.value) return showMessage("❌ Aucun contenu à copier.");
-        navigator.clipboard.writeText(output.value).then(() => {
-          showMessage("✅ Résultat copié dans le presse-papiers", false);
-        });
+        const out = document.getElementById("output").value;
+        if (!out) return showMessage("❌ Aucun contenu à copier.");
+        navigator.clipboard
+          .writeText(out)
+          .then(() =>
+            showMessage("✅ Résultat copié dans le presse-papiers", false)
+          );
       }
 
-      // ---------- Historique ----------
+      // ---------- Historique (MRU + suppression) ----------
+      function entriesEqual(a, b) {
+        return (
+          a.type === b.type &&
+          a.original === b.original &&
+          a.result === b.result
+        );
+      }
       function pushHistory(entry) {
         const state = loadState();
+        const idx = state.history.findIndex((e) => entriesEqual(e, entry));
+        if (idx !== -1) state.history.splice(idx, 1); // MRU: retire l'existant
         state.history.unshift(entry);
         if (state.history.length > 200)
           state.history = state.history.slice(0, 200);
         saveState(state);
         renderHistory(state.history);
       }
-
       function clearHistory() {
         const state = loadState();
         state.history = [];
@@ -575,16 +572,11 @@
         renderHistory(state.history);
         showMessage("🗑 Historique effacé", false);
       }
-
-      function deleteEntry(idx, node) {
+      function deleteEntry(trueIndex, node) {
         const state = loadState();
-        if (idx < 0 || idx >= state.history.length) return;
-
-        // Retirer l'élément du state et sauvegarder
-        state.history.splice(idx, 1);
+        if (trueIndex < 0 || trueIndex >= state.history.length) return;
+        state.history.splice(trueIndex, 1);
         saveState(state);
-
-        // Animation + rerender à la fin
         node.classList.add("removing");
         node.addEventListener(
           "transitionend",
@@ -595,7 +587,6 @@
           { once: true }
         );
       }
-
       function renderHistory(items) {
         const list = document.getElementById("historyList");
         list.innerHTML = "";
@@ -610,9 +601,8 @@
         items.forEach((it, idx) => {
           const item = document.createElement("div");
           item.className = "history-item";
-          item.dataset.idx = String(idx);
+          item.dataset.trueIndex = String(idx);
 
-          // Méta
           const meta = document.createElement("div");
           meta.className = "history-meta";
           const icon = it.type === "encode" ? "🔼" : "🔽";
@@ -622,26 +612,23 @@
           }</span>`;
           item.appendChild(meta);
 
-          // Original
           const l1 = document.createElement("div");
           l1.className = "history-line";
           l1.title = "Texte original";
           l1.textContent = it.original ?? "";
           item.appendChild(l1);
 
-          // Résultat
           const l2 = document.createElement("div");
           l2.className = "history-line";
           l2.title = "Résultat";
           l2.textContent = it.result ?? "";
           item.appendChild(l2);
 
-          // Actions
           const actions = document.createElement("div");
           actions.className = "history-actions";
 
           const btnEdit = document.createElement("button");
-          btnEdit.className = "btn-ghost";
+          btnEdit.className = "btn-ghost small";
           btnEdit.title = "Réinjecter le texte original à gauche";
           btnEdit.textContent = "✏️";
           btnEdit.addEventListener("click", () => {
@@ -654,20 +641,18 @@
           });
 
           const btnView = document.createElement("button");
-          btnView.className = "btn-ghost";
+          btnView.className = "btn-ghost small";
           btnView.title = "Voir en plein écran";
           btnView.textContent = "🔍";
           btnView.addEventListener("click", () => openModal(it));
 
           const btnDel = document.createElement("button");
-          btnDel.className = "btn-ghost danger";
+          btnDel.className = "btn-ghost small danger";
           btnDel.title = "Supprimer cette entrée";
           btnDel.textContent = "🗑️";
           btnDel.addEventListener("click", () => deleteEntry(idx, item));
 
-          actions.appendChild(btnEdit);
-          actions.appendChild(btnView);
-          actions.appendChild(btnDel);
+          actions.append(btnEdit, btnView, btnDel);
           item.appendChild(actions);
 
           list.appendChild(item);
@@ -682,49 +667,51 @@
         document.getElementById("modalOriginal").textContent =
           entry.original ?? "";
         document.getElementById("modalResult").textContent = entry.result ?? "";
-
         const back = document.getElementById("modalBackdrop");
         back.style.display = "flex";
         back.setAttribute("aria-hidden", "false");
-        back.addEventListener("click", backdropCloser);
+        back.addEventListener("click", modalBackdropCloser);
         back
           .querySelector(".modal")
           .addEventListener("click", (ev) => ev.stopPropagation(), {
             once: true,
           });
-        document.addEventListener("keydown", escCloser);
+        document.addEventListener("keydown", modalEscCloser);
       }
       function closeModal() {
         const back = document.getElementById("modalBackdrop");
         back.style.display = "none";
         back.setAttribute("aria-hidden", "true");
-        back.removeEventListener("click", backdropCloser);
-        document.removeEventListener("keydown", escCloser);
+        back.removeEventListener("click", modalBackdropCloser);
+        document.removeEventListener("keydown", modalEscCloser);
       }
-      function backdropCloser() {
-        closeModal();
+      function modalBackdropCloser(e) {
+        if (e.target.id === "modalBackdrop") closeModal();
       }
-      function escCloser(e) {
+      function modalEscCloser(e) {
         if (e.key === "Escape") closeModal();
       }
       function copyModal() {
         const content =
           document.getElementById("modalResult").textContent || "";
         if (!content) return showMessage("❌ Aucun contenu à copier (modal).");
-        navigator.clipboard.writeText(content).then(() => {
-          showMessage(
-            "✅ Résultat (modal) copié dans le presse-papiers",
-            false
+        navigator.clipboard
+          .writeText(content)
+          .then(() =>
+            showMessage(
+              "✅ Résultat (modal) copié dans le presse-papiers",
+              false
+            )
           );
-        });
       }
 
-      // ---------- Modal État localStorage (Debug) ----------
+      // ---------- Modal État (debug) ----------
       function openStateModal() {
-        const state = loadState();
-        const pretty = JSON.stringify(state, null, 2);
-        document.getElementById("stateJson").textContent = pretty;
-
+        document.getElementById("stateJson").textContent = JSON.stringify(
+          loadState(),
+          null,
+          2
+        );
         const back = document.getElementById("stateBackdrop");
         back.style.display = "flex";
         back.setAttribute("aria-hidden", "false");
@@ -743,8 +730,8 @@
         back.removeEventListener("click", stateBackdropCloser);
         document.removeEventListener("keydown", stateEscCloser);
       }
-      function stateBackdropCloser() {
-        closeStateModal();
+      function stateBackdropCloser(e) {
+        if (e.target.id === "stateBackdrop") closeStateModal();
       }
       function stateEscCloser(e) {
         if (e.key === "Escape") closeStateModal();
@@ -752,9 +739,11 @@
       function copyState() {
         const content = document.getElementById("stateJson").textContent || "";
         if (!content) return showMessage("❌ Rien à copier (état).");
-        navigator.clipboard.writeText(content).then(() => {
-          showMessage("✅ État copié dans le presse-papiers", false);
-        });
+        navigator.clipboard
+          .writeText(content)
+          .then(() =>
+            showMessage("✅ État copié dans le presse-papiers", false)
+          );
       }
     </script>
   </body>
