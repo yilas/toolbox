@@ -1,210 +1,703 @@
+<!-- v1.2 - Ajout de la suppression individuelle avec animation -->
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Encodeur/Décodeur Base64</title>
-  <style>
-    :root {
-      --bg-color: #f3f4f7;
-      --text-color: #000;
-      --panel-bg: #fff;
-      --panel-border: #ccc;
-      --textarea-bg: #fafafa;
-      --btn-bg: #0a66c2;
-      --btn-text: #fff;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Encodeur/Décodeur Base64</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg-color: #f3f4f7;
+        --text-color: #000;
+        --panel-bg: #fff;
+        --panel-border: #d0d7de;
+        --textarea-bg: #fafafa;
+        --btn-bg: #0a66c2;
+        --btn-text: #fff;
+        --muted: #6b7280;
+        --danger: #b91c1c;
+        --success: #166534;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
 
-    body.dark {
-      --bg-color: #121212;
-      --text-color: #f3f3f3;
-      --panel-bg: #1e1e1e;
-      --panel-border: #444;
-      --textarea-bg: #2a2a2a;
-      --btn-bg: #0a66c2;
-      --btn-text: #fff;
-    }
+      body.dark {
+        --bg-color: #121212;
+        --text-color: #f3f3f3;
+        --panel-bg: #1e1e1e;
+        --panel-border: #333;
+        --textarea-bg: #2a2a2a;
+        --muted: #9aa0a6;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+      }
 
-    * {
-      box-sizing: border-box;
-    }
+      * {
+        box-sizing: border-box;
+      }
 
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
-    }
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+        transition: background-color 0.25s ease, color 0.25s ease;
+      }
 
-    .top-banner {
-      background-color: #0a66c2;
-      color: white;
-      padding: 16px 32px;
-      font-size: 16px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-    }
+      .top-banner {
+        background-color: #0a66c2;
+        color: white;
+        padding: 12px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .top-banner a {
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+      }
 
-    .top-banner a {
-      color: white;
-      text-decoration: none;
-      margin-left: 12px;
-      font-weight: bold;
-    }
+      header {
+        background-color: #0a66c2;
+        color: white;
+        padding: 18px 28px;
+        font-size: 22px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-    header {
-      background-color: #0a66c2;
-      color: white;
-      padding: 20px 40px;
-      font-size: 24px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+      .theme-toggle {
+        font-size: 20px;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+      }
+      .theme-toggle:hover {
+        transform: scale(1.08);
+      }
 
-    .theme-toggle {
-      font-size: 20px;
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
+      /* Layout principal */
+      .wrap {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 24px;
+        padding: 24px;
+        align-items: start;
+      }
+      @media (max-width: 1000px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+        aside {
+          order: 2;
+        }
+      }
 
-    main {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      padding: 40px;
-    }
+      main,
+      aside {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+      }
 
-    textarea {
-      width: 100%;
-      height: 150px;
-      padding: 12px;
-      font-size: 14px;
-      border: 1px solid var(--panel-border);
-      border-radius: 8px;
-      background: var(--textarea-bg);
-      color: var(--text-color);
-      resize: vertical;
-      font-family: monospace;
-    }
+      main {
+        padding: 24px;
+      }
+      aside {
+        padding: 16px;
+        max-height: calc(100vh - 200px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
 
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
+      textarea {
+        width: 100%;
+        height: 160px;
+        padding: 12px;
+        font-size: 14px;
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        background: var(--textarea-bg);
+        color: var(--text-color);
+        resize: vertical;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+      }
 
-    button {
-      padding: 10px 16px;
-      background-color: var(--btn-bg);
-      color: var(--btn-text);
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
 
-    button:hover {
-      opacity: 0.9;
-    }
+      button {
+        padding: 10px 14px;
+        background-color: var(--btn-bg);
+        color: var(--btn-text);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: opacity 0.2s ease, transform 0.1s ease;
+      }
+      button:hover {
+        opacity: 0.95;
+        transform: translateY(-1px);
+      }
 
-    label {
-      font-weight: bold;
-      margin-top: 20px;
-      display: block;
-    }
-  </style>
-</head>
-<body>
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-color);
+        border: 1px solid var(--panel-border);
+      }
+      .btn-ghost.danger {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
 
-  <div class="top-banner">
-    🔙 <a href="../index.html">Retour au portail</a>
-  </div>
+      label {
+        font-weight: 700;
+        margin: 12px 0 8px;
+        display: block;
+      }
 
-  <header>
-    🔐 Encodeur/Décodeur Base64
-    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
-  </header>
+      #message {
+        min-height: 1.2em;
+        margin-top: 10px;
+        font-size: 14px;
+      }
 
-  <main>
-    <section>
-      <label for="input">🔤 Texte à traiter :</label>
-      <textarea id="input" placeholder="Entrez ici le texte brut ou en base64..."></textarea>
-    </section>
+      /* Aside Historique */
+      .aside-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 4px 12px;
+        border-bottom: 1px solid var(--panel-border);
+        margin-bottom: 8px;
+      }
+      .aside-title {
+        font-weight: 800;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .clear-all {
+        background: transparent;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
 
-    <div class="actions">
-      <button onclick="encodeBase64()">🔼 Encoder</button>
-      <button onclick="decodeBase64()">🔽 Décoder</button>
-      <button onclick="copyOutput()">📋 Copier le résultat</button>
+      .history-list {
+        overflow: auto;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .history-item {
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        padding: 10px;
+        background: var(--textarea-bg);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 10px;
+
+        /* Animation suppression */
+        max-height: 300px;
+        transition: max-height 0.25s ease, opacity 0.2s ease,
+          transform 0.2s ease, margin 0.25s ease, padding 0.25s ease,
+          border-width 0.25s ease;
+      }
+      .history-item.removing {
+        opacity: 0;
+        transform: translateY(-6px);
+        max-height: 0;
+        margin: 0;
+        padding: 0;
+        border-width: 0;
+      }
+
+      .history-meta {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        grid-column: 1 / -1;
+      }
+
+      .history-line {
+        font-size: 13px;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+        grid-column: 1 / -1;
+      }
+
+      .history-actions {
+        display: flex;
+        gap: 6px;
+        grid-column: 2 / 3;
+        align-items: start;
+      }
+
+      .chip {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      /* Modal */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+      .modal {
+        background: var(--panel-bg);
+        color: var(--text-color);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        width: min(920px, 92vw);
+        max-height: 88vh;
+        overflow: auto;
+        padding: 16px;
+      }
+      .modal header {
+        background: transparent;
+        color: var(--text-color);
+        padding: 0 0 10px 0;
+        border-bottom: 1px solid var(--panel-border);
+        font-size: 18px;
+      }
+      .modal pre {
+        background: var(--textarea-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        padding: 12px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+        font-size: 13px;
+      }
+      .modal .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-banner">
+      🔙 <a href="../index.html">Retour au portail</a>
     </div>
 
-    <div id="message" style="margin-top:10px; color:crimson; font-size:14px; min-height:1.2em;"></div>
+    <header>
+      🔐 Encodeur/Décodeur Base64
+      <button
+        class="theme-toggle"
+        onclick="toggleTheme()"
+        title="Changer le thème"
+      >
+        🌙
+      </button>
+    </header>
 
-    <section>
-      <label for="output">📄 Résultat :</label>
-      <textarea id="output" readonly></textarea>
-    </section>
-  </main>
+    <div class="wrap">
+      <!-- Zone principale -->
+      <main>
+        <section>
+          <label for="input">🔤 Texte à traiter :</label>
+          <textarea
+            id="input"
+            placeholder="Entrez ici le texte brut ou en base64..."
+          ></textarea>
+        </section>
 
-  <script>
-    function toggleTheme() {
-      const body = document.body;
-      const btn = document.querySelector('.theme-toggle');
-      body.classList.toggle('dark');
-      btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
-    }
+        <div class="actions">
+          <button onclick="encodeBase64()">🔼 Encoder</button>
+          <button onclick="decodeBase64()">🔽 Décoder</button>
+          <button onclick="copyOutput()">📋 Copier le résultat</button>
+          <button class="btn-ghost" onclick="clearFields()">🧹 Effacer</button>
+        </div>
 
-    function showMessage(msg, isError = true) {
-      const messageEl = document.getElementById("message");
-      messageEl.textContent = msg;
-      messageEl.style.color = isError ? "crimson" : "green";
-      if (msg) {
-        setTimeout(() => {
-          messageEl.textContent = "";
-        }, 3000);
-      }
-    }
+        <div id="message"></div>
 
-    function encodeBase64() {
-      const input = document.getElementById("input").value;
-      try {
-        const encoded = btoa(unescape(encodeURIComponent(input)));
-        document.getElementById("output").value = encoded;
-        showMessage("✅ Texte encodé avec succès", false);
-      } catch (e) {
-        showMessage("❌ Erreur : texte invalide pour l'encodage.");
-      }
-    }
+        <section>
+          <label for="output">📄 Résultat :</label>
+          <textarea id="output" readonly></textarea>
+        </section>
+      </main>
 
-    function decodeBase64() {
-      const input = document.getElementById("input").value;
-      try {
-        const decoded = decodeURIComponent(escape(atob(input)));
-        document.getElementById("output").value = decoded;
-        showMessage("✅ Texte décodé avec succès", false);
-      } catch (e) {
-        showMessage("❌ Erreur : chaîne Base64 invalide.");
-      }
-    }
+      <!-- Historique latéral -->
+      <aside>
+        <div class="aside-head">
+          <div class="aside-title">🕘 Historique</div>
+          <button class="clear-all" onclick="clearHistory()">
+            🗑 Effacer l'historique
+          </button>
+        </div>
+        <div id="historyList" class="history-list" aria-live="polite"></div>
+      </aside>
+    </div>
 
-    function copyOutput() {
-      const output = document.getElementById("output");
-      const button = document.querySelector('button[onclick="copyOutput()"]');
+    <!-- Modal plein écran -->
+    <div
+      id="modalBackdrop"
+      class="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+    >
+      <div class="modal">
+        <header>
+          <strong id="modalTitle">Détail</strong>
+        </header>
+        <section>
+          <p class="muted"><span id="modalMeta"></span></p>
+          <label class="muted">Texte original</label>
+          <pre id="modalOriginal"></pre>
+          <label class="muted">Résultat</label>
+          <pre id="modalResult"></pre>
+        </section>
+        <div class="modal-actions">
+          <button class="btn-ghost" onclick="closeModal()">Fermer</button>
+          <button onclick="copyModal()">📋 Copier le résultat</button>
+        </div>
+      </div>
+    </div>
 
-      navigator.clipboard.writeText(output.value).then(() => {
-        const original = button.textContent;
-        button.textContent = "✅ Copié !";
-        showMessage("✅ Résultat copié dans le presse-papiers", false);
-        setTimeout(() => {
-          button.textContent = original;
-        }, 2000);
+    <script>
+      // ---------- Thème persistant ----------
+      window.addEventListener("load", () => {
+        const savedTheme = localStorage.getItem("theme");
+        const btn = document.querySelector(".theme-toggle");
+        if (savedTheme === "dark") {
+          document.body.classList.add("dark");
+          btn.textContent = "🌞";
+        }
+        loadHistory();
       });
-    }
-  </script>
 
-</body>
+      function toggleTheme() {
+        const body = document.body;
+        const btn = document.querySelector(".theme-toggle");
+        const isDark = body.classList.toggle("dark");
+        btn.textContent = isDark ? "🌞" : "🌙";
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      }
+
+      // ---------- Helpers UI ----------
+      function showMessage(msg, isError = true) {
+        const el = document.getElementById("message");
+        el.textContent = msg;
+        el.style.color = isError ? "var(--danger)" : "var(--success)";
+      }
+
+      function clearFields() {
+        document.getElementById("input").value = "";
+        document.getElementById("output").value = "";
+        showMessage("🧹 Champs effacés", false);
+      }
+
+      function nowStamp() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${pad(d.getDate())}/${pad(
+          d.getMonth() + 1
+        )}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(
+          d.getSeconds()
+        )}`;
+      }
+
+      // ---------- Base64 (UTF-8 safe) ----------
+      function utf8ToB64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bin = "";
+        for (let i = 0; i < bytes.length; i++)
+          bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      }
+      function b64ToUtf8(b64) {
+        const bin = atob(b64);
+        const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
+      }
+
+      // ---------- Actions principales ----------
+      function encodeBase64() {
+        const input = document.getElementById("input").value;
+        if (!input) return showMessage("❌ Entrez un texte avant d'encoder.");
+        try {
+          const encoded = utf8ToB64(input);
+          document.getElementById("output").value = encoded;
+          showMessage("✅ Texte encodé avec succès", false);
+          pushHistory({
+            type: "encode",
+            original: input,
+            result: encoded,
+            ts: nowStamp(),
+          });
+        } catch (e) {
+          showMessage("❌ Erreur : texte invalide pour l'encodage.");
+        }
+      }
+
+      function decodeBase64() {
+        const input = document.getElementById("input").value;
+        if (!input)
+          return showMessage("❌ Entrez une chaîne Base64 à décoder.");
+        try {
+          const decoded = b64ToUtf8(input);
+          document.getElementById("output").value = decoded;
+          showMessage("✅ Texte décodé avec succès", false);
+          pushHistory({
+            type: "decode",
+            original: input,
+            result: decoded,
+            ts: nowStamp(),
+          });
+        } catch (e) {
+          showMessage("❌ Erreur : chaîne Base64 invalide.");
+        }
+      }
+
+      function copyOutput() {
+        const output = document.getElementById("output");
+        if (!output.value) return showMessage("❌ Aucun contenu à copier.");
+        navigator.clipboard.writeText(output.value).then(() => {
+          showMessage("✅ Résultat copié dans le presse-papiers", false);
+        });
+      }
+
+      // ---------- Historique (localStorage) ----------
+      const LS_KEY = "b64_history_v1";
+
+      function loadHistory() {
+        const raw = localStorage.getItem(LS_KEY);
+        let items = [];
+        try {
+          items = raw ? JSON.parse(raw) : [];
+        } catch {
+          items = [];
+        }
+        renderHistory(items);
+      }
+
+      function pushHistory(entry) {
+        const raw = localStorage.getItem(LS_KEY);
+        let items = [];
+        try {
+          items = raw ? JSON.parse(raw) : [];
+        } catch {
+          items = [];
+        }
+        items.unshift(entry); // dernier en haut
+        if (items.length > 200) items = items.slice(0, 200);
+        localStorage.setItem(LS_KEY, JSON.stringify(items));
+        renderHistory(items);
+      }
+
+      function clearHistory() {
+        if (!confirm("Effacer l'historique ?")) return;
+        localStorage.removeItem(LS_KEY);
+        renderHistory([]);
+        showMessage("🗑 Historique effacé", false);
+      }
+
+      function renderHistory(items) {
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        if (!items.length) {
+          const empty = document.createElement("div");
+          empty.className = "muted";
+          empty.style.padding = "8px 6px";
+          empty.textContent = "Aucune entrée d'historique pour le moment.";
+          list.appendChild(empty);
+          return;
+        }
+
+        items.forEach((it, idx) => {
+          const item = document.createElement("div");
+          item.className = "history-item";
+          item.dataset.idx = String(idx);
+
+          // Ligne méta (action + timestamp)
+          const meta = document.createElement("div");
+          meta.className = "history-meta";
+          const icon = it.type === "encode" ? "🔼" : "🔽";
+          const label = it.type === "encode" ? "Encodage" : "Décodage";
+          meta.innerHTML = `<span class="chip">${icon} ${label}</span><span class="muted">${
+            it.ts || ""
+          }</span>`;
+          item.appendChild(meta);
+
+          // Texte original
+          const l1 = document.createElement("div");
+          l1.className = "history-line";
+          l1.title = "Texte original";
+          l1.textContent = it.original ?? "";
+          item.appendChild(l1);
+
+          // Résultat
+          const l2 = document.createElement("div");
+          l2.className = "history-line";
+          l2.title = "Résultat";
+          l2.textContent = it.result ?? "";
+          item.appendChild(l2);
+
+          // Actions (✏️ réinjecter, 🔍 modal, 🗑️ supprimer)
+          const actions = document.createElement("div");
+          actions.className = "history-actions";
+
+          const btnEdit = document.createElement("button");
+          btnEdit.className = "btn-ghost";
+          btnEdit.title = "Réinjecter le texte original à gauche";
+          btnEdit.textContent = "✏️";
+          btnEdit.addEventListener("click", () => {
+            document.getElementById("input").value = it.original ?? "";
+            showMessage(
+              "✏️ Texte original réinjecté dans le champ d’entrée",
+              false
+            );
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+
+          const btnView = document.createElement("button");
+          btnView.className = "btn-ghost";
+          btnView.title = "Voir en plein écran";
+          btnView.textContent = "🔍";
+          btnView.addEventListener("click", () => openModal(it));
+
+          const btnDel = document.createElement("button");
+          btnDel.className = "btn-ghost danger";
+          btnDel.title = "Supprimer cette entrée";
+          btnDel.textContent = "🗑️";
+          btnDel.addEventListener("click", () => deleteEntry(idx, item));
+
+          actions.appendChild(btnEdit);
+          actions.appendChild(btnView);
+          actions.appendChild(btnDel);
+          item.appendChild(actions);
+
+          list.appendChild(item);
+        });
+      }
+
+      // Suppression individuelle avec animation
+      function deleteEntry(idx, node) {
+        const raw = localStorage.getItem(LS_KEY);
+        let items = [];
+        try {
+          items = raw ? JSON.parse(raw) : [];
+        } catch {
+          items = [];
+        }
+        if (idx < 0 || idx >= items.length) return;
+
+        // MàJ du stockage *avant* l'animation (à la demande, sans confirmation)
+        items.splice(idx, 1);
+        localStorage.setItem(LS_KEY, JSON.stringify(items));
+
+        // Animation puis re-render à la fin
+        node.classList.add("removing");
+        node.addEventListener(
+          "transitionend",
+          () => {
+            renderHistory(items);
+            showMessage("🗑️ Entrée supprimée", false);
+          },
+          { once: true }
+        );
+      }
+
+      // ---------- Modal ----------
+      function openModal(entry) {
+        document.getElementById("modalTitle").textContent =
+          entry.type === "encode" ? "🔼 Encodage" : "🔽 Décodage";
+        document.getElementById("modalMeta").textContent = entry.ts || "";
+        document.getElementById("modalOriginal").textContent =
+          entry.original ?? "";
+        document.getElementById("modalResult").textContent = entry.result ?? "";
+
+        const back = document.getElementById("modalBackdrop");
+        back.style.display = "flex";
+        back.setAttribute("aria-hidden", "false");
+
+        back.addEventListener("click", backdropCloser);
+        back
+          .querySelector(".modal")
+          .addEventListener("click", (ev) => ev.stopPropagation(), {
+            once: true,
+          });
+        document.addEventListener("keydown", escCloser);
+      }
+
+      function closeModal() {
+        const back = document.getElementById("modalBackdrop");
+        back.style.display = "none";
+        back.setAttribute("aria-hidden", "true");
+        back.removeEventListener("click", backdropCloser);
+        document.removeEventListener("keydown", escCloser);
+      }
+
+      function backdropCloser() {
+        closeModal();
+      }
+      function escCloser(e) {
+        if (e.key === "Escape") closeModal();
+      }
+
+      function copyModal() {
+        const content =
+          document.getElementById("modalResult").textContent || "";
+        if (!content) return showMessage("❌ Aucun contenu à copier (modal).");
+        navigator.clipboard.writeText(content).then(() => {
+          showMessage(
+            "✅ Résultat (modal) copié dans le presse-papiers",
+            false
+          );
+        });
+      }
+    </script>
+  </body>
 </html>
