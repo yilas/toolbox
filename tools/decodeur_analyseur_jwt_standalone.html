@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Décodeur & Analyseur JWT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg-color: #f3f4f7;
+        --text-color: #000;
+        --panel-bg: #fff;
+        --panel-border: #d0d7de;
+        --textarea-bg: #fafafa;
+        --btn-bg: #0a66c2;
+        --btn-text: #fff;
+        --muted: #6b7280;
+        --danger: #b91c1c;
+        --success: #166534;
+        --warn: #92400e;
+        --info: #1e40af;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        --accent: #0a66c2;
+      }
+      body.dark {
+        --bg-color: #121212;
+        --text-color: #f3f3f3;
+        --panel-bg: #1e1e1e;
+        --panel-border: #333;
+        --textarea-bg: #2a2a2a;
+        --muted: #9aa0a6;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --warn: #f59e0b;
+        --info: #60a5fa;
+        --shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+        --accent: #4ea0ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+
+      .top-banner {
+        background: #0a66c2;
+        color: #fff;
+        padding: 12px 24px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .top-banner a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      header {
+        background: #0a66c2;
+        color: #fff;
+        padding: 18px 28px;
+        font-size: 22px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+      .theme-toggle:hover {
+        transform: scale(1.08);
+      }
+
+      .wrap {
+        display: grid;
+        grid-template-columns: 70% 30%;
+        gap: 24px;
+        padding: 24px;
+        align-items: start;
+      }
+      @media (max-width: 1000px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+        aside {
+          order: 2;
+        }
+      }
+
+      main,
+      aside {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+      }
+      aside {
+        border-left: 3px solid var(--panel-border);
+        display: flex;
+        flex-direction: column;
+        min-height: 60vh;
+      }
+      main {
+        padding: 24px;
+      }
+
+      .aside-head {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--panel-bg);
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--panel-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
+      .aside-title {
+        font-weight: 800;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .aside-tools {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .history-list {
+        padding: 12px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+      }
+
+      label {
+        display: block;
+        font-weight: 700;
+        margin: 12px 0 8px;
+      }
+      textarea,
+      input[type="text"],
+      textarea[readonly] {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        background: var(--textarea-bg);
+        color: var(--text-color);
+        resize: vertical;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+      }
+      textarea#jwt {
+        height: 120px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 800px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      button {
+        padding: 10px 14px;
+        background: var(--btn-bg);
+        color: var(--btn-text);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: opacity 0.2s, transform 0.1s;
+      }
+      button:hover {
+        opacity: 0.95;
+        transform: translateY(-1px);
+      }
+      .btn-outline {
+        background: transparent;
+        color: var(--text-color);
+        border: 1px solid var(--panel-border);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-color);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .btn-ghost.small {
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+      .btn-ghost.danger {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+
+      #message {
+        min-height: 1.2em;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 1000px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: var(--shadow);
+      }
+      .card h3 {
+        margin: 4px 0 12px;
+        font-size: 16px;
+      }
+
+      pre.json {
+        background: var(--textarea-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        padding: 12px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-size: 13px;
+      }
+
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+      }
+      .chip.ok {
+        color: var(--success);
+        border-color: var(--success);
+      }
+      .chip.warn {
+        color: var(--warn);
+        border-color: var(--warn);
+      }
+      .chip.err {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+      .chip.info {
+        color: var(--info);
+        border-color: var(--info);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      td,
+      th {
+        border: 1px solid var(--panel-border);
+        padding: 8px;
+        font-size: 13px;
+        text-align: left;
+      }
+      th {
+        background: var(--textarea-bg);
+      }
+
+      .history-item {
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        background: var(--textarea-bg);
+        padding: 10px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 10px;
+        max-height: 300px;
+        transition: max-height 0.25s, opacity 0.2s, transform 0.2s, margin 0.25s,
+          padding 0.25s, border-width 0.25s;
+      }
+      .history-item.removing {
+        opacity: 0;
+        transform: translateY(-6px);
+        max-height: 0;
+        margin: 0;
+        padding: 0;
+        border-width: 0;
+      }
+      .history-meta {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .history-line {
+        grid-column: 1 / -1;
+        font-size: 13px;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .history-actions {
+        grid-column: 2 / 3;
+        display: flex;
+        gap: 6px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .aside-head .btn-ghost.danger {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+
+      /* Modals */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+      .modal {
+        background: var(--panel-bg);
+        color: var(--text-color);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        width: min(960px, 92vw);
+        max-height: 88vh;
+        overflow: auto;
+        padding: 16px;
+      }
+      .modal header {
+        padding: 0 0 10px;
+        border-bottom: 1px solid var(--panel-border);
+        font-size: 18px;
+      }
+      .modal pre {
+        background: var(--textarea-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        padding: 12px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+        font-size: 13px;
+      }
+      .modal .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      /* Timeline (nbf/iat/exp) */
+      .timeline {
+        position: relative;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--panel-border);
+        margin-top: 10px;
+      }
+      .timeline .range {
+        position: absolute;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--accent);
+        opacity: 0.6;
+      }
+      .legend {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        margin-top: 6px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-banner">
+      🔙 <a href="../index.html">Retour au portail</a>
+    </div>
+
+    <header>
+      🔏 Décodeur & Analyseur JWT
+      <button
+        class="theme-toggle"
+        onclick="toggleTheme()"
+        title="Changer le thème"
+      >
+        🌙
+      </button>
+    </header>
+
+    <div class="wrap">
+      <main>
+        <section>
+          <label for="jwt">🔤 JWT (header.payload.signature) :</label>
+          <textarea
+            id="jwt"
+            placeholder="Collez ici le JWT à analyser..."
+          ></textarea>
+        </section>
+
+        <section class="card">
+          <h3>🧪 Vérification de signature (optionnel)</h3>
+          <div class="row">
+            <div>
+              <label for="hsSecret">Secret HMAC (HS256/384/512)</label>
+              <input
+                id="hsSecret"
+                type="text"
+                placeholder="Entrez le secret pour HS* (si applicable)"
+              />
+            </div>
+            <div>
+              <label for="rsaPem">Clé publique PEM (RS256 / PS256)</label>
+              <textarea
+                id="rsaPem"
+                placeholder="-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkq...
+-----END PUBLIC KEY-----"
+              ></textarea>
+            </div>
+          </div>
+          <div class="muted" style="margin-top: 6px">
+            Astuce : l'algorithme attendu est lu depuis l'en-tête du JWT
+            (<code>alg</code>). Fournissez uniquement la clé/secrète
+            correspondant à cet algorithme.
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>🛡️ Règles de validation (iss / aud / azp)</h3>
+          <div class="row">
+            <div>
+              <label for="expectedIss">Issuer attendu (iss)</label>
+              <input
+                id="expectedIss"
+                type="text"
+                placeholder="https://issuer.example.com"
+              />
+            </div>
+            <div>
+              <label for="expectedAzp">Authorized party attendu (azp)</label>
+              <input
+                id="expectedAzp"
+                type="text"
+                placeholder="client_id / app id"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="expectedAud">Audiences attendues (aud)</label>
+              <input
+                id="expectedAud"
+                type="text"
+                placeholder="api://A, my-api, 12345"
+              />
+              <div class="muted" style="margin-top: 6px">
+                Mode d'audience :
+                <select id="audMode">
+                  <option value="any">contient au moins une</option>
+                  <option value="all">contient toutes</option>
+                </select>
+              </div>
+            </div>
+            <div style="align-self: end">
+              <button class="btn-outline" onclick="resetRules()">
+                Réinitialiser
+              </button>
+              <button onclick="saveRules()">💾 Sauver les règles</button>
+            </div>
+          </div>
+          <div class="muted">
+            Ces règles sont stockées dans le localStorage et appliquées à chaque
+            analyse.
+          </div>
+        </section>
+
+        <div class="actions">
+          <button onclick="decodeJWT()">🔎 Décoder & Analyser</button>
+          <button onclick="copyPayload()">📋 Copier le payload</button>
+          <button onclick="clearFields()" class="btn-outline">
+            🧹 Effacer
+          </button>
+        </div>
+
+        <div id="message"></div>
+
+        <section class="grid2" style="margin-top: 16px">
+          <div class="card">
+            <h3>📑 En-tête (header)</h3>
+            <div class="chips" id="headerChips"></div>
+            <pre class="json" id="headerJson">{}</pre>
+            <div class="actions">
+              <button class="btn-outline" onclick="copyElText('headerJson')">
+                📋 Copier
+              </button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>📄 Charge utile (payload)</h3>
+            <div class="chips" id="payloadChips"></div>
+            <pre class="json" id="payloadJson">{}</pre>
+            <div class="actions">
+              <button class="btn-outline" onclick="copyElText('payloadJson')">
+                📋 Copier
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top: 16px">
+          <h3>🧠 Analyse</h3>
+          <div class="chips" id="analysisChips"></div>
+          <table style="margin-top: 8px">
+            <thead>
+              <tr>
+                <th>Vérification</th>
+                <th>Statut</th>
+                <th>Détails</th>
+              </tr>
+            </thead>
+            <tbody id="checksTable"></tbody>
+          </table>
+          <div id="timelineWrap" style="margin-top: 12px; display: none">
+            <div class="timeline">
+              <div
+                id="timelineRange"
+                class="range"
+                style="left: 0; width: 0"
+              ></div>
+            </div>
+            <div class="legend">
+              <span id="legendStart"></span
+              ><span id="legendNow">Maintenant</span
+              ><span id="legendEnd"></span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside>
+        <div class="aside-head">
+          <div class="aside-title">🕘 Historique</div>
+          <div class="aside-tools">
+            <button
+              class="btn-ghost"
+              onclick="openStateModal()"
+              title="Voir l'état JSON"
+            >
+              🔧 Voir état
+            </button>
+            <button
+              class="btn-ghost danger"
+              onclick="clearHistory()"
+              title="Tout effacer"
+            >
+              🗑 Tout effacer
+            </button>
+          </div>
+        </div>
+        <div id="historyList" class="history-list" aria-live="polite"></div>
+      </aside>
+    </div>
+
+    <!-- Modal détail -->
+    <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+      <div class="modal">
+        <header><strong id="modalTitle">Détail</strong></header>
+        <section>
+          <p class="muted"><span id="modalMeta"></span></p>
+          <label class="muted">En-tête</label>
+          <pre id="modalHeader"></pre>
+          <label class="muted">Payload</label>
+          <pre id="modalPayload"></pre>
+          <label class="muted">Synthèse</label>
+          <pre id="modalSummary"></pre>
+          <label class="muted">Entrées (inputs)</label>
+          <pre id="modalInputs"></pre>
+        </section>
+        <div class="modal-actions">
+          <button class="btn-ghost" onclick="closeModal()">Fermer</button>
+          <button onclick="copyModal()">📋 Copier synthèse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal état (debug) -->
+    <div id="stateBackdrop" class="modal-backdrop" aria-hidden="true">
+      <div class="modal">
+        <header><strong>État localStorage (jwt-decode-analyze)</strong></header>
+        <section><pre id="stateJson"></pre></section>
+        <div class="modal-actions">
+          <button class="btn-ghost" onclick="closeStateModal()">Fermer</button>
+          <button onclick="copyState()">📋 Copier JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---------- Stockage unifié ----------
+      const LS_KEY = "jwt-decode-analyze";
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (!raw) return { theme: "light", history: [] };
+          const parsed = JSON.parse(raw);
+          return {
+            theme: parsed?.theme === "dark" ? "dark" : "light",
+            history: Array.isArray(parsed?.history) ? parsed.history : [],
+            rules: parsed.rules || undefined,
+          };
+        } catch {
+          return { theme: "light", history: [] };
+        }
+      }
+      function saveState(s) {
+        localStorage.setItem(LS_KEY, JSON.stringify(s));
+      }
+
+      // ---------- Init / Thème ----------
+      window.addEventListener("load", () => {
+        const s = loadState();
+        if (s.theme === "dark") {
+          document.body.classList.add("dark");
+          document.querySelector(".theme-toggle").textContent = "🌞";
+        }
+        renderHistory(s.history);
+        rulesToUI();
+      });
+      function toggleTheme() {
+        const s = loadState();
+        const isDark = !(s.theme === "dark");
+        s.theme = isDark ? "dark" : "light";
+        saveState(s);
+        document.body.classList.toggle("dark", isDark);
+        document.querySelector(".theme-toggle").textContent = isDark
+          ? "🌞"
+          : "🌙";
+      }
+
+      // ---------- Utils ----------
+      const enc = new TextEncoder();
+      const dec = new TextDecoder();
+      function showMessage(msg, isError = true) {
+        const el = document.getElementById("message");
+        el.textContent = msg;
+        el.style.color = isError ? "var(--danger)" : "var(--success)";
+      }
+      function clearFields() {
+        document.getElementById("jwt").value = "";
+        document.getElementById("hsSecret").value = "";
+        document.getElementById("rsaPem").value = "";
+        resetOutputs();
+        showMessage("🧹 Champs effacés", false);
+      }
+      function resetOutputs() {
+        document.getElementById("headerJson").textContent = "{}";
+        document.getElementById("payloadJson").textContent = "{}";
+        document.getElementById("checksTable").innerHTML = "";
+        document.getElementById("headerChips").innerHTML = "";
+        document.getElementById("payloadChips").innerHTML = "";
+        document.getElementById("analysisChips").innerHTML = "";
+        document.getElementById("timelineWrap").style.display = "none";
+      }
+      function copyElText(id) {
+        const t = document.getElementById(id).textContent || "";
+        if (!t) return showMessage("❌ Rien à copier.", true);
+        navigator.clipboard
+          .writeText(t)
+          .then(() => showMessage("✅ Copié", false));
+      }
+      function nowStamp() {
+        const d = new Date(),
+          p = (n) => String(n).padStart(2, "0");
+        return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(
+          d.getHours()
+        )}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+      }
+      function fmtDate(sec) {
+        if (typeof sec !== "number") return "—";
+        const d = new Date(sec * 1000);
+        return d.toLocaleString();
+      }
+      function relTime(sec) {
+        if (typeof sec !== "number") return "—";
+        const now = Math.floor(Date.now() / 1000);
+        const diff = sec - now;
+        const sign = diff >= 0 ? "+" : "-";
+        const a = Math.abs(diff);
+        const days = Math.floor(a / 86400),
+          hrs = Math.floor((a % 86400) / 3600),
+          mins = Math.floor((a % 3600) / 60);
+        return `${sign}${days}j ${hrs}h ${mins}m`;
+      }
+      function isNum(x) {
+        return typeof x === "number" && isFinite(x);
+      }
+      function maskStr(s, left = 6, right = 6) {
+        if (!s) return "";
+        const n = s.length;
+        if (n <= left + right) return "*".repeat(n);
+        return s.slice(0, left) + "…" + s.slice(-right);
+      }
+
+      // ---------- Règles (iss/aud/azp) ----------
+      function getRules() {
+        const s = loadState();
+        const r = s.rules || {};
+        return {
+          iss: r.iss || "",
+          azp: r.azp || "",
+          aud: Array.isArray(r.aud) ? r.aud : [],
+          audMode: r.audMode === "all" ? "all" : "any",
+        };
+      }
+      function rulesToUI() {
+        const r = getRules();
+        const iss = document.getElementById("expectedIss");
+        if (iss) iss.value = r.iss;
+        const azp = document.getElementById("expectedAzp");
+        if (azp) azp.value = r.azp;
+        const aud = document.getElementById("expectedAud");
+        if (aud) aud.value = r.aud.join(", ");
+        const mode = document.getElementById("audMode");
+        if (mode) mode.value = r.audMode;
+      }
+      function rulesFromUI() {
+        const iss = (
+          document.getElementById("expectedIss")?.value || ""
+        ).trim();
+        const azp = (
+          document.getElementById("expectedAzp")?.value || ""
+        ).trim();
+        const audStr = (
+          document.getElementById("expectedAud")?.value || ""
+        ).trim();
+        const aud = audStr
+          ? audStr
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+        const audMode =
+          document.getElementById("audMode")?.value === "all" ? "all" : "any";
+        return { iss, azp, aud, audMode };
+      }
+      function saveRules() {
+        const s = loadState();
+        s.rules = rulesFromUI();
+        saveState(s);
+        showMessage("✅ Règles sauvegardées", false);
+      }
+      function resetRules() {
+        const iss = document.getElementById("expectedIss");
+        if (iss) iss.value = "";
+        const azp = document.getElementById("expectedAzp");
+        if (azp) azp.value = "";
+        const aud = document.getElementById("expectedAud");
+        if (aud) aud.value = "";
+        const mode = document.getElementById("audMode");
+        if (mode) mode.value = "any";
+        saveRules();
+      }
+      function normalizeAud(a) {
+        if (Array.isArray(a)) return a.map(String);
+        if (typeof a === "string") return [a];
+        return [];
+      }
+      function applyRules(payload, rules) {
+        const checks = [];
+        const chips = [];
+        const summaryChips = [];
+        // iss
+        if (rules.iss) {
+          if (payload.iss === rules.iss) {
+            checks.push([
+              "Règle iss",
+              "✅",
+              `iss = ${String(payload.iss)}`,
+              "ok",
+            ]);
+            summaryChips.push(["iss:OK", "ok"]);
+          } else if (payload.iss == null) {
+            checks.push(["Règle iss", "⚠️", "Claim iss manquant", "warn"]);
+            summaryChips.push(["iss:absent", "warn"]);
+          } else {
+            checks.push([
+              "Règle iss",
+              "❌",
+              `iss attendu="${rules.iss}" / reçu="${String(payload.iss)}"`,
+              "err",
+            ]);
+            summaryChips.push(["iss:KO", "err"]);
+          }
+          chips.push([`req:iss=${rules.iss}`, "info"]);
+        }
+        // aud
+        if (rules.aud && rules.aud.length) {
+          const claimAud = normalizeAud(payload.aud);
+          if (!claimAud.length) {
+            checks.push(["Règle aud", "⚠️", "Claim aud manquant", "warn"]);
+            summaryChips.push(["aud:absent", "warn"]);
+          } else {
+            const set = new Set(claimAud);
+            const hits = rules.aud.filter((x) => set.has(x));
+            const ok =
+              rules.audMode === "all"
+                ? hits.length === rules.aud.length
+                : hits.length > 0;
+            const modeLabel =
+              rules.audMode === "all" ? "toutes" : "au moins une";
+            if (ok) {
+              checks.push([
+                "Règle aud",
+                "✅",
+                `aud contient ${modeLabel} des attendues (${hits.join(", ")})`,
+                "ok",
+              ]);
+              summaryChips.push(["aud:OK", "ok"]);
+            } else {
+              checks.push([
+                "Règle aud",
+                "❌",
+                `attendues=[${rules.aud.join(
+                  ", "
+                )}], présentes=[${claimAud.join(", ")}] (mode=${
+                  rules.audMode
+                })`,
+                "err",
+              ]);
+              summaryChips.push(["aud:KO", "err"]);
+            }
+          }
+          chips.push([
+            `req:aud=[${rules.aud.join(", ")}] (${rules.audMode})`,
+            "info",
+          ]);
+        }
+        // azp
+        if (rules.azp) {
+          if (payload.azp === rules.azp) {
+            checks.push([
+              "Règle azp",
+              "✅",
+              `azp = ${String(payload.azp)}`,
+              "ok",
+            ]);
+            summaryChips.push(["azp:OK", "ok"]);
+          } else if (payload.azp == null) {
+            checks.push(["Règle azp", "⚠️", "Claim azp manquant", "warn"]);
+            summaryChips.push(["azp:absent", "warn"]);
+          } else {
+            checks.push([
+              "Règle azp",
+              "❌",
+              `azp attendu="${rules.azp}" / reçu="${String(payload.azp)}"`,
+              "err",
+            ]);
+            summaryChips.push(["azp:KO", "err"]);
+          }
+          chips.push([`req:azp=${rules.azp}`, "info"]);
+        }
+        return { checks, chips, summaryChips };
+      }
+
+      // ---------- Base64URL helpers ----------
+      function b64urlToBytes(b64url) {
+        let b = b64url.replace(/-/g, "+").replace(/_/g, "/");
+        const pad = b.length % 4;
+        if (pad === 2) b += "==";
+        else if (pad === 3) b += "=";
+        else if (pad !== 0) throw new Error("Base64URL invalide");
+        const bin = atob(b);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+      }
+      function bytesToB64url(bytes) {
+        let bin = "";
+        for (let i = 0; i < bytes.length; i++)
+          bin += String.fromCharCode(bytes[i]);
+        return btoa(bin)
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/, "");
+      }
+      function safeJsonParse(bytes) {
+        try {
+          return JSON.parse(dec.decode(bytes));
+        } catch {
+          return null;
+        }
+      }
+
+      // ---------- JWT parsing ----------
+      function parseJWT(jwt) {
+        const parts = jwt.split(".");
+        if (parts.length !== 3)
+          throw new Error(
+            "Le JWT doit contenir 3 parties séparées par des points."
+          );
+        const [hB64, pB64, sB64] = parts;
+        const headerBytes = b64urlToBytes(hB64);
+        const payloadBytes = b64urlToBytes(pB64);
+        const signatureBytes = b64urlToBytes(sB64);
+        const header = safeJsonParse(headerBytes);
+        const payload = safeJsonParse(payloadBytes);
+        if (!header || !payload)
+          throw new Error("JSON invalide (header ou payload).");
+        const signingInput = enc.encode(`${parts[0]}.${parts[1]}`);
+        return {
+          header,
+          payload,
+          signatureBytes,
+          headerB64: hB64,
+          payloadB64: pB64,
+          signatureB64: sB64,
+          signingInput,
+        };
+      }
+
+      // ---------- Signature verification (HS256 / RS256 / PS256) ----------
+      async function verifySignature(header, signingInput, signatureBytes) {
+        const alg = header.alg;
+        if (!alg)
+          return { supported: false, ok: false, reason: "Algorithme absent" };
+        if (alg === "none")
+          return {
+            supported: false,
+            ok: false,
+            reason: 'Algorithme "none" interdit',
+          };
+
+        // HS*
+        if (/^HS(256|384|512)$/.test(alg)) {
+          const secret = document.getElementById("hsSecret").value;
+          if (!secret)
+            return {
+              supported: true,
+              ok: false,
+              reason: "Secret HMAC requis pour " + alg,
+            };
+          const hLen =
+            alg === "HS256"
+              ? "SHA-256"
+              : alg === "HS384"
+              ? "SHA-384"
+              : "SHA-512";
+          const key = await crypto.subtle.importKey(
+            "raw",
+            enc.encode(secret),
+            { name: "HMAC", hash: hLen },
+            false,
+            ["sign"]
+          );
+          const mac = new Uint8Array(
+            await crypto.subtle.sign("HMAC", key, signingInput)
+          );
+          const equal = constTimeEqual(mac, signatureBytes);
+          return {
+            supported: true,
+            ok: equal,
+            reason: equal ? "Signature HMAC valide" : "Signature HMAC invalide",
+          };
+        }
+
+        // RS256
+        if (alg === "RS256") {
+          const pem = document.getElementById("rsaPem").value.trim();
+          if (!pem)
+            return {
+              supported: true,
+              ok: false,
+              reason: "Clé publique PEM requise pour RS256",
+            };
+          try {
+            const spki = pemToSpki(pem);
+            const key = await crypto.subtle.importKey(
+              "spki",
+              spki,
+              { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+              false,
+              ["verify"]
+            );
+            const ok = await crypto.subtle.verify(
+              { name: "RSASSA-PKCS1-v1_5" },
+              key,
+              signatureBytes,
+              signingInput
+            );
+            return {
+              supported: true,
+              ok,
+              reason: ok
+                ? "Signature RSA (PKCS#1 v1.5) valide"
+                : "Signature RSA invalide",
+            };
+          } catch (e) {
+            return {
+              supported: true,
+              ok: false,
+              reason: "Erreur import/verify RS256: " + e.message,
+            };
+          }
+        }
+
+        // PS256 (RSA-PSS)
+        if (alg === "PS256") {
+          const pem = document.getElementById("rsaPem").value.trim();
+          if (!pem)
+            return {
+              supported: true,
+              ok: false,
+              reason: "Clé publique PEM requise pour PS256",
+            };
+          try {
+            const spki = pemToSpki(pem);
+            const key = await crypto.subtle.importKey(
+              "spki",
+              spki,
+              { name: "RSA-PSS", hash: "SHA-256" },
+              false,
+              ["verify"]
+            );
+            const ok = await crypto.subtle.verify(
+              { name: "RSA-PSS", saltLength: 32 },
+              key,
+              signatureBytes,
+              signingInput
+            );
+            return {
+              supported: true,
+              ok,
+              reason: ok
+                ? "Signature RSA-PSS valide"
+                : "Signature RSA-PSS invalide",
+            };
+          } catch (e) {
+            return {
+              supported: true,
+              ok: false,
+              reason: "Erreur import/verify PS256: " + e.message,
+            };
+          }
+        }
+
+        return {
+          supported: false,
+          ok: false,
+          reason: "Algorithme non pris en charge: " + alg,
+        };
+      }
+      function constTimeEqual(a, b) {
+        if (a.length !== b.length) return false;
+        let v = 0;
+        for (let i = 0; i < a.length; i++) v |= a[i] ^ b[i];
+        return v === 0;
+      }
+      function pemToSpki(pem) {
+        const lines = pem
+          .replace(/\r/g, "")
+          .split("\n")
+          .filter(
+            (l) => !l.includes("BEGIN") && !l.includes("END") && l.trim() !== ""
+          );
+        const b64 = lines.join("");
+        const bin = atob(b64);
+        const buf = new ArrayBuffer(bin.length);
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+        return buf;
+      }
+
+      // ---------- Analyse des claims ----------
+      function analyzeClaims(header, payload) {
+        const checks = [];
+        const chips = [];
+
+        // Algorithme
+        if (!header.alg)
+          checks.push([
+            "Algorithme",
+            "❌",
+            "Aucun algorithme spécifié (header.alg).",
+            "err",
+          ]);
+        else if (header.alg === "none") {
+          checks.push(["Algorithme", "❌", "alg=none interdit.", "err"]);
+          chips.push(["alg:none", "err"]);
+        } else chips.push([`alg:${header.alg}`, "info"]);
+        if (header.typ && header.typ !== "JWT")
+          checks.push([
+            "Type",
+            "⚠️",
+            `header.typ=${header.typ} (attendu: JWT)`,
+            "warn",
+          ]);
+        if (header.kid) chips.push([`kid:${header.kid}`, "info"]);
+
+        // Claims standards
+        const now = Math.floor(Date.now() / 1000);
+        if (isNum(payload.exp)) {
+          const status =
+            payload.exp < now
+              ? [
+                  "Expiration",
+                  "❌",
+                  `exp=${fmtDate(payload.exp)} (${relTime(
+                    payload.exp
+                  )}) — Expiré`,
+                  "err",
+                ]
+              : [
+                  "Expiration",
+                  "✅",
+                  `exp=${fmtDate(payload.exp)} (${relTime(payload.exp)})`,
+                  "ok",
+                ];
+          checks.push(status);
+        } else
+          checks.push([
+            "Expiration",
+            "⚠️",
+            "Claim exp absent ou non numérique",
+            "warn",
+          ]);
+
+        if (isNum(payload.nbf)) {
+          const st =
+            payload.nbf > now
+              ? [
+                  "NotBefore",
+                  "⚠️",
+                  `nbf=${fmtDate(payload.nbf)} (${relTime(
+                    payload.nbf
+                  )}) — Pas encore valide`,
+                  "warn",
+                ]
+              : [
+                  "NotBefore",
+                  "✅",
+                  `nbf=${fmtDate(payload.nbf)} (${relTime(payload.nbf)})`,
+                  "ok",
+                ];
+          checks.push(st);
+        }
+        if (isNum(payload.iat)) {
+          const st =
+            payload.iat > now + 300
+              ? [
+                  "IssuedAt",
+                  "⚠️",
+                  `iat dans le futur (${fmtDate(payload.iat)} / ${relTime(
+                    payload.iat
+                  )})`,
+                  "warn",
+                ]
+              : [
+                  "IssuedAt",
+                  "✅",
+                  `iat=${fmtDate(payload.iat)} (${relTime(payload.iat)})`,
+                  "ok",
+                ];
+          checks.push(st);
+        }
+
+        if (payload.iss)
+          checks.push(["Issuer (iss)", "✅", String(payload.iss), "ok"]);
+        else checks.push(["Issuer (iss)", "⚠️", "Claim iss manquant", "warn"]);
+        if (payload.sub)
+          checks.push(["Subject (sub)", "✅", String(payload.sub), "ok"]);
+        else checks.push(["Subject (sub)", "⚠️", "Claim sub manquant", "warn"]);
+        if (payload.aud)
+          checks.push([
+            "Audience (aud)",
+            "✅",
+            Array.isArray(payload.aud)
+              ? payload.aud.join(", ")
+              : String(payload.aud),
+            "ok",
+          ]);
+        else
+          checks.push(["Audience (aud)", "⚠️", "Claim aud manquant", "warn"]);
+        if (payload.jti)
+          checks.push(["JWT ID (jti)", "✅", String(payload.jti), "ok"]);
+        if (payload.scope)
+          checks.push(["Scope", "✅", String(payload.scope), "ok"]);
+        if (payload.roles)
+          checks.push([
+            "Rôles",
+            "✅",
+            Array.isArray(payload.roles)
+              ? payload.roles.join(", ")
+              : String(payload.roles),
+            "ok",
+          ]);
+
+        // Cohérence basique
+        if (
+          isNum(payload.nbf) &&
+          isNum(payload.exp) &&
+          payload.nbf > payload.exp
+        )
+          checks.push(["Cohérence nbf/exp", "❌", "nbf > exp", "err"]);
+
+        // Chips synthèse payload
+        if (payload.iss)
+          chips.push([`iss:${String(payload.iss).slice(0, 40)}`, "info"]);
+        if (isNum(payload.exp))
+          chips.push([
+            `exp:${fmtDate(payload.exp)}`,
+            payload.exp < now ? "err" : "ok",
+          ]);
+        if (payload.sub)
+          chips.push([`sub:${String(payload.sub).slice(0, 30)}`, "info"]);
+        return { checks, chips };
+      }
+
+      function renderChecksTable(checks) {
+        const tbody = document.getElementById("checksTable");
+        tbody.innerHTML = "";
+        for (const [name, status, details, level] of checks) {
+          const tr = document.createElement("tr");
+          const td1 = document.createElement("td");
+          td1.textContent = name;
+          const td2 = document.createElement("td");
+          td2.textContent = status;
+          td2.style.fontWeight = "700";
+          const td3 = document.createElement("td");
+          td3.textContent = details;
+          if (level === "err") td2.style.color = "var(--danger)";
+          if (level === "warn") td2.style.color = "var(--warn)";
+          if (level === "ok") td2.style.color = "var(--success)";
+          if (level === "info") td2.style.color = "var(--info)";
+          tr.append(td1, td2, td3);
+          tbody.appendChild(tr);
+        }
+      }
+
+      function renderChips(elId, chips) {
+        const el = document.getElementById(elId);
+        el.innerHTML = "";
+        for (const [label, level] of chips) {
+          const span = document.createElement("span");
+          span.className = `chip ${level || ""}`;
+          span.textContent = label;
+          el.appendChild(span);
+        }
+      }
+
+      function renderTimeline(iat, nbf, exp) {
+        const wrap = document.getElementById("timelineWrap");
+        if (!isNum(exp)) {
+          wrap.style.display = "none";
+          return;
+        }
+        // Choose start = min(iat, nbf, now-1h) and end = exp
+        const now = Math.floor(Date.now() / 1000);
+        const startCandidates = [iat, nbf, now - 3600].filter(isNum);
+        const start = startCandidates.length
+          ? Math.min(...startCandidates)
+          : now - 3600;
+        const end = exp;
+        if (!isNum(end) || end <= start) {
+          wrap.style.display = "none";
+          return;
+        }
+        const pct = (v) =>
+          Math.max(0, Math.min(100, ((v - start) / (end - start)) * 100));
+        const nowPct = pct(now);
+        const rangeEl = document.getElementById("timelineRange");
+        rangeEl.style.left = "0%";
+        rangeEl.style.width = `${Math.min(100, nowPct)}%`;
+        document.getElementById("legendStart").textContent = new Date(
+          start * 1000
+        ).toLocaleString();
+        document.getElementById("legendEnd").textContent = new Date(
+          end * 1000
+        ).toLocaleString();
+        document.getElementById("legendNow").textContent = "Maintenant";
+        wrap.style.display = "block";
+      }
+
+      // ---------- Actions principales ----------
+      async function decodeJWT() {
+        resetOutputs();
+        const jwt = document.getElementById("jwt").value.trim();
+        if (!jwt) return showMessage("❌ Collez un JWT à analyser.");
+        let parsed;
+        try {
+          parsed = parseJWT(jwt);
+        } catch (e) {
+          return showMessage("❌ JWT invalide: " + e.message);
+        }
+
+        // Render header/payload
+        document.getElementById("headerJson").textContent = JSON.stringify(
+          parsed.header,
+          null,
+          2
+        );
+        document.getElementById("payloadJson").textContent = JSON.stringify(
+          parsed.payload,
+          null,
+          2
+        );
+
+        // Analyse claims + règles
+        const { checks, chips } = analyzeClaims(parsed.header, parsed.payload);
+        const rules = rulesFromUI(); // <-- capture les valeurs UI même non sauvegardées
+        const ruleRes = applyRules(parsed.payload, rules);
+        renderChecksTable([...checks, ...ruleRes.checks]);
+        renderChips("payloadChips", [...chips, ...ruleRes.chips]);
+
+        // Header chips
+        const headerCh = [];
+        if (parsed.header.alg)
+          headerCh.push([
+            `alg:${parsed.header.alg}`,
+            parsed.header.alg === "none" ? "err" : "info",
+          ]);
+        if (parsed.header.typ)
+          headerCh.push([
+            `typ:${parsed.header.typ}`,
+            parsed.header.typ === "JWT" ? "ok" : "warn",
+          ]);
+        if (parsed.header.kid)
+          headerCh.push([`kid:${parsed.header.kid}`, "info"]);
+        renderChips("headerChips", headerCh);
+
+        // Signature verification
+        let sigRes = { supported: false, ok: false, reason: "—" };
+        try {
+          sigRes = await verifySignature(
+            parsed.header,
+            parsed.signingInput,
+            parsed.signatureBytes
+          );
+        } catch (e) {
+          sigRes = {
+            supported: true,
+            ok: false,
+            reason: "Erreur vérification: " + e.message,
+          };
+        }
+        const sigChip = sigRes.supported
+          ? sigRes.ok
+            ? ["Signature: OK", "ok"]
+            : ["Signature: ÉCHEC", "err"]
+          : ["Signature: non vérifiée", "warn"];
+        const analysisChips = [sigChip];
+        if (parsed.payload.exp) {
+          analysisChips.push([
+            `exp:${fmtDate(parsed.payload.exp)}`,
+            parsed.payload.exp < Math.floor(Date.now() / 1000) ? "err" : "ok",
+          ]);
+        }
+        analysisChips.push(...ruleRes.summaryChips);
+        renderChips("analysisChips", analysisChips);
+
+        // Append signature result to checks
+        const tbody = document.getElementById("checksTable");
+        const tr = document.createElement("tr");
+        const td1 = document.createElement("td");
+        td1.textContent = "Signature";
+        const td2 = document.createElement("td");
+        td2.textContent = sigRes.supported ? (sigRes.ok ? "✅" : "❌") : "⚠️";
+        td2.style.fontWeight = "700";
+        td2.style.color = sigRes.supported
+          ? sigRes.ok
+            ? "var(--success)"
+            : "var(--danger)"
+          : "var(--warn)";
+        const td3 = document.createElement("td");
+        td3.textContent = sigRes.reason;
+        tr.append(td1, td2, td3);
+        tbody.appendChild(tr);
+
+        // Timeline
+        renderTimeline(
+          parsed.payload.iat,
+          parsed.payload.nbf,
+          parsed.payload.exp
+        );
+
+        // Historique
+        const summary = summarize(parsed.header, parsed.payload, sigRes);
+        (function () {
+          const secret = document.getElementById("hsSecret").value || "";
+          const pem = document.getElementById("rsaPem").value || "";
+          const rulesSnapshot = rules; // ce qu'il y a dans l'UI maintenant
+          pushHistory({
+            type: "jwt",
+            original: jwt,
+            result: summary,
+            ts: nowStamp(),
+            header: parsed.header,
+            payload: parsed.payload,
+            inputs: { hsSecret: secret, rsaPem: pem, rules: rulesSnapshot },
+          });
+        })();
+
+        showMessage("✅ JWT décodé et analysé", false);
+      }
+
+      function summarize(header, payload, sig) {
+        const parts = [];
+        parts.push(`alg:${header.alg ?? "—"}`);
+        if (header.kid) parts.push(`kid:${header.kid}`);
+        if (payload.iss) parts.push(`iss:${payload.iss}`);
+        if (payload.sub) parts.push(`sub:${payload.sub}`);
+        if (isNum(payload.exp))
+          parts.push(
+            `exp:${fmtDate(payload.exp)}${
+              payload.exp < Math.floor(Date.now() / 1000) ? " (expiré)" : ""
+            }`
+          );
+        parts.push(
+          sig.supported
+            ? sig.ok
+              ? "signature:OK"
+              : "signature:KO"
+            : "signature:non vérifiée"
+        );
+        return parts.join(" | ");
+      }
+
+      function copyPayload() {
+        const t = document.getElementById("payloadJson").textContent || "";
+        if (!t) return showMessage("❌ Aucun payload à copier.");
+        navigator.clipboard
+          .writeText(t)
+          .then(() => showMessage("✅ Payload copié", false));
+      }
+
+      // ---------- Historique ----------
+      function entriesEqual(a, b) {
+        const ia = JSON.stringify(a.inputs || {});
+        const ib = JSON.stringify(b.inputs || {});
+        return (
+          a.original === b.original &&
+          a.result === b.result &&
+          a.type === b.type &&
+          ia === ib
+        );
+      }
+
+      function pushHistory(entry) {
+        const s = loadState();
+        const idx = s.history.findIndex((e) => entriesEqual(e, entry));
+        if (idx !== -1) s.history.splice(idx, 1); // MRU
+        s.history.unshift(entry);
+        if (s.history.length > 200) s.history = s.history.slice(0, 200);
+        saveState(s);
+        renderHistory(s.history);
+      }
+
+      function clearHistory() {
+        const s = loadState();
+        s.history = [];
+        saveState(s);
+        renderHistory(s.history);
+        showMessage("🗑 Historique effacé", false);
+      }
+
+      function deleteEntry(trueIndex, node) {
+        const s = loadState();
+        if (trueIndex < 0 || trueIndex >= s.history.length) return;
+        s.history.splice(trueIndex, 1);
+        saveState(s);
+        node.classList.add("removing");
+        node.addEventListener(
+          "transitionend",
+          () => {
+            renderHistory(s.history);
+            showMessage("🗑️ Entrée supprimée", false);
+          },
+          { once: true }
+        );
+      }
+
+      function openModalEntry(entry) {
+        document.getElementById("modalTitle").textContent = "🔏 JWT analysé";
+        document.getElementById("modalMeta").textContent = entry.ts || "";
+        document.getElementById("modalHeader").textContent = JSON.stringify(
+          entry.header ?? {},
+          null,
+          2
+        );
+        document.getElementById("modalPayload").textContent = JSON.stringify(
+          entry.payload ?? {},
+          null,
+          2
+        );
+        document.getElementById("modalSummary").textContent =
+          entry.result ?? "";
+        const inputs = entry.inputs || {};
+        const modalInputs = {
+          hsSecret: inputs.hsSecret
+            ? `(masqué) ${maskStr(inputs.hsSecret)}`
+            : "",
+          rsaPem: inputs.rsaPem
+            ? `(masqué) ${maskStr(
+                (inputs.rsaPem || "").replace(/\s+/g, " ").trim(),
+                16,
+                16
+              )}`
+            : "",
+          rules: inputs.rules || {},
+        };
+        const inputsEl = document.getElementById("modalInputs");
+        if (inputsEl)
+          inputsEl.textContent = JSON.stringify(modalInputs, null, 2);
+        const back = document.getElementById("modalBackdrop");
+        back.style.display = "flex";
+        back.setAttribute("aria-hidden", "false");
+        back.addEventListener("click", modalBackdropCloser);
+        back
+          .querySelector(".modal")
+          .addEventListener("click", (ev) => ev.stopPropagation(), {
+            once: true,
+          });
+        document.addEventListener("keydown", modalEscCloser);
+      }
+
+      function renderHistory(items) {
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        if (!items.length) {
+          const empty = document.createElement("div");
+          empty.className = "muted";
+          empty.style.padding = "8px 6px";
+          empty.textContent = "Aucune entrée d'historique pour le moment.";
+          list.appendChild(empty);
+          return;
+        }
+        items.forEach((it, idx) => {
+          const item = document.createElement("div");
+          item.className = "history-item";
+          item.dataset.trueIndex = String(idx);
+          const meta = document.createElement("div");
+          meta.className = "history-meta";
+          meta.innerHTML = `<span class="chip">🔏 JWT</span><span class="muted">${
+            it.ts || ""
+          }</span>`;
+          item.appendChild(meta);
+          const l1 = document.createElement("div");
+          l1.className = "history-line";
+          l1.title = "JWT";
+          l1.textContent = it.original ?? "";
+          item.appendChild(l1);
+          const l2 = document.createElement("div");
+          l2.className = "history-line";
+          l2.title = "Synthèse";
+          l2.textContent = it.result ?? "";
+          item.appendChild(l2);
+          const actions = document.createElement("div");
+          actions.className = "history-actions";
+          const bEdit = document.createElement("button");
+          bEdit.className = "btn-ghost small";
+          bEdit.title = "Réinjecter le JWT et les entrées";
+          bEdit.textContent = "✏️";
+          bEdit.addEventListener("click", () => {
+            document.getElementById("jwt").value = it.original ?? "";
+            if (it.inputs) {
+              const hs = document.getElementById("hsSecret");
+              if (hs) hs.value = it.inputs.hsSecret || "";
+              const rp = document.getElementById("rsaPem");
+              if (rp) rp.value = it.inputs.rsaPem || "";
+              if (it.inputs.rules) {
+                const r = it.inputs.rules;
+                const iss = document.getElementById("expectedIss");
+                if (iss) iss.value = r.iss || "";
+                const azp = document.getElementById("expectedAzp");
+                if (azp) azp.value = r.azp || "";
+                const aud = document.getElementById("expectedAud");
+                if (aud)
+                  aud.value = (Array.isArray(r.aud) ? r.aud : []).join(", ");
+                const mode = document.getElementById("audMode");
+                if (mode) mode.value = r.audMode === "all" ? "all" : "any";
+                saveRules();
+              }
+            }
+            showMessage("✏️ JWT + entrées réinjectés", false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+          const bView = document.createElement("button");
+          bView.className = "btn-ghost small";
+          bView.title = "Voir en plein écran";
+          bView.textContent = "🔍";
+          bView.addEventListener("click", () => openModalEntry(it));
+          const bDel = document.createElement("button");
+          bDel.className = "btn-ghost small danger";
+          bDel.title = "Supprimer";
+          bDel.textContent = "🗑️";
+          bDel.addEventListener("click", () => deleteEntry(idx, item));
+          actions.append(bEdit, bView, bDel);
+          item.appendChild(actions);
+          list.appendChild(item);
+        });
+      }
+
+      // ---------- Modals ----------
+      function closeModal() {
+        const back = document.getElementById("modalBackdrop");
+        back.style.display = "none";
+        back.setAttribute("aria-hidden", "true");
+        back.removeEventListener("click", modalBackdropCloser);
+        document.removeEventListener("keydown", modalEscCloser);
+      }
+
+      function modalBackdropCloser(e) {
+        if (e.target.id === "modalBackdrop") closeModal();
+      }
+
+      function modalEscCloser(e) {
+        if (e.key === "Escape") closeModal();
+      }
+
+      function copyModal() {
+        const content =
+          document.getElementById("modalSummary").textContent || "";
+        if (!content) return showMessage("❌ Rien à copier (modal).");
+        navigator.clipboard
+          .writeText(content)
+          .then(() => showMessage("✅ Synthèse copiée", false));
+      }
+
+      function openStateModal() {
+        document.getElementById("stateJson").textContent = JSON.stringify(
+          loadState(),
+          null,
+          2
+        );
+        const back = document.getElementById("stateBackdrop");
+        back.style.display = "flex";
+        back.setAttribute("aria-hidden", "false");
+        back.addEventListener("click", stateBackdropCloser);
+        back
+          .querySelector(".modal")
+          .addEventListener("click", (ev) => ev.stopPropagation(), {
+            once: true,
+          });
+        document.addEventListener("keydown", stateEscCloser);
+      }
+
+      function closeStateModal() {
+        const back = document.getElementById("stateBackdrop");
+        back.style.display = "none";
+        back.setAttribute("aria-hidden", "true");
+        back.removeEventListener("click", stateBackdropCloser);
+        document.removeEventListener("keydown", stateEscCloser);
+      }
+
+      function stateBackdropCloser(e) {
+        if (e.target.id === "stateBackdrop") closeStateModal();
+      }
+
+      function stateEscCloser(e) {
+        if (e.key === "Escape") closeStateModal();
+      }
+
+      function copyState() {
+        const content = document.getElementById("stateJson").textContent || "";
+        if (!content) return showMessage("❌ Rien à copier (état).");
+        navigator.clipboard
+          .writeText(content)
+          .then(() => showMessage("✅ État copié", false));
+      }
+    </script>
+  </body>
+</html>
