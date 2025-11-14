@@ -100,6 +100,46 @@
       background: var(--textarea-bg);
       color: var(--text-color);
     }
+
+    /* Bloc contact d'urgence */
+    .emergency-block {
+      margin-top: 25px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px dashed var(--panel-border);
+      background: rgba(0, 0, 0, 0.02);
+    }
+    body.dark .emergency-block {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .emergency-block-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .emergency-toggle-label {
+      font-weight: normal;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .emergency-toggle-label input {
+      margin: 0;
+    }
+
+    .emergency-contact-label {
+      margin-top: 12px;
+    }
+
+    /* conteneur du champ contact (pour pouvoir le cacher) */
+    #emergency-contact-container {
+      margin-top: 8px;
+    }
+
     .checkboxes {
       margin-top: 20px;
     }
@@ -162,6 +202,12 @@
     button.copy-btn:hover {
       opacity: 0.9;
     }
+
+    .form input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     @media screen and (max-width: 900px) {
       main {
         flex-direction: column;
@@ -192,14 +238,21 @@
         <button onclick="setNextMonday()">Prochain lundi</button>
       </div>
 
-      <label for="contact">👤 Nom du contact :</label>
-      <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
-
-      <div class="checkboxes">
-        <label>
+      <!-- Bloc contact d'urgence -->
+      <div class="emergency-block">
+        <div class="emergency-block-title">
+          🚨 Contact d'urgence
+        </div>
+        <label class="emergency-toggle-label">
           <input type="checkbox" id="include-emergency" checked onchange="updateMessages()">
           Ajouter une phrase de contact d'urgence
         </label>
+
+        <!-- Conteneur qu’on va cacher / montrer -->
+        <div id="emergency-contact-container">
+          <label for="contact" class="emergency-contact-label">👤 Nom du contact :</label>
+          <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
+        </div>
       </div>
 
       <div class="checkboxes">
@@ -288,8 +341,22 @@ Vielen Dank für Ihr Verständnis`
       document.getElementById("output").value = selectedMessages;
     }
 
-    // Wrapper pour conserver la logique de sauvegarde
+    // Met à jour l'état du champ + affichage du conteneur
+    function updateContactFieldState() {
+      const cb = document.getElementById("include-emergency");
+      const input = document.getElementById("contact");
+      const container = document.getElementById("emergency-contact-container");
+      if (!cb || !input || !container) return;
+
+      const disabled = !cb.checked;
+      input.disabled = disabled;
+
+      // cache / montre le bloc contact
+      container.style.display = disabled ? 'none' : 'block';
+    }
+
     function updateMessages() {
+      updateContactFieldState();
       updateMessagesCore();
       saveToLocal();
     }
@@ -370,6 +437,9 @@ Vielen Dank für Ihr Verständnis`
         document.body.classList.add('dark');
         document.querySelector('.theme-toggle').textContent = '🌞';
       }
+
+      // remet l’état cohérent au chargement
+      updateContactFieldState();
     }
 
     window.onload = function() {
