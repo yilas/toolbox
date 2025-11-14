@@ -101,7 +101,7 @@
       color: var(--text-color);
     }
 
-    /* MODIF : style du bloc contact d'urgence */
+    /* Bloc contact d'urgence */
     .emergency-block {
       margin-top: 25px;
       padding: 12px 14px;
@@ -130,8 +130,14 @@
     .emergency-toggle-label input {
       margin: 0;
     }
+
     .emergency-contact-label {
       margin-top: 12px;
+    }
+
+    /* conteneur du champ contact (pour pouvoir le cacher) */
+    #emergency-contact-container {
+      margin-top: 8px;
     }
 
     .checkboxes {
@@ -197,7 +203,6 @@
       opacity: 0.9;
     }
 
-    /* MODIF : input désactivé = grisé visuellement */
     .form input:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -233,7 +238,7 @@
         <button onclick="setNextMonday()">Prochain lundi</button>
       </div>
 
-      <!-- MODIF : bloc contact d'urgence regroupé -->
+      <!-- Bloc contact d'urgence -->
       <div class="emergency-block">
         <div class="emergency-block-title">
           🚨 Contact d'urgence
@@ -243,10 +248,12 @@
           Ajouter une phrase de contact d'urgence
         </label>
 
-        <label for="contact" class="emergency-contact-label">👤 Nom du contact :</label>
-        <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
+        <!-- Conteneur qu’on va cacher / montrer -->
+        <div id="emergency-contact-container">
+          <label for="contact" class="emergency-contact-label">👤 Nom du contact :</label>
+          <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
+        </div>
       </div>
-      <!-- FIN MODIF -->
 
       <div class="checkboxes">
         <label><input type="checkbox" id="lang-fr" checked onchange="updateMessages()"> Français 🇫🇷</label>
@@ -334,19 +341,22 @@ Vielen Dank für Ihr Verständnis`
       document.getElementById("output").value = selectedMessages;
     }
 
-    // MODIF : gestion de l'état du champ contact
+    // Met à jour l'état du champ + affichage du conteneur
     function updateContactFieldState() {
       const cb = document.getElementById("include-emergency");
       const input = document.getElementById("contact");
-      if (!cb || !input) return;
+      const container = document.getElementById("emergency-contact-container");
+      if (!cb || !input || !container) return;
 
       const disabled = !cb.checked;
       input.disabled = disabled;
+
+      // cache / montre le bloc contact
+      container.style.display = disabled ? 'none' : 'block';
     }
 
-    // Wrapper pour conserver la logique de sauvegarde
     function updateMessages() {
-      updateContactFieldState(); // MODIF : d'abord mettre à jour l'état du champ
+      updateContactFieldState();
       updateMessagesCore();
       saveToLocal();
     }
@@ -428,7 +438,7 @@ Vielen Dank für Ihr Verständnis`
         document.querySelector('.theme-toggle').textContent = '🌞';
       }
 
-      // MODIF : après chargement, on met à jour l'état du champ contact
+      // remet l’état cohérent au chargement
       updateContactFieldState();
     }
 
