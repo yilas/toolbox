@@ -196,6 +196,13 @@
       <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
 
       <div class="checkboxes">
+        <label>
+          <input type="checkbox" id="include-emergency" checked onchange="updateMessages()">
+          Ajouter une phrase de contact d'urgence
+        </label>
+      </div>
+
+      <div class="checkboxes">
         <label><input type="checkbox" id="lang-fr" checked onchange="updateMessages()"> Français 🇫🇷</label>
         <label><input type="checkbox" id="lang-lb" checked onchange="updateMessages()"> Luxembourgeois 🇱🇺</label>
         <label><input type="checkbox" id="lang-en" checked onchange="updateMessages()"> Anglais 🇬🇧</label>
@@ -224,9 +231,10 @@
       }).format(date);
     }
 
-    function updateMessages() {
+    function updateMessagesCore() {
       const rawDate = document.getElementById("date").value || new Date().toISOString().split("T")[0];
       const contactName = document.getElementById("contact").value || "votre contact";
+      const includeEmergency = document.getElementById("include-emergency").checked;
       const date = new Date(rawDate);
 
       const langs = {
@@ -236,9 +244,7 @@
 
 Je suis actuellement absent du bureau et ne pourrai pas répondre à vos e-mails avant le ${formatDate(date, 'fr-FR')}.
 
-En cas d'urgence, veuillez contacter ${contactName}.
-
-Je vous répondrai dès mon retour.
+${includeEmergency ? `En cas d'urgence, veuillez contacter ${contactName}.\n\n` : ''}Je vous répondrai dès mon retour.
 
 Merci de votre compréhension`
         },
@@ -248,9 +254,7 @@ Merci de votre compréhension`
 
 Ech sinn de Moment net am Büro an ech kann net op Är E-Mailen äntweren, bis de ${formatDate(date, 'lb-LU')}.
 
-Am Noutfall kënnt Dir w.e.g. den ${contactName} kontaktéieren.
-
-Ech ginn Iech esou séier wéi méiglech nom Retour äntweren.
+${includeEmergency ? `Am Noutfall kënnt Dir w.e.g. den ${contactName} kontaktéieren.\n\n` : ''}Ech ginn Iech esou séier wéi méiglech nom Retour äntweren.
 
 Merci fir Äert Verständnis`
         },
@@ -260,9 +264,7 @@ Merci fir Äert Verständnis`
 
 I am currently out of the office and will not be able to respond to emails until ${formatDate(date, 'en-US')}.
 
-For urgent matters, please contact ${contactName}.
-
-I will get back to you as soon as I return.
+${includeEmergency ? `For urgent matters, please contact ${contactName}.\n\n` : ''}I will get back to you as soon as I return.
 
 Thank you for your understanding`
         },
@@ -272,9 +274,7 @@ Thank you for your understanding`
 
 Ich bin derzeit nicht im Büro und kann Ihre E-Mails bis zum ${formatDate(date, 'de-DE')} nicht beantworten.
 
-In dringenden Fällen wenden Sie sich bitte an ${contactName}.
-
-Ich werde Ihnen nach meiner Rückkehr so bald wie möglich antworten.
+${includeEmergency ? `In dringenden Fällen wenden Sie sich bitte an ${contactName}.\n\n` : ''}Ich werde Ihnen nach meiner Rückkehr so bald wie möglich antworten.
 
 Vielen Dank für Ihr Verständnis`
         }
@@ -286,6 +286,12 @@ Vielen Dank für Ihr Verständnis`
         .join("\n\n---\n\n");
 
       document.getElementById("output").value = selectedMessages;
+    }
+
+    // Wrapper pour conserver la logique de sauvegarde
+    function updateMessages() {
+      updateMessagesCore();
+      saveToLocal();
     }
 
     function copyToClipboard() {
@@ -301,11 +307,16 @@ Vielen Dank für Ihr Verständnis`
       });
     }
 
-    function toggleTheme() {
+    function toggleThemeCore() {
       const body = document.body;
       const btn = document.querySelector('.theme-toggle');
       body.classList.toggle('dark');
       btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
+    }
+
+    function toggleTheme() {
+      toggleThemeCore();
+      saveToLocal();
     }
 
     function setDateOffset(days) {
@@ -324,7 +335,6 @@ Vielen Dank für Ihr Verständnis`
       updateMessages();
     }
 
-    // Initial rendering
     function saveToLocal() {
       const state = {
         date: document.getElementById("date").value,
@@ -335,6 +345,7 @@ Vielen Dank für Ihr Verständnis`
           en: document.getElementById("lang-en").checked,
           de: document.getElementById("lang-de").checked
         },
+        includeEmergency: document.getElementById("include-emergency").checked,
         theme: document.body.classList.contains('dark') ? 'dark' : 'light'
       };
       localStorage.setItem('auto-reply-generator_settings', JSON.stringify(state));
@@ -350,26 +361,17 @@ Vielen Dank für Ihr Verständnis`
         document.getElementById("lang-en").checked = saved.langs.en ?? true;
         document.getElementById("lang-de").checked = saved.langs.de ?? true;
       }
+      if (typeof saved.includeEmergency === 'boolean') {
+        document.getElementById("include-emergency").checked = saved.includeEmergency;
+      } else {
+        document.getElementById("include-emergency").checked = true;
+      }
       if (saved.theme === 'dark') {
         document.body.classList.add('dark');
         document.querySelector('.theme-toggle').textContent = '🌞';
       }
     }
 
-    // Modification : on intègre saveToLocal dans updateMessages et toggleTheme
-    const originalUpdateMessages = updateMessages;
-    updateMessages = function() {
-      originalUpdateMessages();
-      saveToLocal();
-    };
-
-    const originalToggleTheme = toggleTheme;
-    toggleTheme = function() {
-      originalToggleTheme();
-      saveToLocal();
-    };
-
-    // Charger les données au démarrage
     window.onload = function() {
       loadFromLocal();
       updateMessages();
