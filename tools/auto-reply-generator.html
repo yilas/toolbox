@@ -100,6 +100,40 @@
       background: var(--textarea-bg);
       color: var(--text-color);
     }
+
+    /* MODIF : style du bloc contact d'urgence */
+    .emergency-block {
+      margin-top: 25px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px dashed var(--panel-border);
+      background: rgba(0, 0, 0, 0.02);
+    }
+    body.dark .emergency-block {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .emergency-block-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .emergency-toggle-label {
+      font-weight: normal;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .emergency-toggle-label input {
+      margin: 0;
+    }
+    .emergency-contact-label {
+      margin-top: 12px;
+    }
+
     .checkboxes {
       margin-top: 20px;
     }
@@ -162,6 +196,13 @@
     button.copy-btn:hover {
       opacity: 0.9;
     }
+
+    /* MODIF : input désactivé = grisé visuellement */
+    .form input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     @media screen and (max-width: 900px) {
       main {
         flex-direction: column;
@@ -192,15 +233,20 @@
         <button onclick="setNextMonday()">Prochain lundi</button>
       </div>
 
-      <label for="contact">👤 Nom du contact :</label>
-      <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
-
-      <div class="checkboxes">
-        <label>
+      <!-- MODIF : bloc contact d'urgence regroupé -->
+      <div class="emergency-block">
+        <div class="emergency-block-title">
+          🚨 Contact d'urgence
+        </div>
+        <label class="emergency-toggle-label">
           <input type="checkbox" id="include-emergency" checked onchange="updateMessages()">
           Ajouter une phrase de contact d'urgence
         </label>
+
+        <label for="contact" class="emergency-contact-label">👤 Nom du contact :</label>
+        <input type="text" id="contact" value="Machin Bidule" oninput="updateMessages()" />
       </div>
+      <!-- FIN MODIF -->
 
       <div class="checkboxes">
         <label><input type="checkbox" id="lang-fr" checked onchange="updateMessages()"> Français 🇫🇷</label>
@@ -288,8 +334,19 @@ Vielen Dank für Ihr Verständnis`
       document.getElementById("output").value = selectedMessages;
     }
 
+    // MODIF : gestion de l'état du champ contact
+    function updateContactFieldState() {
+      const cb = document.getElementById("include-emergency");
+      const input = document.getElementById("contact");
+      if (!cb || !input) return;
+
+      const disabled = !cb.checked;
+      input.disabled = disabled;
+    }
+
     // Wrapper pour conserver la logique de sauvegarde
     function updateMessages() {
+      updateContactFieldState(); // MODIF : d'abord mettre à jour l'état du champ
       updateMessagesCore();
       saveToLocal();
     }
@@ -370,6 +427,9 @@ Vielen Dank für Ihr Verständnis`
         document.body.classList.add('dark');
         document.querySelector('.theme-toggle').textContent = '🌞';
       }
+
+      // MODIF : après chargement, on met à jour l'état du champ contact
+      updateContactFieldState();
     }
 
     window.onload = function() {
