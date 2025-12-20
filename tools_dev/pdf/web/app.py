@@ -147,6 +147,12 @@ def generate_preview_base64(pdf_path):
             logger.error(f"Erreur preview: {e}", extra={"error.type": "preview_gen", "file.path": pdf_path})
             return None
 
+def format_size(size_bytes):
+    """Fonction helper pour afficher la taille lisiblement"""
+    if size_bytes < 1024: return f"{size_bytes} B"
+    elif size_bytes < 1024 * 1024: return f"{size_bytes / 1024:.1f} KB"
+    else: return f"{size_bytes / (1024 * 1024):.2f} MB"
+
 def process_single_pdf(file_storage, compression_level, metadata_form):
     unique_id = str(uuid.uuid4())
     input_filename = f"{unique_id}_{file_storage.filename}"
@@ -155,15 +161,21 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
     input_path = os.path.join(APP_TEMP_DIR, input_filename)
     output_path = os.path.join(APP_TEMP_DIR, output_filename)
 
-    # Span OTel englobant le traitement d'un fichier
+    stats = {
+        "name": file_storage.filename,
+        "status": "pending",
+        "size_in": 0,
+        "size_out": 0,
+        "ratio": 0
+    }
+
     with tracer.start_as_current_span("process_single_pdf") as span:
         span.set_attribute("file.name", file_storage.filename)
-        span.set_attribute("compression.level", compression_level)
 
         try:
-            # 1. Sauvegarde et analyse initiale
             file_storage.save(input_path)
             original_size_bytes = os.path.getsize(input_path)
+            stats["size_in"] = original_size_bytes
 
             logger.info(f"Fichier reçu: {file_storage.filename}",
                         extra={"event.action": "upload", "file.size_in": original_size_bytes})
@@ -174,7 +186,6 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
             quality = {'0': '/default', '1': '/prepress', '2': '/printer', '3': '/ebook', '4': '/screen'}
             settings = quality.get(str(compression_level), '/printer')
 
-            # 2. Compression Ghostscript (Span dédié)
             with tracer.start_as_current_span("ghostscript_execution"):
                 subprocess.run([
                     gs_executable, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
@@ -182,7 +193,23 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
                     f"-sOutputFile={output_path}", input_path
                 ], check=True)
 
-            # 3. Métadonnées, Dates & Sécurité
+            # Vérification taille
+            new_size_temp = os.path.getsize(output_path)
+
+            if new_size_temp >= original_size_bytes:
+                logger.warning(f"Compression inutile. Original conservé.", extra={"file.name": file_storage.filename})
+                if os.path.exists(output_path): os.remove(output_path)
+                shutil.copy2(input_path, output_path)
+
+                # Mise à jour stats (Pas de gain)
+                stats["size_out"] = original_size_bytes
+                stats["status"] = "skipped"
+                stats["ratio"] = 0
+
+                # On retourne aussi les stats
+                return input_path, output_path, file_storage.filename, stats
+
+            # Métadonnées & Sécurité...
             final_title = metadata_form.get('title')
             if not final_title: final_title = os.path.splitext(file_storage.filename)[0]
 
@@ -195,7 +222,6 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
                 'password': metadata_form.get('password')
             }
 
-            # Span dédié à pypdf
             with tracer.start_as_current_span("metadata_injection"):
                 reader = PdfReader(output_path)
                 writer = PdfWriter()
@@ -217,32 +243,31 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
 
                 if meta_dict['password']:
                     writer.encrypt(meta_dict['password'])
-                    span.set_attribute("security.encrypted", True)
 
                 temp_meta = output_path + ".final"
                 with open(temp_meta, "wb") as f: writer.write(f)
                 shutil.move(temp_meta, output_path)
 
-            # 4. Calculs finaux
+            # Calculs finaux
             new_size_bytes = os.path.getsize(output_path)
             ratio = (1 - (new_size_bytes / original_size_bytes)) * 100
 
+            stats["size_out"] = new_size_bytes
+            stats["status"] = "optimized"
+            stats["ratio"] = round(ratio, 1)
+
             logger.info(f"Succès {file_storage.filename}", extra={
-                "event.action": "compression_complete",
-                "file.name": file_storage.filename,
-                "file.size_in": original_size_bytes,
-                "file.size_out": new_size_bytes,
-                "compression.ratio": round(ratio, 2)
+                "file.size_out": new_size_bytes, "compression.ratio": stats["ratio"]
             })
 
-            return input_path, output_path, file_storage.filename
+            # RETOUR AVEC STATS
+            return input_path, output_path, file_storage.filename, stats
 
         except Exception as e:
             span.record_exception(e)
-            span.set_status(trace.Status(trace.StatusCode.ERROR))
-            logger.error(f"Erreur traitement: {e}", extra={"error.message": str(e), "file.name": file_storage.filename})
+            logger.error(f"Erreur: {e}")
             if os.path.exists(input_path): os.remove(input_path)
-            return None, None, None
+            return None, None, None, None
 
 # --- ROUTES FLASK ---
 @app.route('/')
@@ -269,19 +294,24 @@ def compress():
 
     processed_files = []
     previews = None
+    summary_stats = []  # Liste pour stocker le résumé
 
-    # Boucle de traitement
     for file in files:
-        # Filtrage extension
         if not file.filename.lower().endswith('.pdf'):
-            logger.warning("Fichier ignoré", extra={"file.name": file.filename, "reason": "invalid_extension"})
+            logger.warning("Fichier ignoré", extra={"file.name": file.filename})
             continue
 
-        in_p, out_p, name = process_single_pdf(file, compression_level, metadata_form)
+        # On récupère désormais 4 valeurs
+        in_p, out_p, name, stats = process_single_pdf(file, compression_level, metadata_form)
 
         if out_p:
             processed_files.append((in_p, out_p, name))
-            # Génération preview pour le premier fichier valide uniquement
+
+            # Formatage des tailles pour le frontend
+            stats["size_in_fmt"] = format_size(stats["size_in"])
+            stats["size_out_fmt"] = format_size(stats["size_out"])
+            summary_stats.append(stats)
+
             if previews is None:
                 before_img = generate_preview_base64(in_p)
                 after_img = generate_preview_base64(out_p)
@@ -291,10 +321,9 @@ def compress():
     if not processed_files:
         return jsonify({"error": "Aucun fichier PDF valide traité."}), 500
 
-    # Préparation du retour (Fichier unique ou ZIP)
+    # Création ZIP ou fichier unique... (Code inchangé pour cette partie)
     final_file_data = None
     final_file_name = ""
-
     try:
         if len(processed_files) == 1:
             _, output_path, download_name = processed_files[0]
@@ -310,8 +339,8 @@ def compress():
             zip_buffer.seek(0)
             final_file_data = base64.b64encode(zip_buffer.read()).decode('utf-8')
     except Exception as e:
-        logger.error("Erreur préparation téléchargement", extra={"error": str(e)})
-        return jsonify({"error": "Erreur lors de la préparation du fichier final"}), 500
+        logger.error("Erreur ZIP", extra={"error": str(e)})
+        return jsonify({"error": "Erreur finale"}), 500
 
     # Nettoyage
     for in_p, out_p, _ in processed_files:
@@ -325,6 +354,7 @@ def compress():
     return jsonify({
         "status": "success",
         "previews": previews,
+        "summary": summary_stats,
         "file_name": final_file_name,
         "file_data": final_file_data
     })
