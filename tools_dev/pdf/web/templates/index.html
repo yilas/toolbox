@@ -1,126 +1,560 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compresseur PDF Local</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compresseur PDF Local Pro</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f9; color: #333; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input[type="text"], input[type="date"], input[type="datetime-local"], select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        input[type="file"] { padding: 10px 0; }
-        button { width: 100%; background-color: #27ae60; color: white; padding: 12px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background 0.3s; }
-        button:hover { background-color: #219150; }
-        .hint { font-size: 0.8em; color: #777; margin-top: 5px; }
-        .divider { border-top: 1px solid #eee; margin: 25px 0; }
-        .loading { display: none; text-align: center; margin-top: 10px; color: #e67e22; font-weight: bold;}
+      :root {
+        --primary-color: #4f46e5; /* Indigo */
+        --primary-hover: #4338ca;
+        --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --card-bg: #ffffff;
+        --text-dark: #1f2937;
+        --text-muted: #6b7280;
+        --border-color: #e5e7eb;
+        --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.2);
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg-gradient);
+        color: var(--text-dark);
+        padding: 40px 20px;
+        min-height: 100vh;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .container {
+        background: var(--card-bg);
+        width: 100%;
+        max-width: 550px;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      h1 {
+        text-align: center;
+        color: var(--text-dark);
+        font-weight: 800;
+        margin-bottom: 10px;
+        font-size: 1.8rem;
+        background: linear-gradient(to right, var(--primary-color), #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      p.subtitle {
+        text-align: center;
+        color: var(--text-muted);
+        margin-bottom: 35px;
+        font-size: 0.95rem;
+      }
+
+      /* --- Custom File Upload Styles --- */
+      .file-upload-wrapper {
+        position: relative;
+        margin-bottom: 25px;
+      }
+
+      .file-upload-input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 2;
+      }
+
+      .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        background-color: #f9fafb;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .file-upload-wrapper:hover .file-upload-label {
+        border-color: var(--primary-color);
+        background-color: #eef2ff;
+      }
+
+      .file-upload-icon {
+        width: 48px;
+        height: 48px;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        opacity: 0.8;
+      }
+
+      .file-upload-text {
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+
+      .file-upload-hint {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 5px;
+      }
+
+      .file-selected-name {
+        display: none; /* Hidden by default */
+        margin-top: 15px;
+        padding: 10px 15px;
+        background: #eef2ff;
+        border-radius: 8px;
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.9rem;
+        align-items: center;
+      }
+      .file-selected-name svg {
+        margin-right: 8px;
+      }
+
+      /* --- Form Elements Styles --- */
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .label-with-icon {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.95rem;
+      }
+      .label-with-icon svg {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        color: var(--text-muted);
+      }
+
+      input[type="text"],
+      input[type="date"],
+      input[type="datetime-local"],
+      select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 1rem;
+        transition: all 0.2s;
+        color: var(--text-dark);
+        background-color: #fff;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: var(--focus-ring);
+      }
+
+      .divider {
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          var(--border-color),
+          transparent
+        );
+        margin: 30px 0;
+      }
+
+      h3.section-title {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+      }
+
+      /* --- Button Styles --- */
+      .submit-btn-container {
+        margin-top: 35px;
+      }
+      button {
+        width: 100%;
+        background: linear-gradient(to right, var(--primary-color), #6366f1);
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2),
+          0 2px 4px -1px rgba(79, 70, 229, 0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      button svg {
+        margin-right: 10px;
+      }
+
+      button:hover {
+        background: linear-gradient(
+          to right,
+          var(--primary-hover),
+          var(--primary-color)
+        );
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3),
+          0 4px 6px -2px rgba(79, 70, 229, 0.15);
+      }
+      button:active {
+        transform: translateY(0);
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        margin-top: 15px;
+        color: var(--primary-color);
+        font-weight: 600;
+      }
+      .loading svg {
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+      }
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hint {
+        font-size: 0.8em;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Local PDF Compressor</h1>
+      <p class="subtitle">Optimisez vos documents en toute confidentialité.</p>
 
-<div class="container">
-    <h1>Compresseur PDF Local</h1>
-
-    <form action="/compress" method="post" enctype="multipart/form-data" id="pdfForm">
-
-        <div class="form-group">
-            <label for="file">Fichier PDF</label>
-            <input type="file" name="file" id="file" accept=".pdf" required>
+      <form
+        action="/compress"
+        method="post"
+        enctype="multipart/form-data"
+        id="pdfForm"
+      >
+        <div class="file-upload-wrapper">
+          <input
+            type="file"
+            name="file"
+            id="file"
+            accept=".pdf"
+            required
+            class="file-upload-input"
+          />
+          <label for="file" class="file-upload-label" id="file-label-content">
+            <svg
+              class="file-upload-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              ></path>
+            </svg>
+            <span class="file-upload-text"
+              >Cliquez pour sélectionner un PDF</span
+            >
+            <span class="file-upload-hint"
+              >ou glissez-déposez le fichier ici.</span
+            >
+          </label>
+          <div id="file-selected-info" class="file-selected-name">
+            <svg
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span id="filename-display"></span>
+          </div>
         </div>
 
         <div class="form-group">
-            <label for="compression_level">Niveau de compression</label>
-            <select name="compression_level" id="compression_level">
-                <option value="1">Prepress (Haute qualité)</option>
-                <option value="2" selected>Printer (Recommandé - Bon ratio)</option>
-                <option value="3">Ebook (Fichier léger)</option>
-                <option value="4">Screen (Qualité basse)</option>
-            </select>
+          <label for="compression_level" class="label-with-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              ></path>
+            </svg>
+            Niveau de compression
+          </label>
+          <select name="compression_level" id="compression_level">
+            <option value="1">
+              Qualité Prépresse (Très haute, peu de gain)
+            </option>
+            <option value="2" selected>
+              Standard "Printer" (Recommandé - Excellent ratio)
+            </option>
+            <option value="3">Ebook (Fichier léger, qualité moyenne)</option>
+            <option value="4">Écran (Fichier très léger, basse qualité)</option>
+          </select>
         </div>
 
         <div class="divider"></div>
-        <h3>Métadonnées</h3>
+        <h3 class="section-title">Métadonnées (Optionnel)</h3>
 
         <div class="form-group">
-            <label for="author">Auteur</label>
-            <input type="text" name="author" id="author" placeholder="Ex: Yann ILAS">
+          <label for="author" class="label-with-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              ></path>
+            </svg>
+            Auteur
+          </label>
+          <input
+            type="text"
+            name="author"
+            id="author"
+            placeholder="Ex: Votre Nom"
+          />
         </div>
 
         <div class="form-group">
-            <label for="title">Titre</label>
-            <input type="text" name="title" id="title" placeholder="Laissé vide = Nom du fichier">
-            <p class="hint">Sera rempli automatiquement lors du choix du fichier.</p>
+          <label for="title" class="label-with-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              ></path>
+            </svg>
+            Titre du document
+          </label>
+          <input
+            type="text"
+            name="title"
+            id="title"
+            placeholder="Laisser vide = Nom du fichier original"
+          />
+          <p class="hint" id="title-hint">
+            Sera automatiquement rempli lors de la sélection du fichier.
+          </p>
         </div>
 
         <div class="form-group">
-            <label for="subject">Sujet</label>
-            <input type="text" name="subject" id="subject" placeholder="Sujet ou Mots-clés">
+          <label for="subject" class="label-with-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+              ></path>
+            </svg>
+            Sujet / Mots-clés
+          </label>
+          <input
+            type="text"
+            name="subject"
+            id="subject"
+            placeholder="Ex: Factures, Impôts 2023..."
+          />
         </div>
 
-        <div class="form-group">
-            <label for="created_date">Date de création</label>
-            <input type="date" name="created_date" id="created_date">
+        <div class="form-group" style="display: flex; gap: 15px">
+          <div style="flex: 1">
+            <label for="created_date" class="label-with-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+              Création
+            </label>
+            <input type="date" name="created_date" id="created_date" />
+          </div>
+          <div style="flex: 1">
+            <label for="modified_date" class="label-with-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              Modification
+            </label>
+            <input
+              type="datetime-local"
+              name="modified_date"
+              id="modified_date"
+            />
+          </div>
         </div>
 
-        <div class="form-group">
-            <label for="modified_date">Date de modification</label>
-            <input type="datetime-local" name="modified_date" id="modified_date">
+        <div class="submit-btn-container">
+          <button type="submit" id="submitBtn">
+            <svg
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              ></path>
+            </svg>
+            Compresser et Télécharger
+          </button>
         </div>
 
-        <button type="submit" id="submitBtn">Compresser et Télécharger</button>
-        <div class="loading" id="loadingMsg">Traitement en cours...</div>
-    </form>
-</div>
+        <div class="loading" id="loadingMsg">
+          <div
+            style="display: flex; align-items: center; justify-content: center"
+          >
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Traitement du PDF en cours...
+          </div>
+        </div>
+      </form>
+    </div>
 
-<script>
-    // Liste des champs à sauvegarder (J'ai retiré 'title' car il change à chaque fichier)
-    const persistentFields = ['compression_level', 'author', 'subject', 'created_date', 'modified_date'];
+    <script>
+      // --- Logique JavaScript ---
 
-    // 1. Au chargement : Restaurer les valeurs
-    document.addEventListener('DOMContentLoaded', () => {
-        persistentFields.forEach(id => {
-            const storedValue = localStorage.getItem('pdf_tool_' + id);
-            if (storedValue) {
-                document.getElementById(id).value = storedValue;
-            }
-        });
-    });
+      // 1. Gestion de l'affichage du fichier sélectionné (UI custom)
+      const fileInput = document.getElementById("file");
+      const fileLabelContent = document.getElementById("file-label-content");
+      const fileSelectedInfo = document.getElementById("file-selected-info");
+      const filenameDisplay = document.getElementById("filename-display");
+      const titleInput = document.getElementById("title");
+      const titleHint = document.getElementById("title-hint");
 
-    // 2. À chaque changement : Sauvegarder
-    persistentFields.forEach(id => {
-        const element = document.getElementById(id);
-        element.addEventListener('input', (e) => {
-            localStorage.setItem('pdf_tool_' + id, e.target.value);
-        });
-    });
-
-    // 3. AUTO-REMPLISSAGE DU TITRE
-    document.getElementById('file').addEventListener('change', function(e) {
+      fileInput.addEventListener("change", function (e) {
         if (e.target.files.length > 0) {
-            const fileName = e.target.files[0].name;
-            // On retire l'extension .pdf
-            const title = fileName.replace(/\.[^/.]+$/, "");
+          const fileName = e.target.files[0].name;
 
-            // On remplit le champ titre (l'utilisateur peut le modifier ensuite)
-            document.getElementById('title').value = title;
+          // Mise à jour de l'UI d'upload
+          fileLabelContent.style.display = "none";
+          filenameDisplay.textContent = fileName;
+          fileSelectedInfo.style.display = "flex";
+
+          // Auto-remplissage du titre (sans extension)
+          const title = fileName.replace(/\.[^/.]+$/, "");
+          titleInput.value = title;
+          titleHint.textContent =
+            "Titre pré-rempli basé sur le nom du fichier.";
+          titleHint.style.color = "var(--primary-color)";
         }
-    });
+      });
 
-    // Loading effect
-    document.getElementById('pdfForm').addEventListener('submit', () => {
-        document.getElementById('submitBtn').disabled = true;
-        document.getElementById('submitBtn').style.opacity = "0.7";
-        document.getElementById('loadingMsg').style.display = 'block';
+      // 2. Sauvegarde locale des préférences (Auteur, Sujet, Dates, Niveau)
+      const persistentFields = [
+        "compression_level",
+        "author",
+        "subject",
+        "created_date",
+        "modified_date",
+      ];
+
+      // Au chargement : Restaurer
+      document.addEventListener("DOMContentLoaded", () => {
+        persistentFields.forEach((id) => {
+          const storedValue = localStorage.getItem("pdf_tool_pro_" + id);
+          if (storedValue) {
+            document.getElementById(id).value = storedValue;
+          }
+        });
+      });
+
+      // Au changement : Sauvegarder
+      persistentFields.forEach((id) => {
+        const element = document.getElementById(id);
+        element.addEventListener("input", (e) => {
+          localStorage.setItem("pdf_tool_pro_" + id, e.target.value);
+        });
+      });
+
+      // 3. Animation de chargement lors du submit
+      document.getElementById("pdfForm").addEventListener("submit", (e) => {
+        const btn = document.getElementById("submitBtn");
+        const loading = document.getElementById("loadingMsg");
+
+        btn.disabled = true;
+        btn.innerHTML = "Compression en cours...";
+        btn.style.opacity = "0.8";
+        loading.style.display = "block";
+
+        // Reset du bouton après un délai (le téléchargement devrait avoir démarré)
         setTimeout(() => {
-            document.getElementById('submitBtn').disabled = false;
-            document.getElementById('submitBtn').style.opacity = "1";
-            document.getElementById('loadingMsg').style.display = 'none';
-        }, 3000);
-    });
-</script>
-
-</body>
+          btn.disabled = false;
+          btn.innerHTML =
+            '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Compresser et Télécharger';
+          btn.style.opacity = "1";
+          loading.style.display = "none";
+        }, 4000);
+      });
+    </script>
+  </body>
 </html>
