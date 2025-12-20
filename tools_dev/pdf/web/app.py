@@ -5,31 +5,91 @@ import subprocess
 import uuid
 import zipfile
 import logging
+import json
 import base64
 import io
-from datetime import datetime
-import fitz
+from datetime import datetime, timezone
+import fitz  # PyMuPDF
 
-from flask import Flask, render_template, request, send_file, after_this_request, jsonify
+from flask import Flask, render_template, request, jsonify
 from pypdf import PdfReader, PdfWriter
 
-# --- CONFIGURATION LOGGING ---
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler("activity.log", encoding='utf-8'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger(__name__)
+# --- IMPORTS OPENTELEMETRY ---
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+# Pour envoyer vers un collecteur (Jaeger, Tempo, Elastic APM...)
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+# --- CONFIGURATION OPENTELEMETRY ---
+# Définition de la ressource (Le nom du service)
+resource = Resource(attributes={
+    "service.name": "pdf-compressor-local",
+    "service.version": "1.0.0"
+})
+
+trace.set_tracer_provider(TracerProvider(resource=resource))
+tracer = trace.get_tracer(__name__)
+
+# EXPORTER :
+# Option A : Console (Pour tester localement dans le terminal)
+trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+
+# Option B : OTLP (Standard pour envoyer vers Jaeger, Elastic, etc.)
+# Par défaut, ça cherche un collecteur sur localhost:4317
+# trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024 # Limite upload à 100MB pour éviter crash sur base64
+# Instrumentation automatique de Flask (capture les requêtes HTTP)
+FlaskInstrumentor().instrument_app(app)
+
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
 UPLOAD_FOLDER = 'temp_uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+# --- 1. LOGGING AVEC CONTEXTE DE TRACE ---
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        # Récupération du contexte de trace actuel
+        span = trace.get_current_span()
+        trace_context = span.get_span_context()
+
+        log_record = {
+            "@timestamp": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+            "log.level": record.levelname,
+            "message": record.getMessage(),
+            "service.name": "pdf-compressor",
+            "logger": record.name
+        }
+
+        # Injection automatique des IDs de trace si disponibles
+        if trace_context != trace.INVALID_SPAN_CONTEXT:
+            log_record["trace.id"] = format(trace_context.trace_id, "032x")
+            log_record["span.id"] = format(trace_context.span_id, "016x")
+
+        # Ajout des champs 'extra'
+        default_attrs = logging.LogRecord(None, None, None, None, None, None, None).__dict__.keys()
+        for key, value in record.__dict__.items():
+            if key not in default_attrs and key not in ["message", "asctime"]:
+                log_record[key] = value
+
+        return json.dumps(log_record)
+
+logger = logging.getLogger("pdf_app")
+logger.setLevel(logging.INFO)
+if logger.hasHandlers(): logger.handlers.clear()
+
+c_handler = logging.StreamHandler(sys.stdout)
+c_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+logger.addHandler(c_handler)
+
+f_handler = logging.FileHandler("activity.log", encoding='utf-8')
+f_handler.setFormatter(JSONFormatter())
+logger.addHandler(f_handler)
 
 # --- FONCTIONS UTILITAIRES ---
 def get_ghostscript_command():
@@ -53,19 +113,21 @@ def get_file_size_mb(path):
     return os.path.getsize(path) / (1024 * 1024)
 
 def generate_preview_base64(pdf_path):
-    """Génère une image PNG (base64) de la première page du PDF."""
-    try:
-        doc = fitz.open(pdf_path)
-        # Charge la page 0. Matrix(2,2) = zoom X2 pour une meilleure qualité
-        page = doc.load_page(0)
-        pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
-        img_data = pix.tobytes("png")
-        base64_img = base64.b64encode(img_data).decode('utf-8')
-        doc.close()
-        return f"data:image/png;base64,{base64_img}"
-    except Exception as e:
-        logger.error(f"Erreur génération preview pour {pdf_path}: {e}")
-        return None
+    # SPAN MANUEL : Mesurer la génération d'image
+    with tracer.start_as_current_span("generate_preview") as span:
+        span.set_attribute("file.path", pdf_path)
+        try:
+            doc = fitz.open(pdf_path)
+            page = doc.load_page(0)
+            pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
+            img_data = pix.tobytes("png")
+            base64_img = base64.b64encode(img_data).decode('utf-8')
+            doc.close()
+            return f"data:image/png;base64,{base64_img}"
+        except Exception as e:
+            span.record_exception(e) # Enregistre l'erreur dans la trace
+            logger.error(f"Erreur preview: {e}", extra={"error.type": "preview_gen"})
+            return None
 
 def process_single_pdf(file_storage, compression_level, metadata_form):
     unique_id = str(uuid.uuid4())
@@ -75,76 +137,88 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
     input_path = os.path.join(UPLOAD_FOLDER, input_filename)
     output_path = os.path.join(UPLOAD_FOLDER, output_filename)
 
-    try:
-        file_storage.save(input_path)
-        original_size = get_file_size_mb(input_path)
-        logger.info(f"Fichier reçu: {file_storage.filename} ({original_size:.2f} MB)")
+    # SPAN MANUEL : Englobe tout le processus pour un fichier
+    with tracer.start_as_current_span("process_single_pdf") as span:
+        span.set_attribute("file.name", file_storage.filename)
+        span.set_attribute("compression.level", compression_level)
 
-        gs_executable = get_ghostscript_command()
-        if not gs_executable: raise Exception("Ghostscript non trouvé.")
+        try:
+            file_storage.save(input_path)
+            original_size_bytes = os.path.getsize(input_path)
 
-        quality = {'0': '/default', '1': '/prepress', '2': '/printer', '3': '/ebook', '4': '/screen'}
-        settings = quality.get(str(compression_level), '/printer')
+            logger.info(f"Début traitement: {file_storage.filename}",
+                        extra={"file.size_in": original_size_bytes})
 
-        logger.info(f"Démarrage compression (Niveau {compression_level}) pour {file_storage.filename}...")
+            gs_executable = get_ghostscript_command()
+            if not gs_executable: raise Exception("Ghostscript non trouvé.")
 
-        # 1. Compression
-        subprocess.run([
-            gs_executable, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
-            f"-dPDFSETTINGS={settings}", "-dNOPAUSE", "-dQUIET", "-dBATCH",
-            f"-sOutputFile={output_path}", input_path
-        ], check=True)
+            quality = {'0': '/default', '1': '/prepress', '2': '/printer', '3': '/ebook', '4': '/screen'}
+            settings = quality.get(str(compression_level), '/printer')
 
-        # 2. Métadonnées & Sécurité
-        final_title = metadata_form.get('title')
-        if not final_title: final_title = os.path.splitext(file_storage.filename)[0]
+            # SPAN MANUEL : Isoler l'appel Ghostscript (souvent le plus long)
+            with tracer.start_as_current_span("ghostscript_execution"):
+                subprocess.run([
+                    gs_executable, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
+                    f"-dPDFSETTINGS={settings}", "-dNOPAUSE", "-dQUIET", "-dBATCH",
+                    f"-sOutputFile={output_path}", input_path
+                ], check=True)
 
-        meta_dict = {
-            'title': final_title,
-            'author': metadata_form.get('author'),
-            'subject': metadata_form.get('subject'),
-            'created': metadata_form.get('created_date'),
-            'modified': metadata_form.get('modified_date'),
-            'password': metadata_form.get('password')
-        }
+            # Métadonnées & Sécurité
+            final_title = metadata_form.get('title')
+            if not final_title: final_title = os.path.splitext(file_storage.filename)[0]
 
-        # Ouverture systématique pour réécriture propre
-        reader = PdfReader(output_path)
-        writer = PdfWriter()
-        writer.append_pages_from_reader(reader)
+            meta_dict = {
+                'title': final_title,
+                'author': metadata_form.get('author'),
+                'subject': metadata_form.get('subject'),
+                'created': metadata_form.get('created_date'),
+                'modified': metadata_form.get('modified_date'),
+                'password': metadata_form.get('password')
+            }
 
-        new_metadata = {}
-        if reader.metadata:
-            for key, value in reader.metadata.items(): new_metadata[key] = value
+            # SPAN MANUEL : Opérations pypdf
+            with tracer.start_as_current_span("metadata_injection"):
+                reader = PdfReader(output_path)
+                writer = PdfWriter()
+                writer.append_pages_from_reader(reader)
 
-        if meta_dict['title']: new_metadata['/Title'] = meta_dict['title']
-        if meta_dict['author']: new_metadata['/Author'] = meta_dict['author']
-        if meta_dict['subject']: new_metadata['/Subject'] = meta_dict['subject']
-        created = format_date_for_pdf(meta_dict['created'])
-        if created: new_metadata['/CreationDate'] = created
-        modified = format_date_for_pdf(meta_dict['modified'])
-        if modified: new_metadata['/ModDate'] = modified
+                new_metadata = {}
+                if reader.metadata:
+                    for key, value in reader.metadata.items(): new_metadata[key] = value
 
-        writer.add_metadata(new_metadata)
+                if meta_dict['title']: new_metadata['/Title'] = meta_dict['title']
+                if meta_dict['author']: new_metadata['/Author'] = meta_dict['author']
+                if meta_dict['subject']: new_metadata['/Subject'] = meta_dict['subject']
+                created = format_date_for_pdf(meta_dict['created'])
+                if created: new_metadata['/CreationDate'] = created
+                modified = format_date_for_pdf(meta_dict['modified'])
+                if modified: new_metadata['/ModDate'] = modified
 
-        if meta_dict['password']:
-            logger.info(f"Chiffrement activé pour {file_storage.filename}")
-            writer.encrypt(meta_dict['password'])
+                writer.add_metadata(new_metadata)
 
-        temp_meta = output_path + ".final"
-        with open(temp_meta, "wb") as f: writer.write(f)
-        shutil.move(temp_meta, output_path)
+                if meta_dict['password']:
+                    writer.encrypt(meta_dict['password'])
 
-        new_size = get_file_size_mb(output_path)
-        reduction = (1 - (new_size / original_size)) * 100
-        logger.info(f"Succès {file_storage.filename}: {original_size:.2f}MB -> {new_size:.2f}MB (-{reduction:.1f}%)")
+                temp_meta = output_path + ".final"
+                with open(temp_meta, "wb") as f: writer.write(f)
+                shutil.move(temp_meta, output_path)
 
-        return input_path, output_path, file_storage.filename
+            new_size_bytes = os.path.getsize(output_path)
+            ratio = (1 - (new_size_bytes / original_size_bytes)) * 100
 
-    except Exception as e:
-        logger.error(f"Erreur sur {file_storage.filename}: {e}")
-        if os.path.exists(input_path): os.remove(input_path)
-        return None, None, None
+            logger.info(f"Succès {file_storage.filename}", extra={
+                "file.size_out": new_size_bytes,
+                "compression.ratio": ratio
+            })
+
+            return input_path, output_path, file_storage.filename
+
+        except Exception as e:
+            span.record_exception(e)
+            span.set_status(trace.Status(trace.StatusCode.ERROR))
+            logger.error(f"Erreur: {e}", extra={"error.message": str(e)})
+            if os.path.exists(input_path): os.remove(input_path)
+            return None, None, None
 
 @app.route('/')
 def index():
@@ -155,8 +229,6 @@ def compress():
     if 'file' not in request.files: return jsonify({"error": "Aucun fichier"}), 400
     files = request.files.getlist('file')
     if not files or files[0].filename == '': return jsonify({"error": "Aucun fichier sélectionné"}), 400
-
-    logger.info(f"=== Début traitement de {len(files)} fichier(s) ===")
 
     compression_level = request.form.get('compression_level', 2)
     metadata_form = {
@@ -171,25 +243,24 @@ def compress():
     processed_files = []
     previews = None
 
-    for i, file in enumerate(files):
-        # On sauvegarde le nom original car file.filename change après save()
-        original_name = file.filename
+    for file in files:
+        if not file.filename.lower().endswith('.pdf'):
+            continue
+
         in_p, out_p, name = process_single_pdf(file, compression_level, metadata_form)
 
         if out_p:
             processed_files.append((in_p, out_p, name))
-            # Générer la prévisualisation uniquement pour le premier fichier réussi
             if previews is None:
-                logger.info(f"Génération des prévisualisations visuelles pour {name}...")
                 before_img = generate_preview_base64(in_p)
                 after_img = generate_preview_base64(out_p)
                 if before_img and after_img:
                     previews = {"before": before_img, "after": after_img}
 
     if not processed_files:
-        return jsonify({"error": "Erreur lors du traitement."}), 500
+        return jsonify({"error": "Erreur traitement"}), 500
 
-    # --- Préparation de la réponse JSON ---
+    # Création ZIP ou fichier unique (Code identique précédent, abrégé ici)
     final_file_data = None
     final_file_name = ""
 
@@ -207,21 +278,21 @@ def compress():
         zip_buffer.seek(0)
         final_file_data = base64.b64encode(zip_buffer.read()).decode('utf-8')
 
-    # Nettoyage immédiat
     for in_p, out_p, _ in processed_files:
         try:
             if os.path.exists(in_p): os.remove(in_p)
             if os.path.exists(out_p): os.remove(out_p)
         except: pass
-    logger.info("=== Traitement terminé et nettoyage effectué ===")
 
     return jsonify({
         "status": "success",
-        "previews": previews, # Contient {before: "data...", after: "data..."} ou None
+        "previews": previews,
         "file_name": final_file_name,
-        "file_data": final_file_data # Le fichier final en base64
+        "file_data": final_file_data
     })
 
 if __name__ == '__main__':
-    print("--- Serveur Démarré sur http://127.0.0.1:5000 ---")
+    # Serveur sur port tcp/5000
+    # Collecteur OTLP (comme Jaeger) sur port tcp/4317
+    # Ou décommentez ConsoleSpanExporter plus haut pour voir les traces dans le terminal
     app.run(debug=True, port=5000)
