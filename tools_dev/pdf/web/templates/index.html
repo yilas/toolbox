@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Compresseur PDF Local Pro</title>
     <style>
+      /* --- Styles existants inchangés --- */
       :root {
         --primary-color: #4f46e5;
         --primary-hover: #4338ca;
@@ -17,7 +18,6 @@
         --terminal-bg: #1e1e1e;
         --terminal-text: #00ff00;
       }
-
       body {
         font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
           Roboto, Helvetica, Arial, sans-serif;
@@ -30,17 +30,15 @@
         justify-content: center;
         align-items: center;
       }
-
       .container {
         background: var(--card-bg);
         width: 100%;
-        max-width: 550px;
+        max-width: 600px;
         padding: 40px;
         border-radius: 16px;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
           0 10px 10px -5px rgba(0, 0, 0, 0.04);
       }
-
       h1 {
         text-align: center;
         color: var(--text-dark);
@@ -51,15 +49,12 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
-
       p.subtitle {
         text-align: center;
         color: var(--text-muted);
         margin-bottom: 35px;
         font-size: 0.95rem;
       }
-
-      /* --- Custom File Upload Styles --- */
       .file-upload-wrapper {
         position: relative;
         margin-bottom: 25px;
@@ -121,8 +116,6 @@
         margin-right: 8px;
         flex-shrink: 0;
       }
-
-      /* --- Form Elements --- */
       .form-group {
         margin-bottom: 20px;
       }
@@ -181,8 +174,6 @@
         margin-bottom: 20px;
         font-size: 1.2rem;
       }
-
-      /* --- Button --- */
       .submit-btn-container {
         margin-top: 35px;
       }
@@ -218,8 +209,6 @@
         opacity: 0.7;
         cursor: wait;
       }
-
-      /* --- Terminal Log Box --- */
       .terminal-container {
         margin-top: 25px;
         background-color: var(--terminal-bg);
@@ -232,7 +221,7 @@
         overflow-y: auto;
         border: 1px solid #333;
         box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-        display: none; /* Hidden by default */
+        display: none;
       }
       .log-entry {
         margin-bottom: 5px;
@@ -249,24 +238,31 @@
         margin-right: 10px;
         font-size: 0.8em;
       }
+      .hint {
+        font-size: 0.8em;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
 
-      /* Scrollbar custom for terminal */
-      .terminal-container::-webkit-scrollbar {
-        width: 8px;
+      /* Bouton secondaire pour la comparaison */
+      #view-comparison-btn {
+        display: none;
+        margin-top: 15px;
+        background: #fff;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        box-shadow: none;
       }
-      .terminal-container::-webkit-scrollbar-track {
-        background: #2a2a2a;
-      }
-      .terminal-container::-webkit-scrollbar-thumb {
-        background: #555;
-        border-radius: 4px;
+      #view-comparison-btn:hover {
+        background: #eef2ff;
+        transform: translateY(-2px);
       }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>Compresseur PDF Local</h1>
-      <p class="subtitle">Optimisez un ou plusieurs documents simultanément.</p>
+      <p class="subtitle">Optimisez, sécurisez et comparez vos documents.</p>
 
       <form id="pdfForm">
         <div class="file-upload-wrapper">
@@ -333,7 +329,7 @@
             <option value="1">Qualité Prépresse</option>
             <option value="2" selected>Standard "Printer" (Recommandé)</option>
             <option value="3">Ebook (Léger)</option>
-            <option value="4">Écran (Très léger)</option>
+            <option value="4">Écran (Très léger, basse qualité)</option>
           </select>
         </div>
 
@@ -436,6 +432,28 @@
           </div>
         </div>
 
+        <div class="divider"></div>
+        <h3 class="section-title">Sécurité (Optionnel) - Si activé alors preview impossible !</h3>
+        <div class="form-group">
+          <label for="password" class="label-with-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              ></path>
+            </svg>
+            Mot de passe (Chiffrement AES-128)
+          </label>
+          <input
+            type="text"
+            name="password"
+            id="password"
+            placeholder="Laisser vide pour ne pas chiffrer"
+          />
+        </div>
+
         <div class="submit-btn-container">
           <button type="submit" id="submitBtn">
             <svg
@@ -454,6 +472,24 @@
             </svg>
             Compresser et Télécharger
           </button>
+
+          <button type="button" id="view-comparison-btn">
+            <svg
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+              ></path>
+            </svg>
+            🔍 Ouvrir le Comparatif (Plein Écran)
+          </button>
         </div>
 
         <div id="terminal" class="terminal-container">
@@ -463,6 +499,7 @@
     </div>
 
     <script>
+      // --- VARIABLES & SELECTEURS ---
       const fileInput = document.getElementById("file");
       const fileLabelContent = document.getElementById("file-label-content");
       const fileSelectedInfo = document.getElementById("file-selected-info");
@@ -470,25 +507,135 @@
       const titleInput = document.getElementById("title");
       const titleHint = document.getElementById("title-hint");
       const terminal = document.getElementById("terminal");
+      const viewComparisonBtn = document.getElementById("view-comparison-btn");
 
-      // --- Logging Function ---
+      // Variable pour stocker les données de prévisualisation temporairement
+      let currentPreviewData = null;
+
+      // --- FONCTIONS UTILITAIRES ---
       function log(message, type = "normal") {
         terminal.style.display = "block";
         const now = new Date();
         const timeStr = now.toLocaleTimeString();
-
         const div = document.createElement("div");
         div.className = `log-entry ${type}`;
         div.innerHTML = `<span class="log-time">[${timeStr}]</span> ${message}`;
         terminal.appendChild(div);
-        terminal.scrollTop = terminal.scrollHeight; // Auto scroll
+        terminal.scrollTop = terminal.scrollHeight;
       }
 
-      // Gestion sélection fichier(s)
+      function downloadBase64File(base64Data, fileName) {
+        const linkSource = `data:application/octet-stream;base64,${base64Data}`;
+        const downloadLink = document.createElement("a");
+        downloadLink.href = linkSource;
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      }
+
+      // --- LOGIQUE NOUVELLE FENÊTRE ---
+      function openComparisonWindow(previews) {
+        if (!previews) return;
+
+        // Création d'une nouvelle fenêtre vierge
+        const win = window.open("", "_blank");
+        if (!win) {
+          alert("Veuillez autoriser les pop-ups pour voir la comparaison.");
+          return;
+        }
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <title>Comparatif Avant / Après</title>
+            <style>
+                body { margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1e1e1e; color: white; font-family: sans-serif; overflow: hidden; }
+                h2 { margin: 10px 0; font-weight: 300; }
+                .controls { margin-bottom: 15px; display: flex; gap: 20px; font-weight: bold; }
+                .badge { padding: 5px 15px; border-radius: 20px; }
+                .badge-before { background: #4f46e5; color: white; }
+                .badge-after { background: #059669; color: white; }
+
+                .comp-container {
+                    position: relative;
+                    width: 90vw;
+                    height: 80vh;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                    background: #333;
+                    border-radius: 8px;
+                    overflow: hidden;
+                }
+                .comp-img {
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                    object-fit: contain; /* Garde le ratio */
+                    object-position: center;
+                }
+                .comp-after { z-index: 1; }
+                .comp-before {
+                    z-index: 2;
+                    width: 50%; /* Départ */
+                    border-right: 3px solid #fff;
+                    background: #333; /* Masque l'image du dessous */
+                    box-sizing: border-box;
+                }
+                .comp-slider {
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                    background: transparent; z-index: 3; cursor: col-resize;
+                    margin: 0; -webkit-appearance: none; appearance: none;
+                }
+                .comp-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 5px; height: 100%; background: transparent; }
+                .comp-slider::-moz-range-thumb { width: 5px; height: 100%; background: transparent; border: none; }
+
+                .hint { position: absolute; bottom: 20px; color: #aaa; font-size: 0.9em; pointer-events: none;}
+            </style>
+        </head>
+        <body>
+            <h2>Comparaison Visuelle</h2>
+            <div class="controls">
+                <span class="badge badge-before">Original</span>
+                <span class="badge badge-after">Compressé</span>
+            </div>
+
+            <div class="comp-container">
+                <img id="img-after" class="comp-img comp-after" src="${previews.after}">
+                <img id="img-before" class="comp-img comp-before" src="${previews.before}">
+                <input type="range" min="0" max="100" value="50" class="comp-slider" id="comp-slider">
+            </div>
+
+            <div class="hint">Glissez la souris horizontalement pour comparer</div>
+
+            <script>
+                const slider = document.getElementById('comp-slider');
+                const imgBefore = document.getElementById('img-before');
+                slider.addEventListener('input', (e) => {
+                    imgBefore.style.width = e.target.value + "%";
+                });
+            <\/script>
+        </body>
+        </html>
+        `;
+
+        win.document.write(htmlContent);
+        win.document.close(); // Important pour terminer le chargement
+      }
+
+      // --- EVENT LISTENERS ---
+
+      viewComparisonBtn.addEventListener("click", () => {
+        if (currentPreviewData) {
+          openComparisonWindow(currentPreviewData);
+        }
+      });
+
       fileInput.addEventListener("change", function (e) {
         if (e.target.files.length > 0) {
           fileLabelContent.style.display = "none";
           fileSelectedInfo.style.display = "flex";
+          viewComparisonBtn.style.display = "none"; // Cache le bouton d'une ancienne session
+          currentPreviewData = null;
 
           if (e.target.files.length === 1) {
             const fileName = e.target.files[0].name;
@@ -505,14 +652,13 @@
             titleInput.disabled = false;
             titleInput.placeholder =
               "Laisser vide pour garder les noms originaux";
-            titleHint.textContent =
-              "Si rempli, ce titre s'appliquera à TOUS les fichiers.";
+            titleHint.textContent = "Si rempli, s'applique à TOUS.";
             log(`${e.target.files.length} fichiers sélectionnés.`);
           }
         }
       });
 
-      // Persistence des champs
+      // Persistence
       const persistentFields = [
         "compression_level",
         "author",
@@ -532,11 +678,11 @@
         });
       });
 
-      // --- AJAX SUBMISSION WITH LOGS ---
+      // --- AJAX ---
       document
         .getElementById("pdfForm")
         .addEventListener("submit", function (e) {
-          e.preventDefault(); // On stoppe le POST classique
+          e.preventDefault();
 
           const btn = document.getElementById("submitBtn");
           const formData = new FormData(this);
@@ -544,64 +690,51 @@
 
           btn.disabled = true;
           btn.innerHTML = "Traitement...";
+          viewComparisonBtn.style.display = "none"; // Reset button
           log("Début du téléchargement vers le serveur...", "normal");
 
-          // Barre de progression (Upload)
           xhr.upload.onprogress = function (e) {
             if (e.lengthComputable) {
               const percentComplete = (e.loaded / e.total) * 100;
-              if (percentComplete < 100) {
-                // On pourrait afficher une barre, ici on log tous les 20%
-                if (Math.round(percentComplete) % 20 === 0) {
-                  log(`Upload en cours : ${Math.round(percentComplete)}%`);
-                }
-              } else {
-                log(
-                  "Upload terminé. Traitement Ghostscript en cours (patientez)..."
-                );
-              }
+              if (percentComplete === 100)
+                log("Traitement Ghostscript en cours...");
             }
           };
 
           xhr.open("POST", "/compress", true);
-          xhr.responseType = "blob"; // On attend un fichier binaire
+          xhr.responseType = "json";
 
           xhr.onload = function () {
-            if (this.status === 200) {
-              log("Succès ! Le serveur a renvoyé le fichier.", "success");
+            if (this.status === 200 && this.response.status === "success") {
+              const data = this.response;
+              log("Succès !", "success");
 
-              // Création du lien de téléchargement virtuel
-              const blob = this.response;
-
-              // Tentative de récupération du vrai nom de fichier depuis les headers
-              let fileName = "document_optimise.pdf";
-              const disposition = xhr.getResponseHeader("Content-Disposition");
-              if (disposition && disposition.indexOf("attachment") !== -1) {
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                const matches = filenameRegex.exec(disposition);
-                if (matches != null && matches[1]) {
-                  fileName = matches[1].replace(/['"]/g, "");
-                }
+              // 1. Gestion Comparatif
+              if (data.previews) {
+                currentPreviewData = data.previews;
+                viewComparisonBtn.style.display = "inline-flex"; // Affiche le bouton "Ouvrir"
+                log(
+                  "Comparatif visuel prêt (cliquez sur le bouton pour voir)."
+                );
+              } else {
+                log(
+                  "Pas de prévisualisation disponible (erreur interne image).",
+                  "normal"
+                );
               }
 
-              log(`Téléchargement lancé : ${fileName}`, "success");
-
-              const downloadUrl = window.URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = downloadUrl;
-              a.download = fileName;
-              document.body.appendChild(a);
-              a.click();
-              setTimeout(() => {
-                window.URL.revokeObjectURL(downloadUrl);
-                document.body.removeChild(a);
-              }, 100);
+              // 2. Téléchargement automatique
+              log(`Téléchargement lancé : ${data.file_name}`, "success");
+              downloadBase64File(data.file_data, data.file_name);
 
               btn.disabled = false;
               btn.innerHTML =
                 '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Compresser et Télécharger';
             } else {
-              log("Erreur serveur. Vérifiez les logs backend.", "error");
+              let errMsg = this.response
+                ? this.response.error
+                : "Erreur inconnue";
+              log("Erreur : " + errMsg, "error");
               btn.disabled = false;
               btn.innerHTML = "Réessayer";
             }
