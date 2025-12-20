@@ -25,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024 # Limite upload à 100MB pour éviter crash sur base64
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
 UPLOAD_FOLDER = 'temp_uploads'
 if not os.path.exists(UPLOAD_FOLDER):
@@ -56,7 +56,6 @@ def generate_preview_base64(pdf_path):
     """Génère une image PNG (base64) de la première page du PDF."""
     try:
         doc = fitz.open(pdf_path)
-        # Charge la page 0. Matrix(2,2) = zoom X2 pour une meilleure qualité
         page = doc.load_page(0)
         pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
         img_data = pix.tobytes("png")
@@ -108,7 +107,6 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
             'password': metadata_form.get('password')
         }
 
-        # Ouverture systématique pour réécriture propre
         reader = PdfReader(output_path)
         writer = PdfWriter()
         writer.append_pages_from_reader(reader)
@@ -156,7 +154,7 @@ def compress():
     files = request.files.getlist('file')
     if not files or files[0].filename == '': return jsonify({"error": "Aucun fichier sélectionné"}), 400
 
-    logger.info(f"=== Début traitement de {len(files)} fichier(s) ===")
+    logger.info(f"=== Début traitement de {len(files)} fichier(s) potentiels ===")
 
     compression_level = request.form.get('compression_level', 2)
     metadata_form = {
@@ -172,13 +170,14 @@ def compress():
     previews = None
 
     for i, file in enumerate(files):
-        # On sauvegarde le nom original car file.filename change après save()
-        original_name = file.filename
+        if not file.filename.lower().endswith('.pdf'):
+            logger.warning(f"Fichier ignoré (Type non supporté) : {file.filename}")
+            continue
+
         in_p, out_p, name = process_single_pdf(file, compression_level, metadata_form)
 
         if out_p:
             processed_files.append((in_p, out_p, name))
-            # Générer la prévisualisation uniquement pour le premier fichier réussi
             if previews is None:
                 logger.info(f"Génération des prévisualisations visuelles pour {name}...")
                 before_img = generate_preview_base64(in_p)
@@ -187,7 +186,7 @@ def compress():
                     previews = {"before": before_img, "after": after_img}
 
     if not processed_files:
-        return jsonify({"error": "Erreur lors du traitement."}), 500
+        return jsonify({"error": "Aucun fichier PDF valide n'a été traité."}), 500
 
     # --- Préparation de la réponse JSON ---
     final_file_data = None
@@ -207,7 +206,7 @@ def compress():
         zip_buffer.seek(0)
         final_file_data = base64.b64encode(zip_buffer.read()).decode('utf-8')
 
-    # Nettoyage immédiat
+    # Nettoyage
     for in_p, out_p, _ in processed_files:
         try:
             if os.path.exists(in_p): os.remove(in_p)
@@ -217,9 +216,9 @@ def compress():
 
     return jsonify({
         "status": "success",
-        "previews": previews, # Contient {before: "data...", after: "data..."} ou None
+        "previews": previews,
         "file_name": final_file_name,
-        "file_data": final_file_data # Le fichier final en base64
+        "file_data": final_file_data
     })
 
 if __name__ == '__main__':
