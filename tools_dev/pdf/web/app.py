@@ -38,10 +38,7 @@ tracer = trace.get_tracer(__name__)
 #trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
 
 app = Flask(__name__)
-# 4. Instrumentation automatique de Flask (Capture les requêtes HTTP)
-FlaskInstrumentor().instrument_app(app)
-
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # Limite 100MB
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
 UPLOAD_FOLDER = 'temp_uploads'
 if not os.path.exists(UPLOAD_FOLDER):
@@ -121,22 +118,18 @@ def format_date_for_pdf(date_str):
     except ValueError: return None
 
 def generate_preview_base64(pdf_path):
-    """Génère une image PNG (base64) de la première page."""
-    with tracer.start_as_current_span("generate_preview") as span:
-        span.set_attribute("file.path", pdf_path)
-        try:
-            doc = fitz.open(pdf_path)
-            page = doc.load_page(0)
-            # Zoom x1.5 pour une qualité correcte
-            pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
-            img_data = pix.tobytes("png")
-            base64_img = base64.b64encode(img_data).decode('utf-8')
-            doc.close()
-            return f"data:image/png;base64,{base64_img}"
-        except Exception as e:
-            span.record_exception(e)
-            logger.error(f"Erreur preview: {e}", extra={"error.type": "preview_gen", "file.path": pdf_path})
-            return None
+    """Génère une image PNG (base64) de la première page du PDF."""
+    try:
+        doc = fitz.open(pdf_path)
+        page = doc.load_page(0)
+        pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
+        img_data = pix.tobytes("png")
+        base64_img = base64.b64encode(img_data).decode('utf-8')
+        doc.close()
+        return f"data:image/png;base64,{base64_img}"
+    except Exception as e:
+        logger.error(f"Erreur génération preview pour {pdf_path}: {e}")
+        return None
 
 def process_single_pdf(file_storage, compression_level, metadata_form):
     unique_id = str(uuid.uuid4())
@@ -146,10 +139,75 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
     input_path = os.path.join(UPLOAD_FOLDER, input_filename)
     output_path = os.path.join(UPLOAD_FOLDER, output_filename)
 
-    # Span OTel englobant le traitement d'un fichier
-    with tracer.start_as_current_span("process_single_pdf") as span:
-        span.set_attribute("file.name", file_storage.filename)
-        span.set_attribute("compression.level", compression_level)
+    try:
+        file_storage.save(input_path)
+        original_size = get_file_size_mb(input_path)
+        logger.info(f"Fichier reçu: {file_storage.filename} ({original_size:.2f} MB)")
+
+        gs_executable = get_ghostscript_command()
+        if not gs_executable: raise Exception("Ghostscript non trouvé.")
+
+        quality = {'0': '/default', '1': '/prepress', '2': '/printer', '3': '/ebook', '4': '/screen'}
+        settings = quality.get(str(compression_level), '/printer')
+
+        logger.info(f"Démarrage compression (Niveau {compression_level}) pour {file_storage.filename}...")
+
+        # 1. Compression
+        subprocess.run([
+            gs_executable, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
+            f"-dPDFSETTINGS={settings}", "-dNOPAUSE", "-dQUIET", "-dBATCH",
+            f"-sOutputFile={output_path}", input_path
+        ], check=True)
+
+        # 2. Métadonnées & Sécurité
+        final_title = metadata_form.get('title')
+        if not final_title: final_title = os.path.splitext(file_storage.filename)[0]
+
+        meta_dict = {
+            'title': final_title,
+            'author': metadata_form.get('author'),
+            'subject': metadata_form.get('subject'),
+            'created': metadata_form.get('created_date'),
+            'modified': metadata_form.get('modified_date'),
+            'password': metadata_form.get('password')
+        }
+
+        reader = PdfReader(output_path)
+        writer = PdfWriter()
+        writer.append_pages_from_reader(reader)
+
+        new_metadata = {}
+        if reader.metadata:
+            for key, value in reader.metadata.items(): new_metadata[key] = value
+
+        if meta_dict['title']: new_metadata['/Title'] = meta_dict['title']
+        if meta_dict['author']: new_metadata['/Author'] = meta_dict['author']
+        if meta_dict['subject']: new_metadata['/Subject'] = meta_dict['subject']
+        created = format_date_for_pdf(meta_dict['created'])
+        if created: new_metadata['/CreationDate'] = created
+        modified = format_date_for_pdf(meta_dict['modified'])
+        if modified: new_metadata['/ModDate'] = modified
+
+        writer.add_metadata(new_metadata)
+
+        if meta_dict['password']:
+            logger.info(f"Chiffrement activé pour {file_storage.filename}")
+            writer.encrypt(meta_dict['password'])
+
+        temp_meta = output_path + ".final"
+        with open(temp_meta, "wb") as f: writer.write(f)
+        shutil.move(temp_meta, output_path)
+
+        new_size = get_file_size_mb(output_path)
+        reduction = (1 - (new_size / original_size)) * 100
+        logger.info(f"Succès {file_storage.filename}: {original_size:.2f}MB -> {new_size:.2f}MB (-{reduction:.1f}%)")
+
+        return input_path, output_path, file_storage.filename
+
+    except Exception as e:
+        logger.error(f"Erreur sur {file_storage.filename}: {e}")
+        if os.path.exists(input_path): os.remove(input_path)
+        return None, None, None
 
         try:
             # 1. Sauvegarde et analyse initiale
@@ -246,7 +304,7 @@ def compress():
     files = request.files.getlist('file')
     if not files or files[0].filename == '': return jsonify({"error": "Aucun fichier sélectionné"}), 400
 
-    logger.info(f"Batch reçu", extra={"batch.count": len(files)})
+    logger.info(f"=== Début traitement de {len(files)} fichier(s) potentiels ===")
 
     compression_level = request.form.get('compression_level', 2)
     metadata_form = {
@@ -261,18 +319,15 @@ def compress():
     processed_files = []
     previews = None
 
-    # Boucle de traitement
-    for file in files:
-        # Filtrage extension
+    for i, file in enumerate(files):
         if not file.filename.lower().endswith('.pdf'):
-            logger.warning("Fichier ignoré", extra={"file.name": file.filename, "reason": "invalid_extension"})
+            logger.warning(f"Fichier ignoré (Type non supporté) : {file.filename}")
             continue
 
         in_p, out_p, name = process_single_pdf(file, compression_level, metadata_form)
 
         if out_p:
             processed_files.append((in_p, out_p, name))
-            # Génération preview pour le premier fichier valide uniquement
             if previews is None:
                 before_img = generate_preview_base64(in_p)
                 after_img = generate_preview_base64(out_p)
@@ -280,29 +335,25 @@ def compress():
                     previews = {"before": before_img, "after": after_img}
 
     if not processed_files:
-        return jsonify({"error": "Aucun fichier PDF valide traité."}), 500
+        return jsonify({"error": "Aucun fichier PDF valide n'a été traité."}), 500
 
     # Préparation du retour (Fichier unique ou ZIP)
     final_file_data = None
     final_file_name = ""
 
-    try:
-        if len(processed_files) == 1:
-            _, output_path, download_name = processed_files[0]
-            final_file_name = download_name
-            with open(output_path, "rb") as f:
-                final_file_data = base64.b64encode(f.read()).decode('utf-8')
-        else:
-            final_file_name = "documents_optimises.zip"
-            zip_buffer = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                for _, output_path, download_name in processed_files:
-                    zipf.write(output_path, download_name)
-            zip_buffer.seek(0)
-            final_file_data = base64.b64encode(zip_buffer.read()).decode('utf-8')
-    except Exception as e:
-        logger.error("Erreur préparation téléchargement", extra={"error": str(e)})
-        return jsonify({"error": "Erreur lors de la préparation du fichier final"}), 500
+    if len(processed_files) == 1:
+        _, output_path, download_name = processed_files[0]
+        final_file_name = download_name
+        with open(output_path, "rb") as f:
+            final_file_data = base64.b64encode(f.read()).decode('utf-8')
+    else:
+        final_file_name = "documents_optimises.zip"
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for _, output_path, download_name in processed_files:
+                zipf.write(output_path, download_name)
+        zip_buffer.seek(0)
+        final_file_data = base64.b64encode(zip_buffer.read()).decode('utf-8')
 
     # Nettoyage
     for in_p, out_p, _ in processed_files:
