@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import subprocess
+import tempfile
 import uuid
 import zipfile
 import logging
@@ -43,9 +44,9 @@ FlaskInstrumentor().instrument_app(app)
 
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # Limite 100MB
 
-UPLOAD_FOLDER = 'temp_uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+APP_TEMP_DIR = os.path.join(tempfile.gettempdir(), "pdf_compressor_app")
+if not os.path.exists(APP_TEMP_DIR):
+    os.makedirs(APP_TEMP_DIR)
 
 # --- CONFIGURATION LOGGING (JSON UNIFIÉ) ---
 class JSONFormatter(logging.Formatter):
@@ -101,6 +102,14 @@ logging.getLogger('werkzeug').setLevel(logging.WARNING)
 # Logger dédié à l'application
 logger = logging.getLogger("pdf_app")
 
+logger.info(
+    f"Dossier de travail temporaire: {APP_TEMP_DIR}",
+    extra={
+        "event.action": "startup",
+        "directory.path": APP_TEMP_DIR,
+        "os.temp_dir": tempfile.gettempdir()
+    }
+)
 
 # --- FONCTIONS UTILITAIRES ---
 def get_ghostscript_command():
@@ -143,8 +152,8 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
     input_filename = f"{unique_id}_{file_storage.filename}"
     output_filename = f"{unique_id}_processed_{file_storage.filename}"
 
-    input_path = os.path.join(UPLOAD_FOLDER, input_filename)
-    output_path = os.path.join(UPLOAD_FOLDER, output_filename)
+    input_path = os.path.join(APP_TEMP_DIR, input_filename)
+    output_path = os.path.join(APP_TEMP_DIR, output_filename)
 
     # Span OTel englobant le traitement d'un fichier
     with tracer.start_as_current_span("process_single_pdf") as span:
