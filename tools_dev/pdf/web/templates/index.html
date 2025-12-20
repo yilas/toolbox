@@ -6,7 +6,7 @@
     <title>Compresseur PDF Local Pro</title>
     <style>
       :root {
-        --primary-color: #4f46e5; /* Indigo */
+        --primary-color: #4f46e5;
         --primary-hover: #4338ca;
         --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         --card-bg: #ffffff;
@@ -112,7 +112,7 @@
       }
 
       .file-selected-name {
-        display: none; /* Hidden by default */
+        display: none;
         margin-top: 15px;
         padding: 10px 15px;
         background: #eef2ff;
@@ -124,6 +124,7 @@
       }
       .file-selected-name svg {
         margin-right: 8px;
+        flex-shrink: 0;
       }
 
       /* --- Form Elements Styles --- */
@@ -159,6 +160,12 @@
         transition: all 0.2s;
         color: var(--text-dark);
         background-color: #fff;
+      }
+
+      input:disabled {
+        background-color: #f3f4f6;
+        color: #9ca3af;
+        cursor: not-allowed;
       }
 
       input:focus,
@@ -251,8 +258,8 @@
   </head>
   <body>
     <div class="container">
-      <h1>Local PDF Compressor</h1>
-      <p class="subtitle">Optimisez vos documents en toute confidentialité.</p>
+      <h1>Compresseur PDF Local</h1>
+      <p class="subtitle">Optimisez un ou plusieurs documents simultanément.</p>
 
       <form
         action="/compress"
@@ -266,6 +273,7 @@
             name="file"
             id="file"
             accept=".pdf"
+            multiple
             required
             class="file-upload-input"
           />
@@ -275,7 +283,6 @@
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 stroke-linecap="round"
@@ -284,11 +291,9 @@
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               ></path>
             </svg>
-            <span class="file-upload-text"
-              >Cliquez pour sélectionner un PDF</span
-            >
+            <span class="file-upload-text">Sélectionner des PDF</span>
             <span class="file-upload-hint"
-              >ou glissez-déposez le fichier ici.</span
+              >Glissez-déposez ou cliquez (Selection multiple OK)</span
             >
           </label>
           <div id="file-selected-info" class="file-selected-name">
@@ -323,19 +328,15 @@
             Niveau de compression
           </label>
           <select name="compression_level" id="compression_level">
-            <option value="1">
-              Qualité Prépresse (Très haute, peu de gain)
-            </option>
-            <option value="2" selected>
-              Standard "Printer" (Recommandé - Excellent ratio)
-            </option>
-            <option value="3">Ebook (Fichier léger, qualité moyenne)</option>
-            <option value="4">Écran (Fichier très léger, basse qualité)</option>
+            <option value="1">Qualité Prépresse</option>
+            <option value="2" selected>Standard "Printer" (Recommandé)</option>
+            <option value="3">Ebook (Léger)</option>
+            <option value="4">Écran (Très léger)</option>
           </select>
         </div>
 
         <div class="divider"></div>
-        <h3 class="section-title">Métadonnées (Optionnel)</h3>
+        <h3 class="section-title">Métadonnées (Pour tous les fichiers)</h3>
 
         <div class="form-group">
           <label for="author" class="label-with-icon">
@@ -375,9 +376,7 @@
             id="title"
             placeholder="Laisser vide = Nom du fichier original"
           />
-          <p class="hint" id="title-hint">
-            Sera automatiquement rempli lors de la sélection du fichier.
-          </p>
+          <p class="hint" id="title-hint">Sera automatiquement rempli.</p>
         </div>
 
         <div class="form-group">
@@ -474,16 +473,13 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Traitement du PDF en cours...
+            Traitement en cours...
           </div>
         </div>
       </form>
     </div>
 
     <script>
-      // --- Logique JavaScript ---
-
-      // 1. Gestion de l'affichage du fichier sélectionné (UI custom)
       const fileInput = document.getElementById("file");
       const fileLabelContent = document.getElementById("file-label-content");
       const fileSelectedInfo = document.getElementById("file-selected-info");
@@ -491,25 +487,38 @@
       const titleInput = document.getElementById("title");
       const titleHint = document.getElementById("title-hint");
 
+      // Gestion sélection fichier(s)
       fileInput.addEventListener("change", function (e) {
         if (e.target.files.length > 0) {
-          const fileName = e.target.files[0].name;
-
-          // Mise à jour de l'UI d'upload
           fileLabelContent.style.display = "none";
-          filenameDisplay.textContent = fileName;
           fileSelectedInfo.style.display = "flex";
 
-          // Auto-remplissage du titre (sans extension)
-          const title = fileName.replace(/\.[^/.]+$/, "");
-          titleInput.value = title;
-          titleHint.textContent =
-            "Titre pré-rempli basé sur le nom du fichier.";
-          titleHint.style.color = "var(--primary-color)";
+          if (e.target.files.length === 1) {
+            // 1 seul fichier : comportement classique
+            const fileName = e.target.files[0].name;
+            filenameDisplay.textContent = fileName;
+
+            const title = fileName.replace(/\.[^/.]+$/, "");
+            titleInput.value = title;
+            titleInput.disabled = false;
+            titleHint.textContent = "Titre pré-rempli (modifiable).";
+          } else {
+            // Plusieurs fichiers
+            filenameDisplay.textContent =
+              e.target.files.length + " fichiers sélectionnés";
+
+            // On vide le titre et on désactive le champ pour éviter la confusion
+            titleInput.value = "";
+            titleInput.disabled = false; // On laisse le choix : si rempli, s'applique à tous.
+            titleInput.placeholder =
+              "Laisser vide pour garder les noms originaux";
+            titleHint.textContent =
+              "Si rempli, ce titre s'appliquera à TOUS les fichiers.";
+          }
         }
       });
 
-      // 2. Sauvegarde locale des préférences (Auteur, Sujet, Dates, Niveau)
+      // Persistence
       const persistentFields = [
         "compression_level",
         "author",
@@ -517,43 +526,33 @@
         "created_date",
         "modified_date",
       ];
-
-      // Au chargement : Restaurer
       document.addEventListener("DOMContentLoaded", () => {
         persistentFields.forEach((id) => {
           const storedValue = localStorage.getItem("pdf_tool_pro_" + id);
-          if (storedValue) {
-            document.getElementById(id).value = storedValue;
-          }
+          if (storedValue) document.getElementById(id).value = storedValue;
         });
       });
-
-      // Au changement : Sauvegarder
       persistentFields.forEach((id) => {
-        const element = document.getElementById(id);
-        element.addEventListener("input", (e) => {
+        document.getElementById(id).addEventListener("input", (e) => {
           localStorage.setItem("pdf_tool_pro_" + id, e.target.value);
         });
       });
 
-      // 3. Animation de chargement lors du submit
+      // Loading
       document.getElementById("pdfForm").addEventListener("submit", (e) => {
         const btn = document.getElementById("submitBtn");
         const loading = document.getElementById("loadingMsg");
-
         btn.disabled = true;
         btn.innerHTML = "Compression en cours...";
         btn.style.opacity = "0.8";
         loading.style.display = "block";
-
-        // Reset du bouton après un délai (le téléchargement devrait avoir démarré)
         setTimeout(() => {
           btn.disabled = false;
           btn.innerHTML =
             '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Compresser et Télécharger';
           btn.style.opacity = "1";
           loading.style.display = "none";
-        }, 4000);
+        }, 5000);
       });
     </script>
   </body>
