@@ -4,9 +4,22 @@ import shutil
 import subprocess
 import uuid
 import zipfile
+import logging # Module de logging
 from datetime import datetime
 from flask import Flask, render_template, request, send_file, after_this_request
 from pypdf import PdfReader, PdfWriter
+
+# --- CONFIGURATION LOGGING ---
+# Crée un logger qui écrit dans la console ET dans un fichier
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.FileHandler("activity.log", encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -31,29 +44,33 @@ def format_date_for_pdf(date_str):
         return f"D:{dt.strftime('%Y%m%d%H%M%S')}"
     except ValueError: return None
 
+def get_file_size_mb(path):
+    return os.path.getsize(path) / (1024 * 1024)
+
 def process_single_pdf(file_storage, compression_level, metadata_form):
-    """
-    Traite un fichier individuel et retourne le chemin du fichier compressé.
-    """
     unique_id = str(uuid.uuid4())
     input_filename = f"{unique_id}_{file_storage.filename}"
-    # Nom temporaire interne (on garde l'ID pour éviter les conflits serveur)
     output_filename = f"{unique_id}_processed_{file_storage.filename}"
 
     input_path = os.path.join(UPLOAD_FOLDER, input_filename)
     output_path = os.path.join(UPLOAD_FOLDER, output_filename)
 
-    # Sauvegarde temporaire
-    file_storage.save(input_path)
-
     try:
+        file_storage.save(input_path)
+        original_size = get_file_size_mb(input_path)
+        logger.info(f"Fichier reçu: {file_storage.filename} ({original_size:.2f} MB)")
+
         gs_executable = get_ghostscript_command()
-        if not gs_executable: raise Exception("Ghostscript non trouvé.")
+        if not gs_executable:
+            logger.error("Ghostscript introuvable")
+            raise Exception("Ghostscript non trouvé.")
 
         quality = {'0': '/default', '1': '/prepress', '2': '/printer', '3': '/ebook', '4': '/screen'}
         settings = quality.get(str(compression_level), '/printer')
 
-        # 1. Compression Ghostscript
+        logger.info(f"Démarrage compression (Niveau {compression_level}) pour {file_storage.filename}...")
+
+        # 1. Compression
         subprocess.run([
             gs_executable, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
             f"-dPDFSETTINGS={settings}", "-dNOPAUSE", "-dQUIET", "-dBATCH",
@@ -74,6 +91,7 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
         }
 
         if any(v for k, v in meta_dict.items()):
+            logger.info(f"Injection métadonnées pour {file_storage.filename}")
             reader = PdfReader(output_path)
             writer = PdfWriter()
             writer.append_pages_from_reader(reader)
@@ -98,18 +116,21 @@ def process_single_pdf(file_storage, compression_level, metadata_form):
             with open(temp_meta, "wb") as f: writer.write(f)
             shutil.move(temp_meta, output_path)
 
-        # --- MODIFICATION ICI ---
-        # Le 3ème argument est le nom du fichier tel que l'utilisateur le recevra.
-        # On renvoie file_storage.filename (le nom original).
+        # Stats finales
+        new_size = get_file_size_mb(output_path)
+        reduction = (1 - (new_size / original_size)) * 100
+        logger.info(f"Succès {file_storage.filename}: {original_size:.2f}MB -> {new_size:.2f}MB (-{reduction:.1f}%)")
+
         return input_path, output_path, file_storage.filename
 
     except Exception as e:
-        print(f"Erreur sur {file_storage.filename}: {e}")
+        logger.error(f"Erreur sur {file_storage.filename}: {e}")
         if os.path.exists(input_path): os.remove(input_path)
         return None, None, None
 
 @app.route('/')
 def index():
+    logger.info("Page d'accueil visitée")
     return render_template('index.html')
 
 @app.route('/compress', methods=['POST'])
@@ -118,6 +139,8 @@ def compress():
 
     files = request.files.getlist('file')
     if not files or files[0].filename == '': return "Aucun fichier sélectionné", 400
+
+    logger.info(f"Réception de {len(files)} fichier(s) à traiter.")
 
     compression_level = request.form.get('compression_level', 2)
     metadata_form = {
@@ -136,7 +159,8 @@ def compress():
             processed_files.append((in_p, out_p, name))
 
     if not processed_files:
-        return "Erreur lors du traitement des fichiers.", 500
+        logger.error("Aucun fichier n'a pu être traité correctement.")
+        return "Erreur lors du traitement.", 500
 
     @after_this_request
     def cleanup(response):
@@ -150,22 +174,23 @@ def compress():
                 zip_path = os.path.join(UPLOAD_FOLDER, "documents_optimises.zip")
                 if os.path.exists(zip_path): os.remove(zip_path)
             except: pass
+        logger.info("Nettoyage des fichiers temporaires terminé.")
         return response
 
-    # CAS 1 : Un seul fichier -> Renvoi avec le nom original
     if len(processed_files) == 1:
         _, output_path, download_name = processed_files[0]
+        logger.info(f"Envoi du fichier unique: {download_name}")
         return send_file(output_path, as_attachment=True, download_name=download_name)
-
-    # CAS 2 : Plusieurs fichiers -> Création d'un ZIP contenant les fichiers aux noms originaux
     else:
         zip_path = os.path.join(UPLOAD_FOLDER, "documents_optimises.zip")
+        logger.info("Création de l'archive ZIP pour envoi groupé.")
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for _, output_path, download_name in processed_files:
-                # download_name ici est le nom original
                 zipf.write(output_path, download_name)
 
         return send_file(zip_path, as_attachment=True, download_name="documents_optimises.zip")
 
 if __name__ == '__main__':
+    print("--- Serveur Démarré ---")
+    print("Logs disponibles dans le fichier 'activity.log'")
     app.run(debug=True, port=5000)

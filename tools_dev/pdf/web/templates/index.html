@@ -14,6 +14,8 @@
         --text-muted: #6b7280;
         --border-color: #e5e7eb;
         --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        --terminal-bg: #1e1e1e;
+        --terminal-text: #00ff00;
       }
 
       body {
@@ -62,7 +64,6 @@
         position: relative;
         margin-bottom: 25px;
       }
-
       .file-upload-input {
         position: absolute;
         left: 0;
@@ -73,7 +74,6 @@
         cursor: pointer;
         z-index: 2;
       }
-
       .file-upload-label {
         display: flex;
         flex-direction: column;
@@ -86,12 +86,10 @@
         transition: all 0.3s ease;
         text-align: center;
       }
-
       .file-upload-wrapper:hover .file-upload-label {
         border-color: var(--primary-color);
         background-color: #eef2ff;
       }
-
       .file-upload-icon {
         width: 48px;
         height: 48px;
@@ -99,18 +97,15 @@
         margin-bottom: 10px;
         opacity: 0.8;
       }
-
       .file-upload-text {
         font-weight: 600;
         color: var(--primary-color);
       }
-
       .file-upload-hint {
         font-size: 0.85rem;
         color: var(--text-muted);
         margin-top: 5px;
       }
-
       .file-selected-name {
         display: none;
         margin-top: 15px;
@@ -127,11 +122,10 @@
         flex-shrink: 0;
       }
 
-      /* --- Form Elements Styles --- */
+      /* --- Form Elements --- */
       .form-group {
         margin-bottom: 20px;
       }
-
       .label-with-icon {
         display: flex;
         align-items: center;
@@ -146,7 +140,6 @@
         margin-right: 8px;
         color: var(--text-muted);
       }
-
       input[type="text"],
       input[type="date"],
       input[type="datetime-local"],
@@ -161,20 +154,17 @@
         color: var(--text-dark);
         background-color: #fff;
       }
-
       input:disabled {
         background-color: #f3f4f6;
         color: #9ca3af;
         cursor: not-allowed;
       }
-
       input:focus,
       select:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: var(--focus-ring);
       }
-
       .divider {
         height: 1px;
         background: linear-gradient(
@@ -185,7 +175,6 @@
         );
         margin: 30px 0;
       }
-
       h3.section-title {
         color: var(--text-dark);
         font-weight: 700;
@@ -193,7 +182,7 @@
         font-size: 1.2rem;
       }
 
-      /* --- Button Styles --- */
+      /* --- Button --- */
       .submit-btn-container {
         margin-top: 35px;
       }
@@ -208,16 +197,15 @@
         font-weight: 700;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2),
-          0 2px 4px -1px rgba(79, 70, 229, 0.1);
         display: flex;
         justify-content: center;
         align-items: center;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2),
+          0 2px 4px -1px rgba(79, 70, 229, 0.1);
       }
       button svg {
         margin-right: 10px;
       }
-
       button:hover {
         background: linear-gradient(
           to right,
@@ -225,34 +213,53 @@
           var(--primary-color)
         );
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3),
-          0 4px 6px -2px rgba(79, 70, 229, 0.15);
       }
-      button:active {
-        transform: translateY(0);
-      }
-
-      .loading {
-        display: none;
-        text-align: center;
-        margin-top: 15px;
-        color: var(--primary-color);
-        font-weight: 600;
-      }
-      .loading svg {
-        animation: spin 1s linear infinite;
-        margin-right: 8px;
-      }
-      @keyframes spin {
-        100% {
-          transform: rotate(360deg);
-        }
+      button:disabled {
+        opacity: 0.7;
+        cursor: wait;
       }
 
-      .hint {
+      /* --- Terminal Log Box --- */
+      .terminal-container {
+        margin-top: 25px;
+        background-color: var(--terminal-bg);
+        border-radius: 8px;
+        padding: 15px;
+        font-family: "Courier New", Courier, monospace;
+        color: var(--terminal-text);
+        font-size: 0.85rem;
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid #333;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        display: none; /* Hidden by default */
+      }
+      .log-entry {
+        margin-bottom: 5px;
+      }
+      .log-entry.error {
+        color: #ff5555;
+      }
+      .log-entry.success {
+        color: #50fa7b;
+        font-weight: bold;
+      }
+      .log-time {
+        color: #888;
+        margin-right: 10px;
         font-size: 0.8em;
-        color: var(--text-muted);
-        margin-top: 6px;
+      }
+
+      /* Scrollbar custom for terminal */
+      .terminal-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      .terminal-container::-webkit-scrollbar-track {
+        background: #2a2a2a;
+      }
+      .terminal-container::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 4px;
       }
     </style>
   </head>
@@ -261,12 +268,7 @@
       <h1>Compresseur PDF Local</h1>
       <p class="subtitle">Optimisez un ou plusieurs documents simultanément.</p>
 
-      <form
-        action="/compress"
-        method="post"
-        enctype="multipart/form-data"
-        id="pdfForm"
-      >
+      <form id="pdfForm">
         <div class="file-upload-wrapper">
           <input
             type="file"
@@ -336,7 +338,7 @@
         </div>
 
         <div class="divider"></div>
-        <h3 class="section-title">Métadonnées (Pour tous les fichiers)</h3>
+        <h3 class="section-title">Métadonnées</h3>
 
         <div class="form-group">
           <label for="author" class="label-with-icon">
@@ -374,7 +376,7 @@
             type="text"
             name="title"
             id="title"
-            placeholder="Laisser vide = Nom du fichier original"
+            placeholder="Laisser vide pour garder les noms originaux"
           />
           <p class="hint" id="title-hint">Sera automatiquement rempli.</p>
         </div>
@@ -454,27 +456,8 @@
           </button>
         </div>
 
-        <div class="loading" id="loadingMsg">
-          <div
-            style="display: flex; align-items: center; justify-content: center"
-          >
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Traitement en cours...
-          </div>
+        <div id="terminal" class="terminal-container">
+          <div class="log-entry">> Prêt. En attente de fichier...</div>
         </div>
       </form>
     </div>
@@ -486,6 +469,20 @@
       const filenameDisplay = document.getElementById("filename-display");
       const titleInput = document.getElementById("title");
       const titleHint = document.getElementById("title-hint");
+      const terminal = document.getElementById("terminal");
+
+      // --- Logging Function ---
+      function log(message, type = "normal") {
+        terminal.style.display = "block";
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+
+        const div = document.createElement("div");
+        div.className = `log-entry ${type}`;
+        div.innerHTML = `<span class="log-time">[${timeStr}]</span> ${message}`;
+        terminal.appendChild(div);
+        terminal.scrollTop = terminal.scrollHeight; // Auto scroll
+      }
 
       // Gestion sélection fichier(s)
       fileInput.addEventListener("change", function (e) {
@@ -494,31 +491,28 @@
           fileSelectedInfo.style.display = "flex";
 
           if (e.target.files.length === 1) {
-            // 1 seul fichier : comportement classique
             const fileName = e.target.files[0].name;
             filenameDisplay.textContent = fileName;
-
             const title = fileName.replace(/\.[^/.]+$/, "");
             titleInput.value = title;
             titleInput.disabled = false;
             titleHint.textContent = "Titre pré-rempli (modifiable).";
+            log(`Fichier sélectionné : ${fileName}`);
           } else {
-            // Plusieurs fichiers
             filenameDisplay.textContent =
               e.target.files.length + " fichiers sélectionnés";
-
-            // On vide le titre et on désactive le champ pour éviter la confusion
             titleInput.value = "";
-            titleInput.disabled = false; // On laisse le choix : si rempli, s'applique à tous.
+            titleInput.disabled = false;
             titleInput.placeholder =
               "Laisser vide pour garder les noms originaux";
             titleHint.textContent =
               "Si rempli, ce titre s'appliquera à TOUS les fichiers.";
+            log(`${e.target.files.length} fichiers sélectionnés.`);
           }
         }
       });
 
-      // Persistence
+      // Persistence des champs
       const persistentFields = [
         "compression_level",
         "author",
@@ -538,22 +532,89 @@
         });
       });
 
-      // Loading
-      document.getElementById("pdfForm").addEventListener("submit", (e) => {
-        const btn = document.getElementById("submitBtn");
-        const loading = document.getElementById("loadingMsg");
-        btn.disabled = true;
-        btn.innerHTML = "Compression en cours...";
-        btn.style.opacity = "0.8";
-        loading.style.display = "block";
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML =
-            '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Compresser et Télécharger';
-          btn.style.opacity = "1";
-          loading.style.display = "none";
-        }, 5000);
-      });
+      // --- AJAX SUBMISSION WITH LOGS ---
+      document
+        .getElementById("pdfForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault(); // On stoppe le POST classique
+
+          const btn = document.getElementById("submitBtn");
+          const formData = new FormData(this);
+          const xhr = new XMLHttpRequest();
+
+          btn.disabled = true;
+          btn.innerHTML = "Traitement...";
+          log("Début du téléchargement vers le serveur...", "normal");
+
+          // Barre de progression (Upload)
+          xhr.upload.onprogress = function (e) {
+            if (e.lengthComputable) {
+              const percentComplete = (e.loaded / e.total) * 100;
+              if (percentComplete < 100) {
+                // On pourrait afficher une barre, ici on log tous les 20%
+                if (Math.round(percentComplete) % 20 === 0) {
+                  log(`Upload en cours : ${Math.round(percentComplete)}%`);
+                }
+              } else {
+                log(
+                  "Upload terminé. Traitement Ghostscript en cours (patientez)..."
+                );
+              }
+            }
+          };
+
+          xhr.open("POST", "/compress", true);
+          xhr.responseType = "blob"; // On attend un fichier binaire
+
+          xhr.onload = function () {
+            if (this.status === 200) {
+              log("Succès ! Le serveur a renvoyé le fichier.", "success");
+
+              // Création du lien de téléchargement virtuel
+              const blob = this.response;
+
+              // Tentative de récupération du vrai nom de fichier depuis les headers
+              let fileName = "document_optimise.pdf";
+              const disposition = xhr.getResponseHeader("Content-Disposition");
+              if (disposition && disposition.indexOf("attachment") !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) {
+                  fileName = matches[1].replace(/['"]/g, "");
+                }
+              }
+
+              log(`Téléchargement lancé : ${fileName}`, "success");
+
+              const downloadUrl = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = downloadUrl;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => {
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+              }, 100);
+
+              btn.disabled = false;
+              btn.innerHTML =
+                '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Compresser et Télécharger';
+            } else {
+              log("Erreur serveur. Vérifiez les logs backend.", "error");
+              btn.disabled = false;
+              btn.innerHTML = "Réessayer";
+            }
+          };
+
+          xhr.onerror = function () {
+            log("Erreur réseau critique.", "error");
+            btn.disabled = false;
+            btn.innerHTML = "Réessayer";
+          };
+
+          xhr.send(formData);
+        });
     </script>
   </body>
 </html>
