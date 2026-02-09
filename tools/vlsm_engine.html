@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VLSM Professional Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: #020617;
+        color: #e2e8f0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .glass {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(51, 65, 85, 0.5);
+      }
+      .progress-bar {
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      input,
+      select {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        color: white !important;
+      }
+      .node-row:hover {
+        background: rgba(30, 41, 59, 0.5);
+      }
+    </style>
+  </head>
+  <body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+      <header
+        class="flex justify-between items-end mb-8 border-b border-slate-800 pb-6"
+      >
+        <div>
+          <h1 class="text-3xl font-black tracking-tighter text-white">
+            VLSM <span class="text-blue-500">ENGINE</span>
+          </h1>
+          <p class="text-slate-500 text-sm mt-1">
+            Allocation dynamique de masques variables et détection de collision
+          </p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs font-bold text-slate-500 uppercase"
+            >Statut du bloc</span
+          >
+          <div class="text-2xl font-mono" id="utilizationPercent">0%</div>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-12 gap-8">
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+          <section class="glass p-6 rounded-2xl">
+            <h2
+              class="text-sm font-bold uppercase text-blue-400 mb-4 tracking-widest"
+            >
+              1. Bloc Parent
+            </h2>
+            <input
+              type="text"
+              id="parentCidr"
+              value="10.0.0.0/20"
+              class="w-full rounded-xl px-4 py-3 font-mono text-lg outline-none focus:ring-2 focus:ring-blue-500 transition"
+              onchange="updateLayout()"
+            />
+            <div class="mt-2 text-[10px] text-slate-500 flex justify-between">
+              <span>CAPACITÉ TOTALE :</span>
+              <span id="totalCapacity" class="font-mono text-slate-300">-</span>
+            </div>
+          </section>
+
+          <section class="glass p-6 rounded-2xl">
+            <h2
+              class="text-sm font-bold uppercase text-emerald-400 mb-4 tracking-widest"
+            >
+              2. Ajouter des besoins
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <label class="text-xs text-slate-500 block mb-1"
+                  >Nom du Subnet (ex: DMZ, LAN...)</label
+                >
+                <input
+                  type="text"
+                  id="newSubnetName"
+                  placeholder="Application Tier"
+                  class="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs text-slate-500 block mb-1"
+                    >Taille</label
+                  >
+                  <select
+                    id="newSubnetMask"
+                    class="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                  ></select>
+                </div>
+                <div class="flex items-end">
+                  <button
+                    onclick="addSubnet()"
+                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-sm transition shadow-lg shadow-blue-900/20"
+                  >
+                    AJOUTER
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div
+            class="p-4 bg-blue-900/10 border border-blue-500/20 rounded-xl text-xs text-blue-300 leading-relaxed"
+          >
+            <strong>Note Pro :</strong> Le moteur trie automatiquement vos
+            entrées par taille décroissante. C'est la méthode standard pour
+            minimiser la fragmentation de l'espace d'adressage (RFC 1219).
+          </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-8 space-y-6">
+          <div
+            class="glass p-2 rounded-full overflow-hidden flex h-8 w-full border-slate-700"
+          >
+            <div
+              id="usageVisual"
+              class="h-full flex rounded-full overflow-hidden w-full bg-slate-800"
+            ></div>
+          </div>
+
+          <div class="glass rounded-2xl overflow-hidden">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-800/50">
+                  <th class="p-4 text-xs font-bold text-slate-400 uppercase">
+                    Nom
+                  </th>
+                  <th class="p-4 text-xs font-bold text-slate-400 uppercase">
+                    Network / CIDR
+                  </th>
+                  <th class="p-4 text-xs font-bold text-slate-400 uppercase">
+                    Range Hôtes
+                  </th>
+                  <th
+                    class="p-4 text-xs font-bold text-slate-400 uppercase text-right"
+                  >
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="subnetTable" class="divide-y divide-slate-800"></tbody>
+            </table>
+            <div id="emptyState" class="p-12 text-center text-slate-600 italic">
+              Aucun sous-réseau défini. Commencez par en ajouter un.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let subnets = [];
+
+      function ip2int(ip) {
+        return (
+          ip
+            .split(".")
+            .reduce((res, octet) => (res << 8) + parseInt(octet, 10), 0) >>> 0
+        );
+      }
+
+      function int2ip(int) {
+        return [
+          (int >>> 24) & 0xff,
+          (int >>> 16) & 0xff,
+          (int >>> 8) & 0xff,
+          int & 0xff,
+        ].join(".");
+      }
+
+      function init() {
+        const select = document.getElementById("newSubnetMask");
+        for (let i = 16; i <= 31; i++) {
+          let opt = new Option(`/${i} (${Math.pow(2, 32 - i)} IPs)`, i);
+          if (i === 24) opt.selected = true;
+          select.add(opt);
+        }
+        updateLayout();
+      }
+
+      function addSubnet() {
+        const name =
+          document.getElementById("newSubnetName").value ||
+          `Subnet ${subnets.length + 1}`;
+        const mask = parseInt(document.getElementById("newSubnetMask").value);
+
+        subnets.push({ name, mask, id: Date.now() });
+        document.getElementById("newSubnetName").value = "";
+        updateLayout();
+      }
+
+      function removeSubnet(id) {
+        subnets = subnets.filter((s) => s.id !== id);
+        updateLayout();
+      }
+
+      function updateLayout() {
+        const parentInput = document.getElementById("parentCidr").value;
+        if (!parentInput.includes("/")) return;
+
+        const [baseIp, parentMask] = parentInput.split("/");
+        const parentMaskInt = parseInt(parentMask);
+        const parentSize = Math.pow(2, 32 - parentMaskInt);
+        const parentStartInt = ip2int(baseIp) & (-1 << (32 - parentMaskInt));
+
+        document.getElementById("totalCapacity").innerText =
+          `${parentSize} IPs`;
+
+        // TRI PAR TAILLE (Indispensable pour VLSM)
+        subnets.sort((a, b) => a.mask - b.mask);
+
+        const tbody = document.getElementById("subnetTable");
+        const visual = document.getElementById("usageVisual");
+        tbody.innerHTML = "";
+        visual.innerHTML = "";
+
+        let currentPointer = parentStartInt;
+        let totalUsed = 0;
+
+        subnets.forEach((s, index) => {
+          const sSize = Math.pow(2, 32 - s.mask);
+
+          // Alignement sur la frontière du masque (Boundary Alignment)
+          if (currentPointer % sSize !== 0) {
+            currentPointer = (Math.floor(currentPointer / sSize) + 1) * sSize;
+          }
+
+          const sNet = currentPointer;
+          const sBroadcast = sNet + sSize - 1;
+          const isOverLimit = sBroadcast > parentStartInt + parentSize - 1;
+
+          // UI Table Row
+          const tr = document.createElement("tr");
+          tr.className = `node-row transition ${isOverLimit ? "bg-red-900/20" : ""}`;
+          tr.innerHTML = `
+                    <td class="p-4">
+                        <span class="block font-bold text-white">${s.name}</span>
+                        <span class="text-[10px] text-slate-500">Taille: ${sSize} IPs</span>
+                    </td>
+                    <td class="p-4 font-mono">
+                        <span class="${isOverLimit ? "text-red-400" : "text-blue-400"}">${int2ip(sNet)}/${s.mask}</span>
+                    </td>
+                    <td class="p-4 font-mono text-xs text-slate-400">
+                        ${int2ip(sNet + 1)} <span class="text-slate-600">-></span> ${int2ip(sBroadcast - 1)}
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="removeSubnet(${s.id})" class="text-slate-500 hover:text-red-400 transition">✕</button>
+                    </td>
+                `;
+          tbody.appendChild(tr);
+
+          // UI Visual segment
+          if (!isOverLimit) {
+            const segment = document.createElement("div");
+            segment.style.width = `${(sSize / parentSize) * 100}%`;
+            segment.className = `h-full border-r border-black/20 ${["bg-blue-500", "bg-emerald-500", "bg-indigo-500", "bg-cyan-500"][index % 4]}`;
+            segment.title = `${s.name}: ${sSize} IPs`;
+            visual.appendChild(segment);
+            totalUsed += sSize;
+          }
+
+          currentPointer = sBroadcast + 1;
+        });
+
+        const percent = ((totalUsed / parentSize) * 100).toFixed(1);
+        document.getElementById("utilizationPercent").innerText = `${percent}%`;
+        document.getElementById("utilizationPercent").className =
+          `text-2xl font-mono ${percent > 100 ? "text-red-500" : "text-emerald-400"}`;
+        document
+          .getElementById("emptyState")
+          .classList.toggle("hidden", subnets.length > 0);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
