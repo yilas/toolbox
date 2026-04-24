@@ -215,8 +215,8 @@
         const select = document.getElementById("savedNetworks");
         select.innerHTML = '<option value="">-- Réseaux mémorisés --</option>';
         Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith("inventory_")) {
-            const net = key.replace("inventory_", "");
+          if (key.startsWith("snet_calc_inventory_")) {
+            const net = key.replace("snet_calc_inventory_", "");
             const opt = document.createElement("option");
             opt.value = net;
             opt.textContent = net;
@@ -234,7 +234,7 @@
       // --- Logique de stockage ---
       function getStorageKey() {
         const input = document.getElementById("networkInput").value.trim();
-        return input ? `inventory_${input}` : null;
+        return input ? `snet_calc_inventory_${input}` : null;
       }
 
       function getSavedData() {
@@ -333,7 +333,7 @@
         const errorDiv = document.getElementById("errorLog");
 
         if (!input) return;
-        localStorage.setItem("last_active_network", input);
+        localStorage.setItem("snet_calc_last_active_network", input);
 
         const parts = input.split("/");
         if (parts.length !== 2) {
@@ -388,7 +388,7 @@
 
       window.onload = () => {
         refreshHistoryDropdown();
-        const last = localStorage.getItem("last_active_network");
+        const last = localStorage.getItem("snet_calc_last_active_network");
         if (last) {
           document.getElementById("networkInput").value = last;
           document.getElementById("savedNetworks").value = last;
