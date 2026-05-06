@@ -148,6 +148,24 @@
         margin-bottom: 15px;
         font-weight: bold;
       }
+      .network-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 12px 16px;
+        background: #eaf4fb;
+        border: 1px solid #aed6f1;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-family: monospace;
+      }
+      .summary-item {
+        font-size: 0.95em;
+        color: #1a5276;
+      }
+      .summary-item strong {
+        color: #333;
+      }
     </style>
   </head>
   <body>
@@ -174,6 +192,7 @@
       </div>
 
       <div id="errorLog" class="error"></div>
+      <div id="networkInfo"></div>
       <div id="results"></div>
     </div>
 
@@ -338,6 +357,7 @@
         const parts = input.split("/");
         if (parts.length !== 2) {
           errorDiv.textContent = "Format invalide.";
+          document.getElementById("networkInfo").innerHTML = "";
           return;
         }
 
@@ -348,6 +368,17 @@
         const baseInt = ipToInt(parts[0]);
         const networkStart = (baseInt & (0xffffffff << (32 - baseMask))) >>> 0;
         const totalIPs = Math.pow(2, 32 - baseMask);
+        const networkEnd = networkStart + totalIPs - 1;
+
+        const fmt = (n) => n.toLocaleString("fr-FR");
+        document.getElementById("networkInfo").innerHTML = `
+          <div class="network-summary">
+            <span class="summary-item"><strong>Réseau :</strong> ${intToIp(networkStart)}/${baseMask}</span>
+            <span class="summary-item"><strong>Première adresse :</strong> ${intToIp(networkStart)}</span>
+            <span class="summary-item"><strong>Dernière adresse :</strong> ${intToIp(networkEnd)}</span>
+            <span class="summary-item"><strong>Total IPs :</strong> ${fmt(totalIPs)}</span>
+          </div>
+        `;
 
         // Générer les filtres pour les masques cibles
         generateFilterCheckboxes(baseMask + 1, 30);
@@ -360,7 +391,7 @@
           const block = document.createElement("div");
           block.className = "mask-block";
           block.id = `block-mask-${targetMask}`;
-          block.innerHTML = `<div class="mask-header">Masque /${targetMask} <span class="mask-info">${count} sous-réseaux</span></div>`;
+          block.innerHTML = `<div class="mask-header">Masque /${targetMask} <span class="mask-info">${count} sous-réseau${count > 1 ? "x" : ""} &nbsp;·&nbsp; ${fmt(subnetSize)} IPs/sous-réseau</span></div>`;
 
           const grid = document.createElement("div");
           grid.className = "grid";
