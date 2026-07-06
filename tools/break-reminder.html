@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏃 Break Reminder – Rappel de pause active</title>
+  <style>
+    /* ---------- Base / thème aligné sur le portail ---------- */
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #1a1a1a;
+    }
+    header {
+      background-color: #0a66c2;
+      color: white;
+      padding: 24px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    main {
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    /* ---------- Carte principale ---------- */
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 32px;
+      text-align: center;
+      border-top: 6px solid #0a66c2;
+    }
+
+    /* Décompte géant */
+    #countdown {
+      font-size: 72px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 2px;
+      margin: 10px 0 4px;
+      color: #0a66c2;
+    }
+    #status-line {
+      color: #666;
+      font-size: 14px;
+      min-height: 20px;
+      margin-bottom: 24px;
+    }
+
+    /* ---------- Boutons ---------- */
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: transform .1s ease, background .2s ease, opacity .2s ease;
+    }
+    button:active { transform: scale(0.97); }
+
+    .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      padding: 12px 22px;
+      font-size: 15px;
+      background: #0a66c2;
+      color: white;
+    }
+    .btn.secondary { background: #e2e8f0; color: #1a1a1a; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ---------- Réglages ---------- */
+    .settings {
+      margin-top: 26px;
+      padding-top: 22px;
+      border-top: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: left;
+      font-size: 14px;
+    }
+    .setting-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .setting-line input[type="number"] { width: 80px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+
+    /* Interrupteur (toggle) */
+    .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: #ccc; border-radius: 26px; transition: .2s; }
+    .slider::before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .slider { background: #0a66c2; }
+    .switch input:checked + .slider::before { transform: translateX(22px); }
+
+    /* ---------- Compteur / Streak ---------- */
+    .stats { display: flex; gap: 16px; justify-content: center; margin: 4px 0 24px; }
+    .stat-box { background: #f4f6f8; border-radius: 10px; padding: 12px 20px; min-width: 96px; }
+    .stat-box .num { font-size: 30px; font-weight: 700; color: #0a66c2; }
+    .stat-box .lbl { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ---------- Overlay Hardcore ---------- */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 30, 60, 0.82);
+      backdrop-filter: blur(4px);
+      display: none;               /* affiché en flex par JS */
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      animation: fadeIn .25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #overlay .panel {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 32px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+    #overlay h1 { font-size: 30px; margin: 0 0 8px; color: #d32f2f; }
+    #overlay p { color: #555; margin: 0 0 24px; }
+
+    #standup-btn {
+      background: #2e7d32;
+      color: white;
+      font-size: 22px;
+      padding: 20px 30px;
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    footer { text-align: center; padding: 24px; font-size: 13px; color: #999; }
+    .hint { font-size: 12px; color: #999; }
+  </style>
+</head>
+<body>
+  <header>🏃 Break Reminder – Rappel de pause active</header>
+
+  <main>
+    <div class="card">
+      <!-- Décompte principal -->
+      <div id="countdown">60:00</div>
+      <div id="status-line">Prêt à bosser. Le rappel se déclenchera à zéro.</div>
+
+      <!-- Statistiques / Streak -->
+      <div class="stats">
+        <div class="stat-box">
+          <div class="num" id="streak-val">0</div>
+          <div class="lbl">Streak 🔥</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="total-val">0</div>
+          <div class="lbl">Total pauses</div>
+        </div>
+      </div>
+
+      <!-- Contrôles -->
+      <div class="btn-row">
+        <button class="btn" id="start-btn">▶️ Démarrer</button>
+        <button class="btn secondary" id="pause-btn" disabled>⏸️ Pause</button>
+        <button class="btn secondary" id="reset-btn">🔄 Réinitialiser</button>
+      </div>
+
+      <!-- Réglages -->
+      <div class="settings">
+        <div class="setting-line">
+          <label for="minutes-input">⏱️ Intervalle (minutes)</label>
+          <input type="number" id="minutes-input" min="1" max="240" value="60">
+        </div>
+        <div class="setting-line">
+          <label for="hardcore-toggle">💪 Mode Hardcore (blocage écran obligatoire)</label>
+          <label class="switch">
+            <input type="checkbox" id="hardcore-toggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-line">
+          <label for="alert-toggle">🔔 Alertes hors navigateur (notif + son + onglet clignotant)</label>
+          <label class="switch">
+            <input type="checkbox" id="alert-toggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p class="hint">Les alertes hors navigateur permettent d'être prévenu même si tu travailles dans une autre appli. Un navigateur ne peut pas forcer le passage au premier plan : clique la notification système pour revenir sur la page.</p>
+      </div>
+    </div>
+
+    <footer>Reste actif, ménage ton dos. 🪑➡️🧍</footer>
+  </main>
+
+  <!-- ======================= OVERLAY HARDCORE ======================= -->
+  <div id="overlay">
+    <div class="panel">
+      <h1 id="overlay-title">🚨 LÈVE TES FESSES !</h1>
+      <p id="overlay-sub">Ça fait assez longtemps que tu es collé à cette chaise.</p>
+      <button id="standup-btn">🧍 Je suis debout !</button>
+    </div>
+  </div>
+
+  <script>
+  /* =====================================================================
+     BREAK REMINDER — logique complète (Vanilla JS, zéro dépendance)
+     ===================================================================== */
+
+  // ---- Clés LocalStorage (préfixe pour éviter les collisions dans le portail)
+  const LS_STREAK   = 'breakReminder.streak';
+  const LS_TOTAL    = 'breakReminder.total';
+  const LS_MINUTES  = 'breakReminder.minutes';
+  const LS_HARDCORE = 'breakReminder.hardcore';
+  const LS_ALERTS   = 'breakReminder.alerts';
+
+  // ---- Banque de messages piquants (aléatoires)
+  const TAUNTS = [
+    "🚨 LÈVE TES FESSES !",
+    "🪑 La chaise n'est pas ton amie.",
+    "🧍 Debout, feignant !",
+    "🔥 Ton dos te dit merci d'avance.",
+    "🚶 On bouge, on ne discute pas."
+  ];
+
+  // ---- Récupération des éléments du DOM
+  const el = {
+    countdown:   document.getElementById('countdown'),
+    status:      document.getElementById('status-line'),
+    streak:      document.getElementById('streak-val'),
+    total:       document.getElementById('total-val'),
+    start:       document.getElementById('start-btn'),
+    pause:       document.getElementById('pause-btn'),
+    reset:       document.getElementById('reset-btn'),
+    minutes:     document.getElementById('minutes-input'),
+    hardcore:    document.getElementById('hardcore-toggle'),
+    alerts:      document.getElementById('alert-toggle'),
+    overlay:     document.getElementById('overlay'),
+    overlayTitle:document.getElementById('overlay-title'),
+    standup:     document.getElementById('standup-btn'),
+  };
+
+  // ---- État applicatif
+  let remaining   = 0;        // secondes restantes avant la pause
+  let mainTimer   = null;     // handle setInterval du décompte principal
+  let running     = false;
+  let titleFlash  = null;     // handle du clignotement du titre d'onglet
+  const BASE_TITLE = document.title;
+
+  /* ---------------------------------------------------------------
+     Utilitaires
+  --------------------------------------------------------------- */
+  const fmt = (totalSec) => {
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  // Durée configurée (minutes de l'input)
+  function configuredSeconds() {
+    const min = Math.max(1, parseInt(el.minutes.value, 10) || 60);
+    return min * 60;
+  }
+
+  /* ---------------------------------------------------------------
+     Alertes hors navigateur : son + notif système + titre clignotant
+  --------------------------------------------------------------- */
+  // Bip sonore généré à la volée (aucun fichier audio nécessaire)
+  function playBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      // 3 bips courts
+      [0, 0.25, 0.5].forEach(t => {
+        gain.gain.setValueAtTime(0.15, ctx.currentTime + t);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + t + 0.15);
+      });
+      osc.start();
+      osc.stop(ctx.currentTime + 0.7);
+    } catch (e) { /* audio indisponible : on ignore */ }
+  }
+
+  // Fait clignoter le titre de l'onglet pour attirer l'œil dans la barre des tâches
+  function startTitleFlash(msg) {
+    stopTitleFlash();
+    let on = false;
+    titleFlash = setInterval(() => {
+      document.title = on ? BASE_TITLE : msg;
+      on = !on;
+    }, 800);
+  }
+  function stopTitleFlash() {
+    clearInterval(titleFlash);
+    titleFlash = null;
+    document.title = BASE_TITLE;
+  }
+
+  // Notification système (cliquable pour revenir sur la fenêtre)
+  function fireNotification(title) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const n = new Notification(title, {
+      body: 'Clique ici pour revenir et valider ta pause.',
+      requireInteraction: true   // reste affichée jusqu'à interaction
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  }
+
+  // Déclenche toutes les alertes activées
+  function fireAlerts(msg) {
+    if (!el.alerts.checked) return;
+    playBeep();
+    fireNotification(msg);
+    startTitleFlash('🚨 PAUSE !');
+  }
+
+  /* ---------------------------------------------------------------
+     Persistance (LocalStorage)
+  --------------------------------------------------------------- */
+  function loadState() {
+    el.streak.textContent = localStorage.getItem(LS_STREAK) || 0;
+    el.total.textContent  = localStorage.getItem(LS_TOTAL)  || 0;
+
+    const savedMin = localStorage.getItem(LS_MINUTES);
+    if (savedMin) el.minutes.value = savedMin;
+
+    const savedHardcore = localStorage.getItem(LS_HARDCORE);
+    if (savedHardcore !== null) el.hardcore.checked = savedHardcore === 'true';
+
+    const savedAlerts = localStorage.getItem(LS_ALERTS);
+    if (savedAlerts !== null) el.alerts.checked = savedAlerts === 'true';
+  }
+
+  function saveSettings() {
+    localStorage.setItem(LS_MINUTES, el.minutes.value);
+    localStorage.setItem(LS_HARDCORE, el.hardcore.checked);
+    localStorage.setItem(LS_ALERTS, el.alerts.checked);
+  }
+
+  // Valide une pause : +1 au streak et au total
+  function validateBreak() {
+    const streak = (parseInt(localStorage.getItem(LS_STREAK), 10) || 0) + 1;
+    const total  = (parseInt(localStorage.getItem(LS_TOTAL), 10)  || 0) + 1;
+    localStorage.setItem(LS_STREAK, streak);
+    localStorage.setItem(LS_TOTAL, total);
+    el.streak.textContent = streak;
+    el.total.textContent  = total;
+  }
+
+  /* ---------------------------------------------------------------
+     Décompte principal
+  --------------------------------------------------------------- */
+  function tick() {
+    remaining--;
+    el.countdown.textContent = fmt(Math.max(0, remaining));
+    if (remaining <= 0) {
+      stopMainTimer();
+      triggerBreak();
+    }
+  }
+
+  function startTimer() {
+    if (running) return;
+    remaining = (remaining > 0 && el.countdown.textContent !== '00:00')
+      ? remaining          // reprise après pause
+      : configuredSeconds(); // nouveau cycle
+    running = true;
+    el.countdown.textContent = fmt(remaining);
+    el.status.textContent = '⏳ Le compte à rebours tourne. Concentre-toi !';
+    el.start.disabled = true;
+    el.pause.disabled = false;
+    mainTimer = setInterval(tick, 1000);
+  }
+
+  function pauseTimer() {
+    stopMainTimer();
+    el.status.textContent = '⏸️ En pause. Clique « Démarrer » pour reprendre.';
+  }
+
+  function stopMainTimer() {
+    clearInterval(mainTimer);
+    mainTimer = null;
+    running = false;
+    el.start.disabled = false;
+    el.pause.disabled = true;
+  }
+
+  function resetTimer() {
+    stopMainTimer();
+    remaining = configuredSeconds();
+    el.countdown.textContent = fmt(remaining);
+    el.status.textContent = 'Réinitialisé. Prêt à repartir.';
+  }
+
+  /* ---------------------------------------------------------------
+     Déclenchement de la pause (overlay + alertes)
+  --------------------------------------------------------------- */
+  function triggerBreak() {
+    const taunt = rand(TAUNTS);
+    fireAlerts(taunt);   // son + notif + titre clignotant (si activés)
+
+    if (!el.hardcore.checked) {
+      // Mode doux : on valide direct et on relance un cycle
+      validateBreak();
+      el.status.textContent = '✅ Rappel (mode doux). Nouveau cycle lancé.';
+      remaining = configuredSeconds();
+      startTimer();
+      return;
+    }
+
+    // ----- Mode Hardcore : overlay bloquant -----
+    el.overlayTitle.textContent = taunt;
+    el.overlay.style.display = 'flex';
+  }
+
+  // Clic sur « Je suis debout » : on valide, on ferme, on relance
+  function confirmStandUp() {
+    stopTitleFlash();
+    el.overlay.style.display = 'none';
+    validateBreak();
+    el.status.textContent = '💪 Bien joué ! Streak +1. Nouveau cycle lancé.';
+    remaining = configuredSeconds();
+    startTimer();
+  }
+
+  /* ---------------------------------------------------------------
+     Câblage des événements
+  --------------------------------------------------------------- */
+  el.start.addEventListener('click', startTimer);
+  el.pause.addEventListener('click', pauseTimer);
+  el.reset.addEventListener('click', resetTimer);
+  el.standup.addEventListener('click', confirmStandUp);
+
+  el.minutes.addEventListener('change', () => { saveSettings(); if (!running) resetTimer(); });
+  el.hardcore.addEventListener('change', saveSettings);
+  el.alerts.addEventListener('change', () => {
+    saveSettings();
+    // Demande l'autorisation de notifs dès qu'on active les alertes
+    if (el.alerts.checked && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  });
+
+  // Quand l'utilisateur revient sur l'onglet, on arrête le clignotement du titre
+  window.addEventListener('focus', stopTitleFlash);
+
+  // Demande (non bloquante) l'autorisation de notifications au chargement
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  /* ---------------------------------------------------------------
+     Initialisation
+  --------------------------------------------------------------- */
+  loadState();
+  resetTimer();
+  </script>
+</body>
+</html>
