@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Subnets calculator</title>
+  <title>Subnets calculator - Dual View</title>
   <style>
     body {
       font-family:
@@ -32,7 +32,7 @@
       display: flex;
       flex-direction: column;
       gap: 15px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       padding-bottom: 20px;
       border-bottom: 2px solid #eee;
     }
@@ -97,7 +97,39 @@
       background-color: #2ecc71;
     }
 
-    /* Filtres de masques */
+    /* --- Système d'onglets --- */
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    .tab-btn {
+      background-color: #ecf0f1;
+      color: #2c3e50;
+      border: none;
+      padding: 10px 25px;
+      font-size: 15px;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tab-btn:hover {
+      background-color: #d5dbdb;
+    }
+
+    .tab-btn.active {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .view-section.hidden {
+      display: none;
+    }
+
+    /* --- Filtres de masques (Vue Grille) --- */
     .filter-group {
       display: flex;
       flex-wrap: wrap;
@@ -108,6 +140,7 @@
       padding: 10px;
       border-radius: 4px;
       border: 1px solid #eee;
+      margin-bottom: 15px;
     }
 
     .filter-item {
@@ -175,26 +208,25 @@
       gap: 8px;
     }
 
-    /* 1. MASTER : Réseau directement coché */
-    .network-item.master-checked {
+    /* --- États visuels (Partagés Grille & Arbre) --- */
+    .network-item.master-checked,
+    .tree-row-master {
       border: 2px solid #111 !important;
       font-weight: bold;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
-    /* 2. ENFANT (Hérité) : Inclus dans un Master coché */
-    .network-item.inherited {
+    .network-item.inherited,
+    .tree-row-inherited {
       border: 1px dashed #555 !important;
       opacity: 0.65;
     }
 
-    /* 3. PARENT PARTIEL : Contient au moins un enfant coché (< 100%) */
     .network-item.partially-occupied {
       border: 1px dashed #e67e22 !important;
       background-color: #fef5e7 !important;
     }
 
-    /* 4. PARENT COMPLET : 100% de ses sous-réseaux sont occupés */
     .network-item.fully-occupied {
       border: 1px solid #7f8c8d !important;
       background-color: #eaeded !important;
@@ -221,7 +253,7 @@
       white-space: nowrap;
     }
 
-    /* EFFETS DE SURVOL ET HIGHLIGHT */
+    /* Effets de survol */
     .network-item.highlight-target {
       outline: 3px solid #2980b9 !important;
       transform: scale(1.02);
@@ -262,6 +294,84 @@
     .summary-item strong {
       color: #333;
     }
+
+    /* --- Styles spécifiques à la Vue Arbre (Tableau) --- */
+    table.tree-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: monospace;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    table.tree-table th,
+    table.tree-table td {
+      border: 1px solid #95a5a6;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    table.tree-table th {
+      background-color: #2c3e50;
+      color: white;
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    table.tree-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    table.tree-table tr:hover {
+      background-color: #eaf2f8;
+    }
+
+    .btn-action {
+      background: none;
+      border: none;
+      color: #2980b9;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    .btn-action:hover {
+      color: #e74c3c;
+    }
+
+    .visual-cell {
+      text-align: center;
+      font-weight: bold;
+      background-color: #eaecee;
+      transition: background 0.15s;
+    }
+
+    .leaf-cell {
+      background-color: #d5f5e3;
+      color: #1e8449;
+    }
+
+    .parent-cell {
+      background-color: #edbb99;
+      color: #7e5109;
+    }
+
+    .parent-cell:hover {
+      background-color: #e59866;
+    }
+
+    .join-link {
+      display: block;
+      font-size: 11px;
+      font-weight: normal;
+      color: #c0392b;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-top: 4px;
+    }
   </style>
 </head>
 
@@ -272,7 +382,7 @@
         <select id="savedNetworks" onchange="loadFromHistory(this.value)">
           <option value="">-- Réseaux mémorisés --</option>
         </select>
-        <input type="text" id="networkInput" placeholder="Ex: 10.105.196.0/22" />
+        <input type="text" id="networkInput" placeholder="Ex: 10.104.0.0/21" />
         <button onclick="decompose()">Décomposer</button>
         <button onclick="exportToUrl()" class="btn-export">
           Exporter (URL)
@@ -281,18 +391,47 @@
           Reset ce réseau
         </button>
       </div>
+    </div>
 
-      <div id="filterContainer" class="filter-group">
-        <strong>Afficher les masques :</strong>
-      </div>
+    <!-- Navigation par Onglets -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-grid" onclick="switchTab('grid')">
+        Vue Grille (Inventaire)
+      </button>
+      <button class="tab-btn" id="tab-tree" onclick="switchTab('tree')">
+        Vue Arbre (Divide & Join)
+      </button>
     </div>
 
     <div id="errorLog" class="error"></div>
     <div id="networkInfo"></div>
-    <div id="results"></div>
+
+    <!-- Section Vue Grille -->
+    <div id="view-grid" class="view-section">
+      <div id="filterContainer" class="filter-group"></div>
+      <div id="results"></div>
+    </div>
+
+    <!-- Section Vue Arbre -->
+    <div id="view-tree" class="view-section hidden">
+      <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+        <button onclick="autoSplitTreeToInventory()" style="background: #27ae60; font-size: 13px; padding: 8px 15px;">
+          Déplier l'arbre selon l'inventaire
+        </button>
+        <button onclick="resetTree()" style="background: #7f8c8d; font-size: 13px; padding: 8px 15px;">
+          Réinitialiser l'arbre au masque de base
+        </button>
+      </div>
+      <div id="treeContainer"></div>
+    </div>
   </div>
 
   <script>
+    const MAX_MASK = 30;
+    let rootNode = null;
+    let currentTab = "grid";
+    let latestSubnetData = null;
+
     // --- Helpers IP ---
     function ipToInt(ip) {
       return (
@@ -309,6 +448,10 @@
         (int >>> 8) & 0xff,
         int & 0xff,
       ].join(".");
+    }
+
+    function intToNetmask(mask) {
+      return mask === 0 ? "0.0.0.0" : intToIp((0xffffffff << (32 - mask)) >>> 0);
     }
 
     function getDistinctColor(str) {
@@ -328,7 +471,28 @@
       return parents;
     }
 
-    // --- Gestion de l'historique ---
+    // --- Gestion des Onglets ---
+    function switchTab(tab) {
+      currentTab = tab;
+      document
+        .querySelectorAll(".tab-btn")
+        .forEach((btn) => btn.classList.remove("active"));
+      document
+        .querySelectorAll(".view-section")
+        .forEach((sec) => sec.classList.add("hidden"));
+
+      document.getElementById(`tab-${tab}`).classList.add("active");
+      document.getElementById(`view-${tab}`).classList.remove("hidden");
+
+      if (tab === "tree") {
+        autoSplitTreeToInventory();
+        renderTreeTable();
+      } else {
+        updateUI();
+      }
+    }
+
+    // --- Gestion de l'historique et du stockage ---
     function refreshHistoryDropdown() {
       const select = document.getElementById("savedNetworks");
       select.innerHTML = '<option value="">-- Réseaux mémorisés --</option>';
@@ -349,7 +513,6 @@
       decompose();
     }
 
-    // --- Logique de stockage ---
     function getStorageKey() {
       const input = document.getElementById("networkInput").value.trim();
       return input ? `snet_calc_inventory_${input}` : null;
@@ -378,7 +541,9 @@
         delete data[netId];
       }
       saveData(data);
+
       updateUI();
+      if (rootNode) renderTreeTable();
     }
 
     function clearCurrentInventory() {
@@ -409,10 +574,7 @@
         params.set("taken", takenSubnets.join(","));
       }
 
-      // Construction de l'URL complète
       const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-
-      // Copie exclusive dans le buffer (presse-papier), sans toucher à la barre d'adresse
       const btn = document.querySelector(".btn-export");
       const originalText = btn.textContent;
 
@@ -457,14 +619,19 @@
 
         decompose();
 
-        window.history.replaceState({}, document.title, window.location.pathname);
-
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
         return true;
       }
       return false;
     }
 
-    // --- Gestion des Survols ---
+    // =========================================================================
+    // --- LOGIQUE VUE GRILLE (Inventaire & Rendu Paresseux) ---
+    // =========================================================================
     function handleMouseEnter(el) {
       el.classList.add("highlight-target");
       const ownId = el.getAttribute("data-own-id");
@@ -500,7 +667,6 @@
       });
     }
 
-    // --- Mise à jour visuelle (États d'occupation) ---
     function updateUI() {
       document.querySelectorAll(".network-item").forEach((el) => {
         el.style.backgroundColor = "";
@@ -525,14 +691,12 @@
       const sortedKeys = Object.keys(data).sort(
         (a, b) => parseInt(a.split("/")[1]) - parseInt(b.split("/")[1]),
       );
-
       const parentOccupiedIPs = {};
 
       sortedKeys.forEach((netKey) => {
         if (data[netKey] === "taken") {
           const color = getDistinctColor(netKey);
           const master = document.querySelector(`[data-own-id="${netKey}"]`);
-
           const childMask = parseInt(netKey.split("/")[1]);
           const childIPCount = Math.pow(2, 32 - childMask);
 
@@ -546,7 +710,6 @@
             const parentList = rawParents
               .split("|")
               .filter((p) => p.length > 0);
-
             parentList.forEach((parentNet) => {
               parentOccupiedIPs[parentNet] =
                 (parentOccupiedIPs[parentNet] || 0) + childIPCount;
@@ -563,7 +726,6 @@
 
             child.classList.add("inherited");
             child.style.backgroundColor = color;
-
             const childCb = child.querySelector("input");
             if (childCb) childCb.disabled = true;
           });
@@ -582,13 +744,11 @@
           const parentMask = parseInt(parentNet.split("/")[1]);
           const totalParentIPs = Math.pow(2, 32 - parentMask);
           const occupied = parentOccupiedIPs[parentNet];
-
           const cb = parentEl.querySelector("input");
 
           if (occupied >= totalParentIPs) {
             parentEl.classList.add("fully-occupied");
             if (cb) cb.disabled = true;
-
             if (!parentEl.querySelector(".full-badge")) {
               const badge = document.createElement("span");
               badge.className = "full-badge";
@@ -608,31 +768,265 @@
       });
     }
 
-    // --- Filtres de visibilité ---
+    function populateGridDOM(gridEl, blockData) {
+      const fragment = document.createDocumentFragment();
+      blockData.subnets.forEach((subnet) => {
+        const label = document.createElement("label");
+        label.className = "network-item";
+        label.setAttribute("data-own-id", subnet.id);
+        label.setAttribute(
+          "data-parents",
+          `|${subnet.parents.join("|")}|`,
+        );
+        label.onmouseenter = () => handleMouseEnter(label);
+        label.onmouseleave = handleMouseLeave;
+        label.innerHTML = `
+            <div class="network-item-content">
+              <input type="checkbox" data-id="${subnet.id}" onchange="toggleInventory(this)">
+              <span>${subnet.id}</span>
+            </div>
+          `;
+        fragment.appendChild(label);
+      });
+      gridEl.appendChild(fragment);
+      gridEl.dataset.loaded = "true";
+    }
+
     function toggleMaskVisibility(mask, isVisible) {
       const block = document.getElementById(`block-mask-${mask}`);
-      if (block) {
-        if (isVisible) block.classList.remove("hidden");
-        else block.classList.add("hidden");
+      if (!block) return;
+
+      if (isVisible) {
+        const grid = block.querySelector(".grid");
+        if (grid && grid.dataset.loaded === "false" && latestSubnetData) {
+          const blockData = latestSubnetData.maskBlocks.find(
+            (b) => b.mask === mask,
+          );
+          if (blockData) {
+            populateGridDOM(grid, blockData);
+            updateUI();
+          }
+        }
+        block.classList.remove("hidden");
+      } else {
+        block.classList.add("hidden");
       }
     }
 
-    function generateFilterCheckboxes(start, end) {
-      const container = document.getElementById("filterContainer");
-      container.innerHTML = "<strong>Afficher les masques :</strong>";
+    // =========================================================================
+    // --- LOGIQUE VUE ARBRE (Divide & Join) ---
+    // =========================================================================
+    function createNode(ipInt, mask, parent = null) {
+      return {
+        id: `${intToIp(ipInt)}/${mask}`,
+        ipInt: ipInt,
+        mask: mask,
+        state: "leaf",
+        parent: parent,
+        left: null,
+        right: null,
+      };
+    }
 
-      for (let m = start; m <= end; m++) {
-        const label = document.createElement("label");
-        label.className = "filter-item";
-        label.innerHTML = `<input type="checkbox" checked onchange="toggleMaskVisibility(${m}, this.checked)"> /${m}`;
-        container.appendChild(label);
+    function findNodeByCidr(node, cidr) {
+      if (!node) return null;
+      if (node.id === cidr) return node;
+      return (
+        findNodeByCidr(node.left, cidr) || findNodeByCidr(node.right, cidr)
+      );
+    }
+
+    function getLeafCount(node) {
+      if (node.state === "leaf") return 1;
+      return getLeafCount(node.left) + getLeafCount(node.right);
+    }
+
+    function getLeaves(node, list = []) {
+      if (node.state === "leaf") list.push(node);
+      else {
+        getLeaves(node.left, list);
+        getLeaves(node.right, list);
+      }
+      return list;
+    }
+
+    function getAncestors(node) {
+      const ancestors = [];
+      let curr = node.parent;
+      while (curr) {
+        ancestors.push(curr);
+        curr = curr.parent;
+      }
+      return ancestors;
+    }
+
+    function divideByCidr(cidr, triggerRender = true) {
+      const node = findNodeByCidr(rootNode, cidr);
+      if (node && node.mask < MAX_MASK) {
+        const nextMask = node.mask + 1;
+        const diff = Math.pow(2, 32 - nextMask);
+        node.state = "split";
+        node.left = createNode(node.ipInt, nextMask, node);
+        node.right = createNode(node.ipInt + diff, nextMask, node);
+        if (triggerRender) renderTreeTable();
       }
     }
 
-    // --- Logique Refactorisée (Calcul / Rendu) ---
+    function joinByCidr(cidr) {
+      const node = findNodeByCidr(rootNode, cidr);
+      if (node && node.state === "split") {
+        node.state = "leaf";
+        node.left = null;
+        node.right = null;
+        renderTreeTable();
+      }
+    }
+
+    function resetTree() {
+      if (!rootNode) return;
+      rootNode.state = "leaf";
+      rootNode.left = null;
+      rootNode.right = null;
+      renderTreeTable();
+    }
+
+    function autoSplitTreeToInventory() {
+      if (!rootNode) return;
+      const data = getSavedData();
+      const allocatedCidrs = Object.keys(data).filter(
+        (k) => data[k] === "taken",
+      );
+      if (allocatedCidrs.length === 0) return;
+
+      let changed = true;
+      while (changed) {
+        changed = false;
+        const leaves = getLeaves(rootNode);
+        for (let leaf of leaves) {
+          for (let cidr of allocatedCidrs) {
+            const [allocIp, allocMaskStr] = cidr.split("/");
+            const allocMask = parseInt(allocMaskStr, 10);
+            const allocInt = ipToInt(allocIp);
+
+            const leafEnd =
+              (leaf.ipInt + Math.pow(2, 32 - leaf.mask) - 1) >>> 0;
+            if (
+              allocInt >= leaf.ipInt &&
+              allocInt <= leafEnd &&
+              allocMask > leaf.mask
+            ) {
+              if (leaf.mask < MAX_MASK) {
+                divideByCidr(leaf.id, false);
+                changed = true;
+                break;
+              }
+            }
+          }
+          if (changed) break;
+        }
+      }
+      renderTreeTable();
+    }
+
+    function renderTreeTable() {
+      if (!rootNode) return;
+      const container = document.getElementById("treeContainer");
+      const leaves = getLeaves(rootNode);
+      const fmt = (n) => n.toLocaleString("fr-FR");
+      const data = getSavedData();
+
+      let html = `
+          <table class="tree-table">
+            <thead>
+              <tr>
+                <th>Subnet address (Allouer)</th>
+                <th>Netmask</th>
+                <th>Range of addresses</th>
+                <th>first ip (network)</th>
+                <th>Useable IPs</th>
+                <th>last ip (broadcast)</th>
+                <th>Hosts</th>
+                <th>Divide</th>
+                <th colspan="${MAX_MASK - rootNode.mask + 1}" style="text-align:center;">Visual Hierarchy</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+      leaves.forEach((leaf) => {
+        const totalIps = Math.pow(2, 32 - leaf.mask);
+        const startIp = leaf.ipInt;
+        const endIp = (startIp + totalIps - 1) >>> 0;
+
+        const hosts =
+          leaf.mask >= 31
+            ? leaf.mask === 31
+              ? 2
+              : 1
+            : Math.max(0, totalIps - 2);
+        const useableStart = leaf.mask >= 31 ? startIp : startIp + 1;
+        const useableEnd = leaf.mask >= 31 ? endIp : endIp - 1;
+
+        const isTaken = data[leaf.id] === "taken";
+        const ancestors = getAncestors(leaf);
+        const isInherited = ancestors.some(
+          (anc) => data[anc.id] === "taken",
+        );
+
+        let rowStyle = "";
+        if (isTaken) {
+          const color = getDistinctColor(leaf.id);
+          rowStyle = `style="background-color: ${color}; font-weight:bold;"`;
+        } else if (isInherited) {
+          rowStyle = `style="opacity: 0.6; background-color: #f2f4f4;"`;
+        }
+
+        html += `
+            <tr ${rowStyle}>
+              <td>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" data-id="${leaf.id}" onchange="toggleInventory(this)" ${isTaken ? "checked" : ""} ${isInherited ? "disabled" : ""}>
+                  <span>${leaf.id}</span>
+                </label>
+              </td>
+              <td>${intToNetmask(leaf.mask)} (/${leaf.mask})</td>
+              <td>${intToIp(startIp)} - ${intToIp(endIp)}</td>
+              <td>${intToIp(startIp)}</td>
+              <td>${intToIp(useableStart)} - ${intToIp(useableEnd)}</td>
+              <td>${intToIp(endIp)}</td>
+              <td>${fmt(hosts)}</td>
+              <td>
+                ${leaf.mask < MAX_MASK ? `<button class="btn-action" onclick="divideByCidr('${leaf.id}')">Divide</button>` : ""}
+              </td>
+          `;
+
+        const colSpan = MAX_MASK - leaf.mask + 1;
+        html += `<td class="visual-cell leaf-cell" colspan="${colSpan}">/${leaf.mask}</td>`;
+
+        ancestors.forEach((parent) => {
+          if (leaf.ipInt === parent.ipInt) {
+            const rSpan = getLeafCount(parent);
+            html += `
+                <td class="visual-cell parent-cell" rowspan="${rSpan}">
+                  /${parent.mask}
+                  <span class="join-link" onclick="joinByCidr('${parent.id}')">Join</span>
+                </td>
+              `;
+          }
+        });
+
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+    }
+
+    // =========================================================================
+    // --- MOTEUR CENTRAL (Calculs & Orchestration) ---
+    // =========================================================================
     function calculateSubnetData(inputStr) {
       const input = inputStr.trim();
-
       const ipRegex =
         /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\/(3[0-2]|[1-2]?\d)$/;
 
@@ -647,7 +1041,6 @@
       const parts = input.split("/");
       const baseMask = parseInt(parts[1], 10);
       const baseInt = ipToInt(parts[0]);
-
       const shift = baseMask === 0 ? 0 : 32 - baseMask;
       const networkStart =
         baseMask === 0 ? 0 : (baseInt & (0xffffffff << shift)) >>> 0;
@@ -660,9 +1053,11 @@
         endIp: intToIp(networkEnd),
         totalIPs: totalIPs,
         baseMask: baseMask,
+        startInt: networkStart,
       };
 
       const maskBlocks = [];
+      let totalSubnetsCount = 0;
 
       for (
         let targetMask = baseMask + 1;
@@ -672,24 +1067,18 @@
         const subnetSize = Math.pow(2, 32 - targetMask);
         const count = totalIPs / subnetSize;
 
-        if (count > 1024) continue;
+        if (count > 65536) continue;
+        totalSubnetsCount += count;
 
         const subnets = [];
         for (let i = 0; i < count; i++) {
           const currentNetInt = (networkStart + i * subnetSize) >>> 0;
           const netStr = `${intToIp(currentNetInt)}/${targetMask}`;
-          const parents = getParentCIDRs(
-            currentNetInt,
-            targetMask,
-            baseMask,
-          );
-
           subnets.push({
             id: netStr,
-            parents: parents,
+            parents: getParentCIDRs(currentNetInt, targetMask, baseMask),
           });
         }
-
         maskBlocks.push({
           mask: targetMask,
           count: count,
@@ -702,16 +1091,20 @@
         isValid: true,
         baseNetwork: baseNetwork,
         maskBlocks: maskBlocks,
+        totalSubnetsCount: totalSubnetsCount,
       };
     }
 
     function renderSubnets(data) {
+      latestSubnetData = data;
       const resultsDiv = document.getElementById("results");
       const errorDiv = document.getElementById("errorLog");
       const infoDiv = document.getElementById("networkInfo");
+      const filterContainer = document.getElementById("filterContainer");
 
       resultsDiv.innerHTML = "";
       errorDiv.textContent = "";
+      filterContainer.innerHTML = "<strong>Afficher les masques :</strong>";
 
       if (!data.isValid) {
         errorDiv.textContent = data.error;
@@ -721,6 +1114,7 @@
 
       const { baseNetwork, maskBlocks } = data;
       const fmt = (n) => n.toLocaleString("fr-FR");
+      const savedData = getSavedData();
 
       infoDiv.innerHTML = `
           <div class="network-summary">
@@ -731,46 +1125,34 @@
           </div>
         `;
 
-      generateFilterCheckboxes(baseNetwork.baseMask + 1, 30);
-
       const fragment = document.createDocumentFragment();
 
       maskBlocks.forEach((blockData) => {
-        const block = document.createElement("div");
-        block.className = "mask-block";
-        block.id = `block-mask-${blockData.mask}`;
+        const hasAllocated = blockData.subnets.some((s) => savedData[s.id]);
+        const isDefaultVisible = blockData.count <= 256 || hasAllocated;
 
-        const count = blockData.count;
+        const filterLabel = document.createElement("label");
+        filterLabel.className = "filter-item";
+        filterLabel.innerHTML = `<input type="checkbox" ${isDefaultVisible ? "checked" : ""} onchange="toggleMaskVisibility(${blockData.mask}, this.checked)"> /${blockData.mask}`;
+        filterContainer.appendChild(filterLabel);
+
+        const block = document.createElement("div");
+        block.className = `mask-block ${isDefaultVisible ? "" : "hidden"}`;
+        block.id = `block-mask-${blockData.mask}`;
         block.innerHTML = `
             <div class="mask-header">
               Masque /${blockData.mask} 
-              <span class="mask-info">${count} sous-réseau${count > 1 ? "x" : ""} &nbsp;·&nbsp; ${fmt(blockData.subnetSize)} IPs/sous-réseau</span>
+              <span class="mask-info">${blockData.count} sous-réseau${blockData.count > 1 ? "x" : ""} &nbsp;·&nbsp; ${fmt(blockData.subnetSize)} IPs/sous-réseau</span>
             </div>
           `;
 
         const grid = document.createElement("div");
         grid.className = "grid";
+        grid.dataset.loaded = "false";
 
-        blockData.subnets.forEach((subnet) => {
-          const label = document.createElement("label");
-          label.className = "network-item";
-          label.setAttribute("data-own-id", subnet.id);
-          label.setAttribute(
-            "data-parents",
-            `|${subnet.parents.join("|")}|`,
-          );
-
-          label.onmouseenter = () => handleMouseEnter(label);
-          label.onmouseleave = handleMouseLeave;
-
-          label.innerHTML = `
-              <div class="network-item-content">
-                <input type="checkbox" data-id="${subnet.id}" onchange="toggleInventory(this)">
-                <span>${subnet.id}</span>
-              </div>
-            `;
-          grid.appendChild(label);
-        });
+        if (isDefaultVisible) {
+          populateGridDOM(grid, blockData);
+        }
 
         block.appendChild(grid);
         fragment.appendChild(block);
@@ -783,12 +1165,25 @@
     function decompose() {
       const inputEl = document.getElementById("networkInput");
       const input = inputEl.value.trim();
-
       if (!input) return;
 
       localStorage.setItem("snet_calc_last_active_network", input);
       const subnetData = calculateSubnetData(input);
+
+      // 1. Initialiser le rendu de la Grille avec filtrage paresseux
       renderSubnets(subnetData);
+
+      // 2. Initialiser l'Arbre Binaire à la racine
+      if (subnetData.isValid) {
+        rootNode = createNode(
+          subnetData.baseNetwork.startInt,
+          subnetData.baseNetwork.baseMask,
+        );
+        if (currentTab === "tree") {
+          autoSplitTreeToInventory();
+          renderTreeTable();
+        }
+      }
     }
 
     // --- Initialisation au chargement ---
