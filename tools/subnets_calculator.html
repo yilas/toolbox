@@ -1,613 +1,811 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Subnets calculator</title>
-    <style>
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-          Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-        background-color: #f4f7f9;
-        display: flex;
-        justify-content: center;
-      }
-      .container {
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        width: 95%;
-        max-width: 1800px;
-      }
-      .toolbar {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #eee;
-      }
-      .input-group {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-      input[type="text"],
-      select {
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-        font-family: monospace;
-      }
-      input[type="text"] {
-        flex: 2;
-      }
-      select {
-        flex: 1;
-        background-color: #fff;
-        cursor: pointer;
-      }
 
-      button {
-        padding: 10px 25px;
-        background-color: #3498db;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        white-space: nowrap;
-      }
-      button:hover {
-        background-color: #2980b9;
-      }
-      button.btn-reset {
-        background-color: #e74c3c;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subnets calculator</title>
+  <style>
+    body {
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+        Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f7f9;
+      display: flex;
+      justify-content: center;
+    }
 
-      /* Filtres de masques */
-      .filter-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        font-size: 0.9em;
-        background: #fff;
-        padding: 10px;
-        border-radius: 4px;
-        border: 1px solid #eee;
-      }
-      .filter-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        background: #ececec;
-        padding: 4px 8px;
-        border-radius: 3px;
-        cursor: pointer;
-      }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 95%;
+      max-width: 1800px;
+    }
 
-      .mask-block {
-        margin-bottom: 25px;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
-        overflow: hidden;
-      }
-      .mask-block.hidden {
-        display: none;
-      }
+    .toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
 
-      .mask-header {
-        background: #f8f9fa;
-        padding: 10px 20px;
-        font-weight: bold;
-        border-bottom: 1px solid #e0e0e0;
-        display: flex;
-        justify-content: space-between;
-      }
-      .mask-info {
-        font-weight: normal;
-        font-size: 0.85em;
-        color: #666;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 8px;
-        padding: 20px;
-      }
-      .network-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        font-family: monospace;
-        font-size: 0.9em;
-        padding: 8px;
-        background: #ffffff;
-        border-radius: 4px;
-        border: 1px solid #dee2e6;
-        color: #212529;
-        position: relative;
-        transition: all 0.15s ease-in-out;
-      }
-      .network-item-content {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
 
-      /* 1. MASTER : Réseau directement coché */
-      .network-item.master-checked {
-        border: 2px solid #111 !important;
-        font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-      }
+    input[type="text"],
+    select {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: monospace;
+    }
 
-      /* 2. ENFANT (Hérité) : Inclus dans un Master coché */
-      .network-item.inherited {
-        border: 1px dashed #555 !important;
-        opacity: 0.65;
-      }
+    input[type="text"] {
+      flex: 2;
+      min-width: 200px;
+    }
 
-      /* 3. PARENT PARTIEL : Contient au moins un enfant coché (< 100%) */
-      .network-item.partially-occupied {
-        border: 1px dashed #e67e22 !important;
-        background-color: #fef5e7 !important;
-      }
+    select {
+      flex: 1;
+      min-width: 180px;
+      background-color: #fff;
+      cursor: pointer;
+    }
 
-      /* 4. PARENT COMPLET : 100% de ses sous-réseaux sont occupés */
-      .network-item.fully-occupied {
-        border: 1px solid #7f8c8d !important;
-        background-color: #eaeded !important;
-        opacity: 0.85;
-      }
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      white-space: nowrap;
+      transition: background-color 0.2s ease;
+    }
 
-      .partial-badge {
-        font-size: 0.7em;
-        background: #e67e22;
-        color: #fff;
-        padding: 1px 6px;
-        border-radius: 3px;
-        font-weight: bold;
-        white-space: nowrap;
-      }
+    button:hover {
+      background-color: #2980b9;
+    }
 
-      .full-badge {
-        font-size: 0.7em;
-        background: #7f8c8d;
-        color: #fff;
-        padding: 1px 6px;
-        border-radius: 3px;
-        font-weight: bold;
-        white-space: nowrap;
-      }
+    button.btn-reset {
+      background-color: #e74c3c;
+    }
 
-      /* EFFETS DE SURVOL ET HIGHLIGHT */
-      .network-item.highlight-target {
-        outline: 3px solid #2980b9 !important;
-        transform: scale(1.02);
-        z-index: 10;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      }
+    button.btn-reset:hover {
+      background-color: #c0392b;
+    }
 
-      .network-item.highlight-related {
-        outline: 3px dashed #e74c3c !important;
-        transform: scale(1.02);
-        z-index: 9;
-        box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
-      }
+    button.btn-export {
+      background-color: #27ae60;
+    }
 
-      .error {
-        color: #e74c3c;
-        margin-bottom: 15px;
-        font-weight: bold;
-      }
-      .network-summary {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        padding: 12px 16px;
-        background: #eaf4fb;
-        border: 1px solid #aed6f1;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        font-family: monospace;
-      }
-      .summary-item {
-        font-size: 0.95em;
-        color: #1a5276;
-      }
-      .summary-item strong {
-        color: #333;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="toolbar">
-        <div class="input-group">
-          <select id="savedNetworks" onchange="loadFromHistory(this.value)">
-            <option value="">-- Réseaux mémorisés --</option>
-          </select>
-          <input
-            type="text"
-            id="networkInput"
-            placeholder="Ex: 10.105.196.0/22"
-          />
-          <button onclick="decompose()">Décomposer</button>
-          <button onclick="clearCurrentInventory()" class="btn-reset">
-            Reset ce réseau
-          </button>
-        </div>
+    button.btn-export:hover {
+      background-color: #2ecc71;
+    }
 
-        <div id="filterContainer" class="filter-group">
-          <strong>Afficher les masques :</strong>
-        </div>
+    /* Filtres de masques */
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.9em;
+      background: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #ececec;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .mask-block {
+      margin-bottom: 25px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .mask-block.hidden {
+      display: none;
+    }
+
+    .mask-header {
+      background: #f8f9fa;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .mask-info {
+      font-weight: normal;
+      font-size: 0.85em;
+      color: #666;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 8px;
+      padding: 20px;
+    }
+
+    .network-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: monospace;
+      font-size: 0.9em;
+      padding: 8px;
+      background: #ffffff;
+      border-radius: 4px;
+      border: 1px solid #dee2e6;
+      color: #212529;
+      position: relative;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .network-item-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 1. MASTER : Réseau directement coché */
+    .network-item.master-checked {
+      border: 2px solid #111 !important;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    /* 2. ENFANT (Hérité) : Inclus dans un Master coché */
+    .network-item.inherited {
+      border: 1px dashed #555 !important;
+      opacity: 0.65;
+    }
+
+    /* 3. PARENT PARTIEL : Contient au moins un enfant coché (< 100%) */
+    .network-item.partially-occupied {
+      border: 1px dashed #e67e22 !important;
+      background-color: #fef5e7 !important;
+    }
+
+    /* 4. PARENT COMPLET : 100% de ses sous-réseaux sont occupés */
+    .network-item.fully-occupied {
+      border: 1px solid #7f8c8d !important;
+      background-color: #eaeded !important;
+      opacity: 0.85;
+    }
+
+    .partial-badge {
+      font-size: 0.7em;
+      background: #e67e22;
+      color: #fff;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .full-badge {
+      font-size: 0.7em;
+      background: #7f8c8d;
+      color: #fff;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    /* EFFETS DE SURVOL ET HIGHLIGHT */
+    .network-item.highlight-target {
+      outline: 3px solid #2980b9 !important;
+      transform: scale(1.02);
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .network-item.highlight-related {
+      outline: 3px dashed #e74c3c !important;
+      transform: scale(1.02);
+      z-index: 9;
+      box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+    }
+
+    .error {
+      color: #e74c3c;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .network-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 12px 16px;
+      background: #eaf4fb;
+      border: 1px solid #aed6f1;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-family: monospace;
+    }
+
+    .summary-item {
+      font-size: 0.95em;
+      color: #1a5276;
+    }
+
+    .summary-item strong {
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <div class="input-group">
+        <select id="savedNetworks" onchange="loadFromHistory(this.value)">
+          <option value="">-- Réseaux mémorisés --</option>
+        </select>
+        <input type="text" id="networkInput" placeholder="Ex: 10.105.196.0/22" />
+        <button onclick="decompose()">Décomposer</button>
+        <button onclick="exportToUrl()" class="btn-export">
+          Exporter (URL)
+        </button>
+        <button onclick="clearCurrentInventory()" class="btn-reset">
+          Reset ce réseau
+        </button>
       </div>
 
-      <div id="errorLog" class="error"></div>
-      <div id="networkInfo"></div>
-      <div id="results"></div>
+      <div id="filterContainer" class="filter-group">
+        <strong>Afficher les masques :</strong>
+      </div>
     </div>
 
-    <script>
-      // Helpers IP
-      function ipToInt(ip) {
-        return (
-          ip
-            .split(".")
-            .reduce((res, octet) => (res << 8) + parseInt(octet, 10), 0) >>> 0
-        );
-      }
-      function intToIp(int) {
-        return [
-          (int >>> 24) & 0xff,
-          (int >>> 16) & 0xff,
-          (int >>> 8) & 0xff,
-          int & 0xff,
-        ].join(".");
-      }
-      function getDistinctColor(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++)
-          hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash * 137.5) % 360}, 85%, 85%)`;
-      }
+    <div id="errorLog" class="error"></div>
+    <div id="networkInfo"></div>
+    <div id="results"></div>
+  </div>
 
-      function getParentCIDRs(ipInt, currentMask, baseMask) {
-        const parents = [];
-        for (let m = currentMask - 1; m >= baseMask; m--) {
-          const parentNet = (ipInt & (0xffffffff << (32 - m))) >>> 0;
-          parents.push(`${intToIp(parentNet)}/${m}`);
+  <script>
+    // --- Helpers IP ---
+    function ipToInt(ip) {
+      return (
+        ip
+          .split(".")
+          .reduce((res, octet) => (res << 8) + parseInt(octet, 10), 0) >>> 0
+      );
+    }
+
+    function intToIp(int) {
+      return [
+        (int >>> 24) & 0xff,
+        (int >>> 16) & 0xff,
+        (int >>> 8) & 0xff,
+        int & 0xff,
+      ].join(".");
+    }
+
+    function getDistinctColor(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++)
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      return `hsl(${Math.abs(hash * 137.5) % 360}, 85%, 85%)`;
+    }
+
+    function getParentCIDRs(ipInt, currentMask, baseMask) {
+      const parents = [];
+      for (let m = currentMask - 1; m >= baseMask; m--) {
+        const shift = m === 0 ? 0 : 32 - m;
+        const parentNet = m === 0 ? 0 : (ipInt & (0xffffffff << shift)) >>> 0;
+        parents.push(`${intToIp(parentNet)}/${m}`);
+      }
+      return parents;
+    }
+
+    // --- Gestion de l'historique ---
+    function refreshHistoryDropdown() {
+      const select = document.getElementById("savedNetworks");
+      select.innerHTML = '<option value="">-- Réseaux mémorisés --</option>';
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("snet_calc_inventory_")) {
+          const net = key.replace("snet_calc_inventory_", "");
+          const opt = document.createElement("option");
+          opt.value = net;
+          opt.textContent = net;
+          select.appendChild(opt);
         }
-        return parents;
-      }
+      });
+    }
 
-      // --- Gestion de l'historique ---
-      function refreshHistoryDropdown() {
-        const select = document.getElementById("savedNetworks");
-        select.innerHTML = '<option value="">-- Réseaux mémorisés --</option>';
-        Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith("snet_calc_inventory_")) {
-            const net = key.replace("snet_calc_inventory_", "");
-            const opt = document.createElement("option");
-            opt.value = net;
-            opt.textContent = net;
-            select.appendChild(opt);
-          }
-        });
-      }
+    function loadFromHistory(val) {
+      if (!val) return;
+      document.getElementById("networkInput").value = val;
+      decompose();
+    }
 
-      function loadFromHistory(val) {
-        if (!val) return;
-        document.getElementById("networkInput").value = val;
+    // --- Logique de stockage ---
+    function getStorageKey() {
+      const input = document.getElementById("networkInput").value.trim();
+      return input ? `snet_calc_inventory_${input}` : null;
+    }
+
+    function getSavedData() {
+      const key = getStorageKey();
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : {};
+    }
+
+    function saveData(data) {
+      const key = getStorageKey();
+      if (key) {
+        localStorage.setItem(key, JSON.stringify(data));
+        refreshHistoryDropdown();
+      }
+    }
+
+    function toggleInventory(checkbox) {
+      const netId = checkbox.dataset.id;
+      let data = getSavedData();
+      if (checkbox.checked) {
+        data[netId] = "taken";
+      } else {
+        delete data[netId];
+      }
+      saveData(data);
+      updateUI();
+    }
+
+    function clearCurrentInventory() {
+      const key = getStorageKey();
+      if (key && confirm(`Effacer l'inventaire pour ${key} ?`)) {
+        localStorage.removeItem(key);
+        refreshHistoryDropdown();
         decompose();
       }
+    }
 
-      // --- Logique de stockage ---
-      function getStorageKey() {
-        const input = document.getElementById("networkInput").value.trim();
-        return input ? `snet_calc_inventory_${input}` : null;
+    // --- Export dans le presse-papier et Restauration par URL ---
+    function exportToUrl() {
+      const input = document.getElementById("networkInput").value.trim();
+      if (!input) {
+        alert("Veuillez d'abord décomposer un réseau avant d'exporter.");
+        return;
       }
 
-      function getSavedData() {
-        const key = getStorageKey();
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : {};
+      const data = getSavedData();
+      const takenSubnets = Object.keys(data).filter(
+        (key) => data[key] === "taken",
+      );
+
+      const params = new URLSearchParams();
+      params.set("net", input);
+      if (takenSubnets.length > 0) {
+        params.set("taken", takenSubnets.join(","));
       }
 
-      function saveData(data) {
-        const key = getStorageKey();
-        if (key) {
-          localStorage.setItem(key, JSON.stringify(data));
-          refreshHistoryDropdown();
-        }
-      }
+      // Construction de l'URL complète
+      const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
 
-      function toggleInventory(checkbox) {
-        const netId = checkbox.dataset.id;
-        let data = getSavedData();
-        if (checkbox.checked) {
-          data[netId] = "taken";
-        } else {
-          delete data[netId];
-        }
-        saveData(data);
-        updateUI();
-      }
+      // Copie exclusive dans le buffer (presse-papier), sans toucher à la barre d'adresse
+      const btn = document.querySelector(".btn-export");
+      const originalText = btn.textContent;
 
-      function clearCurrentInventory() {
-        const key = getStorageKey();
-        if (key && confirm(`Effacer l'inventaire pour ${key} ?`)) {
-          localStorage.removeItem(key);
-          refreshHistoryDropdown();
-          decompose();
-        }
-      }
-
-      // --- Gestion des Survols ---
-      function handleMouseEnter(el) {
-        el.classList.add("highlight-target");
-        const ownId = el.getAttribute("data-own-id");
-
-        if (
-          el.classList.contains("partially-occupied") ||
-          el.classList.contains("fully-occupied")
-        ) {
-          const children = document.querySelectorAll(
-            `.network-item.master-checked[data-parents*="|${ownId}|"]`,
-          );
-          children.forEach((child) => child.classList.add("highlight-related"));
-        }
-
-        if (
-          el.classList.contains("master-checked") ||
-          el.classList.contains("inherited")
-        ) {
-          const rawParents = el.getAttribute("data-parents") || "";
-          const parentList = rawParents.split("|").filter((p) => p.length > 0);
-          parentList.forEach((parentNet) => {
-            const parentEl = document.querySelector(
-              `[data-own-id="${parentNet}"]`,
-            );
-            if (parentEl) parentEl.classList.add("highlight-related");
-          });
-        }
-      }
-
-      function handleMouseLeave() {
-        document.querySelectorAll(".network-item").forEach((el) => {
-          el.classList.remove("highlight-target", "highlight-related");
+      navigator.clipboard
+        .writeText(newUrl)
+        .then(() => {
+          btn.textContent = "URL copiée dans le buffer !";
+          btn.style.backgroundColor = "#1e8449";
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.backgroundColor = "";
+          }, 2500);
+        })
+        .catch(() => {
+          prompt("Voici votre URL de restauration à copier :", newUrl);
         });
-      }
+    }
 
-      function updateUI() {
-        // 1. Réinitialiser tout l'état DOM
-        document.querySelectorAll(".network-item").forEach((el) => {
-          el.style.backgroundColor = "";
-          el.classList.remove(
-            "inherited",
-            "master-checked",
-            "partially-occupied",
-            "fully-occupied",
-          );
+    function checkAndRestoreFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const net = params.get("net");
 
-          const cb = el.querySelector("input");
-          if (cb) {
-            cb.checked = false;
-            cb.disabled = false;
-          }
-
-          const badge = el.querySelector(".partial-badge, .full-badge");
-          if (badge) badge.remove();
-        });
-
-        const data = getSavedData();
-        const sortedKeys = Object.keys(data).sort(
-          (a, b) => parseInt(a.split("/")[1]) - parseInt(b.split("/")[1]),
-        );
-
-        // Map pour calculer le nombre d'IPs occupées dans chaque parent
-        const parentOccupiedIPs = {};
-
-        sortedKeys.forEach((netKey) => {
-          if (data[netKey] === "taken") {
-            const color = getDistinctColor(netKey);
-            const master = document.querySelector(`[data-own-id="${netKey}"]`);
-
-            const childMask = parseInt(netKey.split("/")[1]);
-            const childIPCount = Math.pow(2, 32 - childMask);
-
-            if (master) {
-              master.classList.add("master-checked");
-              master.style.backgroundColor = color;
-              const masterCb = master.querySelector("input");
-              if (masterCb) masterCb.checked = true;
-
-              // Compter les IPs occupées pour la remontée vers les parents
-              const rawParents = master.getAttribute("data-parents") || "";
-              const parentList = rawParents
-                .split("|")
-                .filter((p) => p.length > 0);
-
-              parentList.forEach((parentNet) => {
-                parentOccupiedIPs[parentNet] =
-                  (parentOccupiedIPs[parentNet] || 0) + childIPCount;
-              });
-            }
-
-            // Déclinaison vers les enfants
-            const children = document.querySelectorAll(
-              `[data-parents*="|${netKey}|"]`,
-            );
-            children.forEach((child) => {
-              child.classList.remove("partially-occupied", "fully-occupied");
-              const badge = child.querySelector(".partial-badge, .full-badge");
-              if (badge) badge.remove();
-
-              child.classList.add("inherited");
-              child.style.backgroundColor = color;
-
-              const childCb = child.querySelector("input");
-              if (childCb) childCb.disabled = true;
+      if (net) {
+        if (params.has("taken")) {
+          const taken = params.get("taken");
+          const data = {};
+          if (taken.trim()) {
+            taken.split(",").forEach((id) => {
+              if (id.trim()) data[id.trim()] = "taken";
             });
           }
-        });
+          localStorage.setItem(
+            `snet_calc_inventory_${net}`,
+            JSON.stringify(data),
+          );
+          refreshHistoryDropdown();
+        }
 
-        // 2. Traitement dynamique de la couverture des parents (Partiel vs Complet)
-        Object.keys(parentOccupiedIPs).forEach((parentNet) => {
+        document.getElementById("networkInput").value = net;
+        const select = document.getElementById("savedNetworks");
+        if (select) select.value = net;
+
+        decompose();
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        return true;
+      }
+      return false;
+    }
+
+    // --- Gestion des Survols ---
+    function handleMouseEnter(el) {
+      el.classList.add("highlight-target");
+      const ownId = el.getAttribute("data-own-id");
+
+      if (
+        el.classList.contains("partially-occupied") ||
+        el.classList.contains("fully-occupied")
+      ) {
+        const children = document.querySelectorAll(
+          `.network-item.master-checked[data-parents*="|${ownId}|"]`,
+        );
+        children.forEach((child) => child.classList.add("highlight-related"));
+      }
+
+      if (
+        el.classList.contains("master-checked") ||
+        el.classList.contains("inherited")
+      ) {
+        const rawParents = el.getAttribute("data-parents") || "";
+        const parentList = rawParents.split("|").filter((p) => p.length > 0);
+        parentList.forEach((parentNet) => {
           const parentEl = document.querySelector(
             `[data-own-id="${parentNet}"]`,
           );
-          if (
-            parentEl &&
-            !parentEl.classList.contains("master-checked") &&
-            !parentEl.classList.contains("inherited")
-          ) {
-            const parentMask = parseInt(parentNet.split("/")[1]);
-            const totalParentIPs = Math.pow(2, 32 - parentMask);
-            const occupied = parentOccupiedIPs[parentNet];
+          if (parentEl) parentEl.classList.add("highlight-related");
+        });
+      }
+    }
 
-            const cb = parentEl.querySelector("input");
+    function handleMouseLeave() {
+      document.querySelectorAll(".network-item").forEach((el) => {
+        el.classList.remove("highlight-target", "highlight-related");
+      });
+    }
 
-            if (occupied >= totalParentIPs) {
-              // 100% couvert -> Statut COMPLET (Retrait du statut Partiel)
-              parentEl.classList.add("fully-occupied");
-              if (cb) cb.disabled = true;
+    // --- Mise à jour visuelle (États d'occupation) ---
+    function updateUI() {
+      document.querySelectorAll(".network-item").forEach((el) => {
+        el.style.backgroundColor = "";
+        el.classList.remove(
+          "inherited",
+          "master-checked",
+          "partially-occupied",
+          "fully-occupied",
+        );
 
-              if (!parentEl.querySelector(".full-badge")) {
-                const badge = document.createElement("span");
-                badge.className = "full-badge";
-                badge.textContent = "Complet";
-                parentEl.appendChild(badge);
-              }
-            } else {
-              // < 100% couvert -> Statut PARTIEL
-              parentEl.classList.add("partially-occupied");
-              if (!parentEl.querySelector(".partial-badge")) {
-                const badge = document.createElement("span");
-                badge.className = "partial-badge";
-                badge.textContent = "Partiel";
-                parentEl.appendChild(badge);
-              }
+        const cb = el.querySelector("input");
+        if (cb) {
+          cb.checked = false;
+          cb.disabled = false;
+        }
+
+        const badge = el.querySelector(".partial-badge, .full-badge");
+        if (badge) badge.remove();
+      });
+
+      const data = getSavedData();
+      const sortedKeys = Object.keys(data).sort(
+        (a, b) => parseInt(a.split("/")[1]) - parseInt(b.split("/")[1]),
+      );
+
+      const parentOccupiedIPs = {};
+
+      sortedKeys.forEach((netKey) => {
+        if (data[netKey] === "taken") {
+          const color = getDistinctColor(netKey);
+          const master = document.querySelector(`[data-own-id="${netKey}"]`);
+
+          const childMask = parseInt(netKey.split("/")[1]);
+          const childIPCount = Math.pow(2, 32 - childMask);
+
+          if (master) {
+            master.classList.add("master-checked");
+            master.style.backgroundColor = color;
+            const masterCb = master.querySelector("input");
+            if (masterCb) masterCb.checked = true;
+
+            const rawParents = master.getAttribute("data-parents") || "";
+            const parentList = rawParents
+              .split("|")
+              .filter((p) => p.length > 0);
+
+            parentList.forEach((parentNet) => {
+              parentOccupiedIPs[parentNet] =
+                (parentOccupiedIPs[parentNet] || 0) + childIPCount;
+            });
+          }
+
+          const children = document.querySelectorAll(
+            `[data-parents*="|${netKey}|"]`,
+          );
+          children.forEach((child) => {
+            child.classList.remove("partially-occupied", "fully-occupied");
+            const badge = child.querySelector(".partial-badge, .full-badge");
+            if (badge) badge.remove();
+
+            child.classList.add("inherited");
+            child.style.backgroundColor = color;
+
+            const childCb = child.querySelector("input");
+            if (childCb) childCb.disabled = true;
+          });
+        }
+      });
+
+      Object.keys(parentOccupiedIPs).forEach((parentNet) => {
+        const parentEl = document.querySelector(
+          `[data-own-id="${parentNet}"]`,
+        );
+        if (
+          parentEl &&
+          !parentEl.classList.contains("master-checked") &&
+          !parentEl.classList.contains("inherited")
+        ) {
+          const parentMask = parseInt(parentNet.split("/")[1]);
+          const totalParentIPs = Math.pow(2, 32 - parentMask);
+          const occupied = parentOccupiedIPs[parentNet];
+
+          const cb = parentEl.querySelector("input");
+
+          if (occupied >= totalParentIPs) {
+            parentEl.classList.add("fully-occupied");
+            if (cb) cb.disabled = true;
+
+            if (!parentEl.querySelector(".full-badge")) {
+              const badge = document.createElement("span");
+              badge.className = "full-badge";
+              badge.textContent = "Complet";
+              parentEl.appendChild(badge);
+            }
+          } else {
+            parentEl.classList.add("partially-occupied");
+            if (!parentEl.querySelector(".partial-badge")) {
+              const badge = document.createElement("span");
+              badge.className = "partial-badge";
+              badge.textContent = "Partiel";
+              parentEl.appendChild(badge);
             }
           }
+        }
+      });
+    }
+
+    // --- Filtres de visibilité ---
+    function toggleMaskVisibility(mask, isVisible) {
+      const block = document.getElementById(`block-mask-${mask}`);
+      if (block) {
+        if (isVisible) block.classList.remove("hidden");
+        else block.classList.add("hidden");
+      }
+    }
+
+    function generateFilterCheckboxes(start, end) {
+      const container = document.getElementById("filterContainer");
+      container.innerHTML = "<strong>Afficher les masques :</strong>";
+
+      for (let m = start; m <= end; m++) {
+        const label = document.createElement("label");
+        label.className = "filter-item";
+        label.innerHTML = `<input type="checkbox" checked onchange="toggleMaskVisibility(${m}, this.checked)"> /${m}`;
+        container.appendChild(label);
+      }
+    }
+
+    // --- Logique Refactorisée (Calcul / Rendu) ---
+    function calculateSubnetData(inputStr) {
+      const input = inputStr.trim();
+
+      const ipRegex =
+        /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\/(3[0-2]|[1-2]?\d)$/;
+
+      if (!ipRegex.test(input)) {
+        return {
+          isValid: false,
+          error:
+            "Format invalide. Veuillez entrer une adresse IPv4 valide avec son masque (ex: 192.168.1.0/24).",
+        };
+      }
+
+      const parts = input.split("/");
+      const baseMask = parseInt(parts[1], 10);
+      const baseInt = ipToInt(parts[0]);
+
+      const shift = baseMask === 0 ? 0 : 32 - baseMask;
+      const networkStart =
+        baseMask === 0 ? 0 : (baseInt & (0xffffffff << shift)) >>> 0;
+      const totalIPs = Math.pow(2, 32 - baseMask);
+      const networkEnd = (networkStart + totalIPs - 1) >>> 0;
+
+      const baseNetwork = {
+        cidr: `${intToIp(networkStart)}/${baseMask}`,
+        startIp: intToIp(networkStart),
+        endIp: intToIp(networkEnd),
+        totalIPs: totalIPs,
+        baseMask: baseMask,
+      };
+
+      const maskBlocks = [];
+
+      for (
+        let targetMask = baseMask + 1;
+        targetMask <= 30;
+        targetMask++
+      ) {
+        const subnetSize = Math.pow(2, 32 - targetMask);
+        const count = totalIPs / subnetSize;
+
+        if (count > 1024) continue;
+
+        const subnets = [];
+        for (let i = 0; i < count; i++) {
+          const currentNetInt = (networkStart + i * subnetSize) >>> 0;
+          const netStr = `${intToIp(currentNetInt)}/${targetMask}`;
+          const parents = getParentCIDRs(
+            currentNetInt,
+            targetMask,
+            baseMask,
+          );
+
+          subnets.push({
+            id: netStr,
+            parents: parents,
+          });
+        }
+
+        maskBlocks.push({
+          mask: targetMask,
+          count: count,
+          subnetSize: subnetSize,
+          subnets: subnets,
         });
       }
 
-      // --- Filtres de visibilité ---
-      function toggleMaskVisibility(mask, isVisible) {
-        const block = document.getElementById(`block-mask-${mask}`);
-        if (block) {
-          if (isVisible) block.classList.remove("hidden");
-          else block.classList.add("hidden");
-        }
+      return {
+        isValid: true,
+        baseNetwork: baseNetwork,
+        maskBlocks: maskBlocks,
+      };
+    }
+
+    function renderSubnets(data) {
+      const resultsDiv = document.getElementById("results");
+      const errorDiv = document.getElementById("errorLog");
+      const infoDiv = document.getElementById("networkInfo");
+
+      resultsDiv.innerHTML = "";
+      errorDiv.textContent = "";
+
+      if (!data.isValid) {
+        errorDiv.textContent = data.error;
+        infoDiv.innerHTML = "";
+        return;
       }
 
-      function generateFilterCheckboxes(start, end) {
-        const container = document.getElementById("filterContainer");
-        container.innerHTML = "<strong>Afficher les masques :</strong>";
+      const { baseNetwork, maskBlocks } = data;
+      const fmt = (n) => n.toLocaleString("fr-FR");
 
-        for (let m = start; m <= end; m++) {
-          const label = document.createElement("label");
-          label.className = "filter-item";
-          label.innerHTML = `<input type="checkbox" checked onchange="toggleMaskVisibility(${m}, this.checked)"> /${m}`;
-          container.appendChild(label);
-        }
-      }
-
-      function decompose() {
-        const input = document.getElementById("networkInput").value.trim();
-        const resultsDiv = document.getElementById("results");
-        const errorDiv = document.getElementById("errorLog");
-
-        if (!input) return;
-        localStorage.setItem("snet_calc_last_active_network", input);
-
-        const parts = input.split("/");
-        if (parts.length !== 2) {
-          errorDiv.textContent = "Format invalide.";
-          document.getElementById("networkInfo").innerHTML = "";
-          return;
-        }
-
-        resultsDiv.innerHTML = "";
-        errorDiv.textContent = "";
-
-        const baseMask = parseInt(parts[1]);
-        const baseInt = ipToInt(parts[0]);
-        const networkStart = (baseInt & (0xffffffff << (32 - baseMask))) >>> 0;
-        const totalIPs = Math.pow(2, 32 - baseMask);
-        const networkEnd = networkStart + totalIPs - 1;
-
-        const fmt = (n) => n.toLocaleString("fr-FR");
-        document.getElementById("networkInfo").innerHTML = `
+      infoDiv.innerHTML = `
           <div class="network-summary">
-            <span class="summary-item"><strong>Réseau :</strong> ${intToIp(networkStart)}/${baseMask}</span>
-            <span class="summary-item"><strong>Première adresse :</strong> ${intToIp(networkStart)}</span>
-            <span class="summary-item"><strong>Dernière adresse :</strong> ${intToIp(networkEnd)}</span>
-            <span class="summary-item"><strong>Total IPs :</strong> ${fmt(totalIPs)}</span>
+            <span class="summary-item"><strong>Réseau :</strong> ${baseNetwork.cidr}</span>
+            <span class="summary-item"><strong>Première adresse :</strong> ${baseNetwork.startIp}</span>
+            <span class="summary-item"><strong>Dernière adresse :</strong> ${baseNetwork.endIp}</span>
+            <span class="summary-item"><strong>Total IPs :</strong> ${fmt(baseNetwork.totalIPs)}</span>
           </div>
         `;
 
-        generateFilterCheckboxes(baseMask + 1, 30);
+      generateFilterCheckboxes(baseNetwork.baseMask + 1, 30);
 
-        for (let targetMask = baseMask + 1; targetMask <= 30; targetMask++) {
-          const subnetSize = Math.pow(2, 32 - targetMask);
-          const count = totalIPs / subnetSize;
-          if (count > 1024) continue;
+      const fragment = document.createDocumentFragment();
 
-          const block = document.createElement("div");
-          block.className = "mask-block";
-          block.id = `block-mask-${targetMask}`;
-          block.innerHTML = `<div class="mask-header">Masque /${targetMask} <span class="mask-info">${count} sous-réseau${count > 1 ? "x" : ""} &nbsp;·&nbsp; ${fmt(subnetSize)} IPs/sous-réseau</span></div>`;
+      maskBlocks.forEach((blockData) => {
+        const block = document.createElement("div");
+        block.className = "mask-block";
+        block.id = `block-mask-${blockData.mask}`;
 
-          const grid = document.createElement("div");
-          grid.className = "grid";
+        const count = blockData.count;
+        block.innerHTML = `
+            <div class="mask-header">
+              Masque /${blockData.mask} 
+              <span class="mask-info">${count} sous-réseau${count > 1 ? "x" : ""} &nbsp;·&nbsp; ${fmt(blockData.subnetSize)} IPs/sous-réseau</span>
+            </div>
+          `;
 
-          for (let i = 0; i < count; i++) {
-            const currentNetInt = networkStart + i * subnetSize;
-            const netStr = `${intToIp(currentNetInt)}/${targetMask}`;
-            const parents = getParentCIDRs(currentNetInt, targetMask, baseMask);
+        const grid = document.createElement("div");
+        grid.className = "grid";
 
-            const label = document.createElement("label");
-            label.className = "network-item";
-            label.setAttribute("data-own-id", netStr);
-            label.setAttribute("data-parents", `|${parents.join("|")}|`);
-            label.onmouseenter = () => handleMouseEnter(label);
-            label.onmouseleave = handleMouseLeave;
+        blockData.subnets.forEach((subnet) => {
+          const label = document.createElement("label");
+          label.className = "network-item";
+          label.setAttribute("data-own-id", subnet.id);
+          label.setAttribute(
+            "data-parents",
+            `|${subnet.parents.join("|")}|`,
+          );
 
-            label.innerHTML = `
+          label.onmouseenter = () => handleMouseEnter(label);
+          label.onmouseleave = handleMouseLeave;
+
+          label.innerHTML = `
               <div class="network-item-content">
-                <input type="checkbox" data-id="${netStr}" onchange="toggleInventory(this)">
-                <span>${netStr}</span>
+                <input type="checkbox" data-id="${subnet.id}" onchange="toggleInventory(this)">
+                <span>${subnet.id}</span>
               </div>
             `;
-            grid.appendChild(label);
-          }
-          block.appendChild(grid);
-          resultsDiv.appendChild(block);
-        }
-        updateUI();
-      }
+          grid.appendChild(label);
+        });
 
-      window.onload = () => {
-        refreshHistoryDropdown();
+        block.appendChild(grid);
+        fragment.appendChild(block);
+      });
+
+      resultsDiv.appendChild(fragment);
+      updateUI();
+    }
+
+    function decompose() {
+      const inputEl = document.getElementById("networkInput");
+      const input = inputEl.value.trim();
+
+      if (!input) return;
+
+      localStorage.setItem("snet_calc_last_active_network", input);
+      const subnetData = calculateSubnetData(input);
+      renderSubnets(subnetData);
+    }
+
+    // --- Initialisation au chargement ---
+    window.onload = () => {
+      refreshHistoryDropdown();
+      const restoredFromUrl = checkAndRestoreFromUrl();
+
+      if (!restoredFromUrl) {
         const last = localStorage.getItem("snet_calc_last_active_network");
         if (last) {
           document.getElementById("networkInput").value = last;
           document.getElementById("savedNetworks").value = last;
           decompose();
         }
-      };
-    </script>
-  </body>
+      }
+    };
+  </script>
+</body>
+
 </html>
