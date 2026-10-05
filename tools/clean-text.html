@@ -101,6 +101,23 @@
     .finding-code { color: var(--muted); font-family: var(--mono); font-size: .75rem; }
     .excerpt { margin-top: 4px; color: var(--muted); font-family: var(--mono); font-size: .78rem; }
     .empty { padding: 18px; color: var(--muted); text-align: center; }
+    .diff-card { margin-top: 14px; overflow: hidden; }
+    .diff-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .diff-legend { display: flex; gap: 12px; color: var(--muted); font-size: .78rem; }
+    .diff-legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+    .diff-legend .removed::before { background: rgba(220, 38, 38, .35); }
+    .diff-legend .added::before { background: rgba(22, 163, 74, .35); }
+    .diff-view { margin: 0; padding: 0; overflow: auto; max-height: 520px; background: var(--panel-2); font-family: var(--mono); font-size: 13px; line-height: 1.5; }
+    .diff-line { display: grid; grid-template-columns: 64px 64px minmax(max-content, 1fr); min-width: 100%; width: max-content; }
+    .diff-line .oldno, .diff-line .newno { padding: 1px 10px; text-align: right; user-select: none; color: var(--muted); border-right: 1px solid var(--border); }
+    .diff-line .code { padding: 1px 12px; white-space: pre; }
+    .diff-line.meta .code { color: var(--info); font-weight: 700; }
+    .diff-line.hunk .code { color: var(--primary); background: rgba(37, 99, 235, .08); }
+    .diff-line.added { background: rgba(22, 163, 74, .11); }
+    .diff-line.added .code { color: var(--good); }
+    .diff-line.removed { background: rgba(220, 38, 38, .10); }
+    .diff-line.removed .code { color: var(--danger); }
+    .diff-line.context .code { color: var(--text); }
     details { margin-top: 14px; }
     summary { cursor: pointer; font-weight: 750; padding: 14px 16px; }
     .help { padding: 0 16px 16px; color: var(--muted); line-height: 1.55; }
@@ -197,6 +214,19 @@
         <div class="card-title"><span>Diagnostics stylistiques</span><span class="counter" id="findingCount">0 finding</span></div>
         <div class="findings" id="findings"><div class="empty">Aucune analyse effectuée.</div></div>
       </article>
+    </section>
+
+    <section class="card diff-card">
+      <div class="card-title">
+        <div class="diff-toolbar">
+          <span>Diff unifié</span>
+          <span class="counter" id="diffSummary">0 ajout · 0 suppression</span>
+        </div>
+        <div class="diff-legend"><span class="removed">supprimé</span><span class="added">ajouté</span></div>
+      </div>
+      <div class="diff-view" id="diffView" aria-label="Diff entre le texte source et le résultat">
+        <div class="empty">Le diff apparaîtra après le nettoyage.</div>
+      </div>
     </section>
 
     <details class="card">
@@ -509,12 +539,121 @@
       element.textContent = `${text.length} car. · ${lines} ligne${lines > 1 ? "s" : ""}`;
     }
 
+    function splitDiffLines(text) {
+      const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const lines = normalized.split("\n");
+      if (lines.length && lines[lines.length - 1] === "") lines.pop();
+      return lines;
+    }
+
+    function diffOperations(before, after) {
+      const a = splitDiffLines(before);
+      const b = splitDiffLines(after);
+      const cells = (a.length + 1) * (b.length + 1);
+      if (cells > 2_000_000) {
+        return [
+          ...a.map((line) => ({ type: "removed", text: line })),
+          ...b.map((line) => ({ type: "added", text: line }))
+        ];
+      }
+
+      const dp = Array.from({ length: a.length + 1 }, () => new Uint32Array(b.length + 1));
+      for (let i = a.length - 1; i >= 0; i--) {
+        for (let j = b.length - 1; j >= 0; j--) {
+          dp[i][j] = a[i] === b[j]
+            ? dp[i + 1][j + 1] + 1
+            : Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+
+      const operations = [];
+      let i = 0;
+      let j = 0;
+      while (i < a.length && j < b.length) {
+        if (a[i] === b[j]) {
+          operations.push({ type: "context", text: a[i] });
+          i++; j++;
+        } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+          operations.push({ type: "removed", text: a[i++] });
+        } else {
+          operations.push({ type: "added", text: b[j++] });
+        }
+      }
+      while (i < a.length) operations.push({ type: "removed", text: a[i++] });
+      while (j < b.length) operations.push({ type: "added", text: b[j++] });
+      return operations;
+    }
+
+    function createDiffLine(type, oldNumber, newNumber, text) {
+      const row = document.createElement("div");
+      row.className = `diff-line ${type}`;
+
+      const oldNo = document.createElement("span");
+      oldNo.className = "oldno";
+      oldNo.textContent = oldNumber ?? "";
+
+      const newNo = document.createElement("span");
+      newNo.className = "newno";
+      newNo.textContent = newNumber ?? "";
+
+      const code = document.createElement("span");
+      code.className = "code";
+      const prefix = type === "added" ? "+" : type === "removed" ? "-" : type === "context" ? " " : "";
+      code.textContent = prefix + text;
+
+      row.append(oldNo, newNo, code);
+      return row;
+    }
+
+    function renderUnifiedDiff(before, after) {
+      const view = $("diffView");
+      view.replaceChildren();
+
+      const operations = diffOperations(before, after);
+      const additions = operations.filter((item) => item.type === "added").length;
+      const deletions = operations.filter((item) => item.type === "removed").length;
+      $("diffSummary").textContent = `${additions} ajout${additions !== 1 ? "s" : ""} · ${deletions} suppression${deletions !== 1 ? "s" : ""}`;
+
+      if (!additions && !deletions) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Aucune différence : le texte source et le résultat sont identiques.";
+        view.append(empty);
+        return;
+      }
+
+      view.append(
+        createDiffLine("meta", null, null, "--- source"),
+        createDiffLine("meta", null, null, "+++ cleaned")
+      );
+
+      const oldTotal = splitDiffLines(before).length;
+      const newTotal = splitDiffLines(after).length;
+      view.append(createDiffLine("hunk", null, null, `@@ -1,${oldTotal} +1,${newTotal} @@`));
+
+      let oldLine = 1;
+      let newLine = 1;
+      for (const operation of operations) {
+        if (operation.type === "context") {
+          view.append(createDiffLine("context", oldLine, newLine, operation.text));
+          oldLine++; newLine++;
+        } else if (operation.type === "removed") {
+          view.append(createDiffLine("removed", oldLine, null, operation.text));
+          oldLine++;
+        } else {
+          view.append(createDiffLine("added", null, newLine, operation.text));
+          newLine++;
+        }
+      }
+    }
+
     function run() {
       const original = source.value;
       const opts = options();
       const result = processText(original, opts);
       output.value = result.cleaned;
       renderStats(result.stats, result.changed);
+      renderUnifiedDiff(original, result.cleaned);
       const findings = opts.lint ? analyseStyle(original, opts.connectorThreshold, opts.openingThreshold) : [];
       renderFindings(findings, opts.lint);
       updateCounter($("sourceCounter"), original);
@@ -560,6 +699,8 @@
     $("clearBtn").addEventListener("click", () => {
       source.value = ""; output.value = ""; currentFilename = "texte.txt"; $("filename").textContent = "Saisie manuelle";
       updateCounter($("sourceCounter"), ""); updateCounter($("outputCounter"), "");
+      $("diffSummary").textContent = "0 ajout · 0 suppression";
+      $("diffView").innerHTML = '<div class="empty">Le diff apparaîtra après le nettoyage.</div>';
       renderStats({ unicode: 0, whitespace: 0, punctuation: 0, ascii: 0, style: 0, total: 0 }, false);
       $("status").className = "status"; $("status").textContent = "En attente d'un texte.";
       renderFindings([], false);
