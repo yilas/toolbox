@@ -38,30 +38,29 @@
         background-color: #0a66c2;
         color: white;
         padding: 16px 32px;
-        font-size: 16px;
-        font-weight: bold;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
+        gap: 16px;
       }
       .top-banner a {
         color: white;
         text-decoration: none;
-        margin-left: 12px;
+        font-size: 16px;
         font-weight: bold;
+        justify-self: start;
         transition: text-decoration 0.3s ease;
       }
       .top-banner a:hover {
         text-decoration: underline;
       }
-      header {
-        background-color: #0a66c2;
-        color: white;
-        padding: 20px 40px;
+      .page-title {
         font-size: 24px;
         font-weight: bold;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        text-align: center;
+      }
+      .top-banner .theme-toggle {
+        justify-self: end;
       }
       .theme-toggle {
         font-size: 20px;
@@ -190,6 +189,14 @@
         cursor: pointer;
       }
       @media screen and (max-width: 900px) {
+        .top-banner {
+          grid-template-columns: 1fr auto;
+        }
+        .page-title {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          font-size: 21px;
+        }
         main {
           flex-direction: column;
           padding: 20px;
@@ -199,18 +206,17 @@
   </head>
   <body>
     <div class="top-banner">
-      🔙 <a href="../index.html">Retour à la page principale</a>
-    </div>
-    <header>
-      📬 Réponse automatique multilingue
+      <a href="../index.html">🔙 Retour au portail</a>
+      <div class="page-title">📬 Réponse automatique multilingue</div>
       <button
         class="theme-toggle"
         onclick="toggleTheme()"
         title="Changer le thème"
+        aria-label="Changer le thème"
       >
         🌙
       </button>
-    </header>
+    </div>
     <main>
       <div class="form">
         <label for="date">📅 Date de retour :</label>
