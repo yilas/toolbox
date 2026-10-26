@@ -79,6 +79,25 @@
     .actions { display: flex; gap: 7px; flex-wrap: wrap; }
     .actions button { padding: 7px 10px; font-size: 12px; }
     .delete { color: var(--danger); }
+    .tag-filter { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 10px; max-width: 180px; }
+    .tags-input { width: 100%; margin: 0 0 10px; padding: 8px 10px; background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+    .tag-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 10px; }
+    .tag-chip { font-size: 11px; padding: 3px 8px; border-radius: 14px; color: var(--text); background: var(--button-bg); }
+    .note-tools { display: flex; gap: 5px; align-items: center; }
+    .note-tools button { padding: 5px 8px; min-width: 30px; }
+    .drag-handle { cursor: grab; touch-action: none; }
+    .drag-handle:active { cursor: grabbing; }
+    .note.drag-over { outline: 2px dashed var(--accent); outline-offset: 2px; }
+    .trash-panel { margin-top: 6px; }
+    .trash-head { display: flex; gap: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+    .trash-head h2 { font-size: 22px; margin: 0; }
+    .trash-list { display: grid; gap: 10px; }
+    .trash-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+    .trash-item p { margin: 3px 0; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .trash-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .trash-actions .permanent-delete { color: var(--danger); }
+    .help { color: var(--muted); font-size: 12px; margin: 0 0 14px; }
+
     .empty { grid-column: 1 / -1; text-align: center; padding: 75px 20px; color: var(--muted); border: 1px dashed var(--border); border-radius: 13px; }
     .empty strong { display: block; color: var(--text); font-size: 22px; margin-bottom: 6px; }
     footer { margin-top: 35px; color: var(--muted); font-size: 12px; }
@@ -104,20 +123,36 @@
 
     <div class="toolbar">
       <input class="search" id="search" type="search" placeholder="⌕ Rechercher… (Ctrl/⌘ + K)" aria-label="Rechercher">
+      <select id="tag-filter" class="tag-filter" aria-label="Filtrer par tag"><option value="">Tous les tags</option></select>
       <button id="paste" type="button">📋 Coller</button>
       <button id="copy-all" type="button">⧉ Tout copier</button>
       <button id="export" type="button">↓ Export JSON</button>
       <button id="import" type="button">↑ Import JSON</button>
+      <button id="trash-toggle" type="button" aria-controls="trash-view" aria-expanded="false">🗑 Corbeille (<span id="trash-count">0</span>)</button>
       <input id="import-file" type="file" accept=".json,application/json" hidden>
     </div>
 
     <div class="stats" id="stats" aria-live="polite"></div>
+    <p class="help" id="order-hint">⠿ Glisse la poignée d'un bloc pour le déplacer, ou utilise les flèches ↑ ↓. Désactive la recherche et les filtres pour réordonner.</p>
     <main class="grid" id="notes"></main>
+    <section id="trash-view" class="trash-panel" aria-label="Corbeille" hidden>
+      <div class="trash-head">
+        <div>
+          <h2>🗑 Corbeille</h2>
+          <p class="help">Restauration possible pendant 7 jours. Les blocs temporaires ne survivent pas à la fin de la session.</p>
+        </div>
+        <div class="actions">
+          <button id="trash-close" type="button">← Retour aux blocs</button>
+          <button id="trash-empty" class="delete" type="button">Vider la corbeille</button>
+        </div>
+      </div>
+      <div id="trash-list" class="trash-list"></div>
+    </section>
 
     <footer>
       <p>📌 Les blocs persistants sont enregistrés dans IndexedDB. Les autres sont conservés pendant la session ou jusqu'à expiration.</p>
       <p>Aucun serveur, aucun compte, aucune synchronisation. Les données locales ne sont pas chiffrées : n'y stocke pas de secrets.</p>
-      <p>Raccourcis : Ctrl/⌘ + Entrée = nouveau bloc · Ctrl/⌘ + K = recherche</p>
+      <p>Raccourcis : Ctrl/⌘ + Entrée = nouveau bloc · Ctrl/⌘ + K = recherche · Ctrl/⌘ + Maj + V = coller dans un nouveau bloc (hors éditeur) · Ctrl/⌘ + Maj + C = copier le bloc actif · Alt + ↑/↓ = déplacer un bloc · Échap = fermer la corbeille.</p>
     </footer>
   </div>
   <div id="toast" role="status" hidden></div>
@@ -127,7 +162,23 @@
     "use strict";
 
     const $ = selector => document.querySelector(selector);
+    const DB_NAME = "toolbox-scratchpad";
+    const STORE = "notes";
+    const TRASH_STORE = "trash";
+    const SESSION_KEY = "toolbox-scratchpad-session-v1";
+    const TRASH_SESSION_KEY = "toolbox-scratchpad-trash-v1";
+    const LEGACY_KEY = "scratchpad.v1";
     const THEME_KEY = "toolbox-scratchpad-theme";
+    const TRASH_RETENTION = 7 * 24 * 60 * 60 * 1000;
+    const TTL = { session: 0, hour: 3600000, day: 86400000 };
+
+    let db = null;
+    let notes = [];
+    let trash = [];
+    let draggingId = null;
+    let activeId = null;
+    let showingTrash = false;
+    let toastTimer;
 
     function applyTheme(theme) {
       const dark = theme === "dark";
@@ -139,7 +190,6 @@
       const meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.content = dark ? "#0e121a" : "#f4f7fb";
     }
-
     applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
     $("#theme-toggle").addEventListener("click", () => {
       const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
@@ -147,7 +197,6 @@
       try { localStorage.setItem(THEME_KEY, next); }
       catch { console.warn("Préférence de thème non sauvegardée"); }
     });
-
     const systemTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
     if (systemTheme && systemTheme.addEventListener) {
       systemTheme.addEventListener("change", event => {
@@ -156,15 +205,6 @@
         if (manual !== "light" && manual !== "dark") applyTheme(event.matches ? "dark" : "light");
       });
     }
-
-    const DB_NAME = "toolbox-scratchpad";
-    const STORE = "notes";
-    const SESSION_KEY = "toolbox-scratchpad-session-v1";
-    const LEGACY_KEY = "scratchpad.v1";
-    const TTL = { session: 0, hour: 3600000, day: 86400000 };
-    let db = null;
-    let notes = [];
-    let toastTimer;
 
     const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random());
 
@@ -175,110 +215,172 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => { element.hidden = true; }, 2500);
     }
-
     function safe(value) {
-      return String(value).replace(/[&<>"']/g, c => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-      })[c]);
+      return String(value).replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+    }
+    function parseTags(value) {
+      const items = Array.isArray(value) ? value : String(value || "").split(",");
+      return [...new Set(items.map(x => String(x).trim().replace(/^#+/, "").toLocaleLowerCase())
+        .filter(Boolean).map(x => x.slice(0, 32)))].slice(0, 12);
+    }
+    function normalize(value) {
+      if (!value || typeof value.body !== "string") return null;
+      const pinned = Boolean(value.pinned);
+      return {
+        id: typeof value.id === "string" ? value.id : newId(),
+        title: String(value.title || ""),
+        body: value.body,
+        tags: parseTags(value.tags),
+        pinned,
+        ttl: pinned ? "session" : (Object.hasOwn(TTL, value.ttl) ? value.ttl : "session"),
+        expiresAt: pinned ? null : (Number(value.expiresAt) || null),
+        order: Number.isFinite(value.order) ? value.order : null,
+        createdAt: Number(value.createdAt) || Date.now(),
+        updatedAt: Number(value.updatedAt) || Date.now()
+      };
+    }
+    function normalizeTrash(value) {
+      const note = normalize(value);
+      if (!note) return null;
+      return { ...note, deletedAt: Number(value.deletedAt) || Date.now() };
     }
 
-    // IndexedDB est réservé aux blocs explicitement épinglés.
+    // La migration v1 -> v2 conserve le magasin "notes" et ajoute "trash".
     function openDB() {
       return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
+        const request = indexedDB.open(DB_NAME, 2);
         request.onupgradeneeded = () => {
-          if (!request.result.objectStoreNames.contains(STORE)) {
-            request.result.createObjectStore(STORE, { keyPath: "id" });
-          }
+          const database = request.result;
+          if (!database.objectStoreNames.contains(STORE))
+            database.createObjectStore(STORE, { keyPath: "id" });
+          if (!database.objectStoreNames.contains(TRASH_STORE))
+            database.createObjectStore(TRASH_STORE, { keyPath: "id" });
         };
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
         request.onblocked = () => reject(new Error("Ouverture IndexedDB bloquée"));
       });
     }
-
-    function transact(mode, action) {
+    function transaction(stores, mode, callback) {
       if (!db) return Promise.reject(new Error("IndexedDB indisponible"));
       return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, mode);
-        const request = action(tx.objectStore(STORE));
-        let value;
-        request.onsuccess = () => { value = request.result; };
-        tx.oncomplete = () => resolve(value);
+        const tx = db.transaction(stores, mode);
+        let result;
+        try {
+          const request = callback(tx);
+          if (request) request.onsuccess = () => { result = request.result; };
+        } catch (error) { tx.abort(); reject(error); return; }
+        tx.oncomplete = () => resolve(result);
         tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error || new Error("Transaction annulée"));
       });
     }
+    const getNotesDB = () => transaction([STORE], "readonly", tx => tx.objectStore(STORE).getAll());
+    const putNoteDB = note => transaction([STORE], "readwrite", tx => tx.objectStore(STORE).put(note));
+    const getTrashDB = () => transaction([TRASH_STORE], "readonly", tx => tx.objectStore(TRASH_STORE).getAll());
+    const deleteTrashDB = id => transaction([TRASH_STORE], "readwrite", tx => tx.objectStore(TRASH_STORE).delete(id));
+    const archiveDB = note => transaction([STORE, TRASH_STORE], "readwrite", tx => {
+      tx.objectStore(TRASH_STORE).put(note);
+      tx.objectStore(STORE).delete(note.id);
+    });
+    const restoreDB = note => transaction([STORE, TRASH_STORE], "readwrite", tx => {
+      tx.objectStore(STORE).put(note);
+      tx.objectStore(TRASH_STORE).delete(note.id);
+    });
+    const clearTrashDB = () => transaction([TRASH_STORE], "readwrite", tx => tx.objectStore(TRASH_STORE).clear());
+    const unpinDB = id => transaction([STORE], "readwrite", tx => tx.objectStore(STORE).delete(id));
 
-    const getSaved = () => transact("readonly", store => store.getAll());
-    const putSaved = note => transact("readwrite", store => store.put(note));
-    const removeSaved = id => transact("readwrite", store => store.delete(id));
-
-    function readSession() {
+    function readSession(key) {
       try {
-        const value = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "[]");
+        const value = JSON.parse(sessionStorage.getItem(key) || "[]");
         return Array.isArray(value) ? value : [];
       } catch { return []; }
     }
-
     function saveSession() {
       try {
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(notes.filter(n => !n.pinned)));
-      } catch { notify("Stockage de session indisponible"); }
+      } catch { notify("Stockage temporaire indisponible"); }
     }
-
-    function normalize(n) {
-      if (!n || typeof n.body !== "string") return null;
-      const ttl = Object.prototype.hasOwnProperty.call(TTL, n.ttl) ? n.ttl : "session";
-      return {
-        id: typeof n.id === "string" ? n.id : newId(),
-        title: String(n.title || ""),
-        body: n.body,
-        pinned: Boolean(n.pinned),
-        ttl: Boolean(n.pinned) ? "session" : ttl,
-        expiresAt: Boolean(n.pinned) ? null : (Number(n.expiresAt) || null),
-        createdAt: Number(n.createdAt) || Date.now(),
-        updatedAt: Number(n.updatedAt) || Date.now()
-      };
+    function saveTrashSession() {
+      try {
+        sessionStorage.setItem(TRASH_SESSION_KEY, JSON.stringify(trash.filter(n => !n.pinned)));
+      } catch { notify("Stockage de corbeille indisponible"); }
     }
-
-    function updateStats() {
-      $("#stats").textContent = notes.length + " bloc(s) · " +
-        notes.filter(n => n.pinned).length + " persistant(s)";
+    async function persist(note) {
+      if (!note.pinned) { saveSession(); return; }
+      try { await putNoteDB(note); }
+      catch (error) { console.error(error); notify("Sauvegarde IndexedDB impossible"); }
     }
+    function nextTopOrder() {
+      return notes.length ? Math.min(...notes.map(n => Number.isFinite(n.order) ? n.order : 0)) - 1 : 0;
+    }
+    function hasFilters() { return Boolean($("#search").value.trim() || $("#tag-filter").value); }
 
     function expireNotes() {
       const before = notes.length;
       notes = notes.filter(n => n.pinned || !n.expiresAt || n.expiresAt > Date.now());
       if (notes.length !== before) saveSession();
     }
-
-    async function persist(note) {
-      if (!note.pinned) {
-        saveSession();
-        return;
+    async function expireTrash() {
+      const now = Date.now();
+      const expired = trash.filter(n => now - n.deletedAt >= TRASH_RETENTION);
+      for (const n of expired.filter(n => n.pinned)) {
+        try { await deleteTrashDB(n.id); }
+        catch (error) { console.error(error); continue; }
       }
-      try {
-        await putSaved(note);
-      } catch (error) {
-        console.error(error);
-        notify("Sauvegarde IndexedDB impossible");
+      const expiredIds = new Set(expired.filter(n => !n.pinned).map(n => n.id));
+      for (const n of expired.filter(n => n.pinned)) {
+        // Keep failed DB deletions visible so they can be retried.
+        try {
+          const present = (await getTrashDB()).some(entry => entry.id === n.id);
+          if (!present) expiredIds.add(n.id);
+        } catch {}
+      }
+      if (expiredIds.size) {
+        trash = trash.filter(n => !expiredIds.has(n.id));
+        saveTrashSession();
       }
     }
-
+    function renderTagFilter() {
+      const select = $("#tag-filter");
+      const choice = select.value;
+      const tags = [...new Set(notes.flatMap(n => n.tags))].sort((a, b) => a.localeCompare(b));
+      select.innerHTML = '<option value="">Tous les tags</option>' +
+        tags.map(tag => '<option value="' + safe(tag) + '">#' + safe(tag) + '</option>').join("");
+      select.value = tags.includes(choice) ? choice : "";
+    }
+    function updateStats() {
+      $("#stats").textContent = notes.length + " bloc(s) · " +
+        notes.filter(n => n.pinned).length + " persistant(s)";
+      $("#trash-count").textContent = String(trash.length);
+      $("#trash-empty").disabled = trash.length === 0;
+    }
     function render() {
       expireNotes();
+      renderTagFilter();
       const query = $("#search").value.toLocaleLowerCase();
+      const tag = $("#tag-filter").value;
+      const filtered = hasFilters();
       const visible = notes.filter(n =>
-        (n.title + " " + n.body).toLocaleLowerCase().includes(query)
+        (!tag || n.tags.includes(tag)) &&
+        (n.title + " " + n.body + " " + n.tags.join(" ")).toLocaleLowerCase().includes(query)
       );
-      $("#notes").innerHTML = visible.length ? visible.map(n => (
+      $("#notes").innerHTML = visible.length ? visible.map((n, i) =>
         '<article class="note ' + (n.pinned ? "pinned" : "") + '" data-id="' + safe(n.id) + '">' +
           '<div class="note-head">' +
             '<input class="title" aria-label="Titre" placeholder="Sans titre" value="' + safe(n.title) + '">' +
-            '<button type="button" class="delete" title="Supprimer définitivement" aria-label="Supprimer ce bloc">✕</button>' +
+            '<div class="note-tools">' +
+              '<button class="drag-handle" draggable="' + (!filtered) + '" type="button" aria-label="Glisser ce bloc" title="' +
+                (filtered ? "Enlever les filtres pour réordonner" : "Glisser pour réordonner") + '">⠿</button>' +
+              '<button class="move-up" type="button" aria-label="Monter le bloc" ' + (filtered || i === 0 ? "disabled" : "") + '>↑</button>' +
+              '<button class="move-down" type="button" aria-label="Descendre le bloc" ' + (filtered || i === visible.length - 1 ? "disabled" : "") + '>↓</button>' +
+              '<button type="button" class="delete" title="Déplacer vers la corbeille" aria-label="Supprimer ce bloc">✕</button>' +
+            '</div>' +
           '</div>' +
           '<textarea class="content" aria-label="Contenu" spellcheck="false" placeholder="Colle une commande, du JSON, une URL…">' + safe(n.body) + '</textarea>' +
+          '<input class="tags-input" aria-label="Tags séparés par des virgules" placeholder="Tags : aks, terraform, tmp" value="' + safe(n.tags.join(", ")) + '">' +
+          '<div class="tag-chips">' + n.tags.map(t => '<button type="button" class="tag-chip" data-tag="' + safe(t) + '" title="Filtrer par #' + safe(t) + '">#' + safe(t) + '</button>').join("") + '</div>' +
           '<div class="note-foot">' +
             '<label class="pin"><input type="checkbox" class="pin-checkbox" ' + (n.pinned ? "checked" : "") + '> 📌 Persistant</label>' +
             '<select class="ttl" aria-label="Durée de conservation" ' + (n.pinned ? "disabled" : "") + '>' +
@@ -290,73 +392,156 @@
               '<button type="button" class="copy">⧉ Copier</button></div>' +
           '</div>' +
         '</article>'
-      )).join("") : '<div class="empty"><strong>' +
-        (query ? "Aucun résultat" : "Tout est prêt ✳") +
-        '</strong>' + (query ? "Essaie un autre mot-clé." : "Crée un bloc ou colle du texte pour commencer.") + '</div>';
+      ).join("") : '<div class="empty"><strong>' +
+        (filtered ? "Aucun résultat" : "Tout est prêt ✳") + '</strong>' +
+        (filtered ? "Essaie un autre mot-clé ou tag." : "Crée un bloc ou colle du texte pour commencer.") + '</div>';
       updateStats();
     }
-
-    async function createNote(title = "", body = "", pinned = false) {
+    function renderTrash() {
+      const items = [...trash].sort((a, b) => b.deletedAt - a.deletedAt);
+      $("#trash-list").innerHTML = items.length ? items.map(n =>
+        '<article class="trash-item" data-id="' + safe(n.id) + '">' +
+          '<div><strong>' + safe(n.title || "Sans titre") + '</strong>' +
+          '<p>' + safe(n.body.slice(0, 140)) + (n.body.length > 140 ? "…" : "") + '</p>' +
+          '<p>' + (n.pinned ? "📌 Persistant" : "Temporaire") + ' · Supprimé le ' +
+            safe(new Date(n.deletedAt).toLocaleString("fr-FR")) +
+            (n.tags.length ? ' · ' + n.tags.map(t => "#" + safe(t)).join(" ") : "") + '</p></div>' +
+          '<div class="trash-actions"><button type="button" class="restore">↶ Restaurer</button>' +
+          '<button type="button" class="permanent-delete">Supprimer définitivement</button></div>' +
+        '</article>'
+      ).join("") : '<div class="empty"><strong>Corbeille vide</strong>Aucune note à restaurer.</div>';
+      updateStats();
+    }
+    function setTrashView(open) {
+      showingTrash = open;
+      $("#trash-view").hidden = !open;
+      $("#notes").hidden = open;
+      $("#stats").hidden = open;
+      $("#order-hint").hidden = open;
+      $("#search").disabled = open;
+      $("#tag-filter").disabled = open;
+      $("#trash-toggle").setAttribute("aria-expanded", String(open));
+      if (open) renderTrash();
+      else render();
+    }
+    async function commitOrder() {
+      notes.forEach((n, i) => { n.order = i; });
+      saveSession();
+      try {
+        for (const n of notes.filter(n => n.pinned)) await putNoteDB(n);
+      } catch (error) { console.error(error); notify("Impossible de sauvegarder tout l’ordre"); }
+    }
+    async function moveNote(id, destination) {
+      if (hasFilters() || showingTrash) { notify("Enlève les filtres pour déplacer un bloc"); return; }
+      const from = notes.findIndex(n => n.id === id);
+      const to = notes.findIndex(n => n.id === destination);
+      if (from < 0 || to < 0 || from === to) return;
+      const [note] = notes.splice(from, 1);
+      notes.splice(to, 0, note);
+      await commitOrder();
+      render();
+    }
+    async function moveBy(id, delta) {
+      if (hasFilters()) { notify("Enlève les filtres pour déplacer un bloc"); return; }
+      const i = notes.findIndex(n => n.id === id);
+      if (i < 0 || i + delta < 0 || i + delta >= notes.length) return;
+      const targetId = notes[i + delta].id;
+      await moveNote(id, targetId);
+      const card = [...document.querySelectorAll(".note")].find(a => a.dataset.id === id);
+      const button = card && card.querySelector(delta < 0 ? ".move-up" : ".move-down");
+      if (button) button.focus();
+    }
+    async function createNote(title = "", body = "", pinned = false, tags = []) {
       if (pinned && !db) pinned = false;
       const note = {
-        id: newId(), title, body, pinned, ttl: "session",
-        expiresAt: null, createdAt: Date.now(), updatedAt: Date.now()
+        id: newId(), title, body, tags: parseTags(tags), pinned, ttl: "session",
+        expiresAt: null, order: nextTopOrder(), createdAt: Date.now(), updatedAt: Date.now()
       };
       notes.unshift(note);
       await persist(note);
       saveSession();
       $("#search").value = "";
+      $("#tag-filter").value = "";
       render();
-      const first = $("#notes .note .content");
-      if (first) first.focus();
+      activeId = note.id;
+      $("#notes .note .content")?.focus();
     }
-
     async function deleteNote(note) {
-      if (!confirm("Supprimer définitivement ce bloc ?")) return;
+      const deleted = { ...note, deletedAt: Date.now() };
       if (note.pinned) {
-        try { await removeSaved(note.id); }
-        catch { notify("Suppression impossible dans IndexedDB"); return; }
+        try { await archiveDB(deleted); }
+        catch (error) { console.error(error); notify("Impossible de déplacer ce bloc dans la corbeille"); return; }
       }
+      trash.unshift(deleted);
       notes = notes.filter(n => n.id !== note.id);
+      if (activeId === note.id) activeId = null;
       saveSession();
+      saveTrashSession();
       render();
-      notify("Bloc supprimé");
+      notify("Déplacé dans la corbeille (7 jours)");
     }
-
-    async function setPinned(note, pinned) {
-      if (pinned && !db) {
-        notify("IndexedDB indisponible dans ce navigateur");
-        render();
-        return;
+    async function restoreNote(note) {
+      const restored = { ...note, order: nextTopOrder() };
+      delete restored.deletedAt;
+      if (note.pinned) {
+        try { await restoreDB(restored); }
+        catch (error) { console.error(error); notify("Restauration impossible"); return; }
       }
+      trash = trash.filter(n => n.id !== note.id);
+      notes.unshift(restored);
+      saveSession();
+      saveTrashSession();
+      renderTrash();
+      notify("Bloc restauré");
+    }
+    async function permanentlyDelete(note) {
+      if (!confirm("Supprimer définitivement ce bloc de la corbeille ?")) return;
+      if (note.pinned) {
+        try { await deleteTrashDB(note.id); }
+        catch (error) { console.error(error); notify("Suppression impossible"); return; }
+      }
+      trash = trash.filter(n => n.id !== note.id);
+      saveTrashSession();
+      renderTrash();
+      notify("Bloc définitivement supprimé");
+    }
+    async function emptyTrash() {
+      if (!trash.length || !confirm("Vider définitivement toute la corbeille ?")) return;
+      try { if (db) await clearTrashDB(); }
+      catch (error) { console.error(error); notify("Impossible de vider la corbeille"); return; }
+      trash = [];
+      saveTrashSession();
+      renderTrash();
+      notify("Corbeille vidée");
+    }
+    async function setPinned(note, pinned) {
+      if (pinned && !db) { notify("IndexedDB indisponible"); render(); return; }
       if (pinned) {
-        const updated = { ...note, pinned: true, ttl: "session", expiresAt: null };
+        const changed = { ...note, pinned: true, ttl: "session", expiresAt: null };
         try {
-          await putSaved(updated);
-          Object.assign(note, updated);
+          await putNoteDB(changed);
+          Object.assign(note, changed);
           saveSession();
           notify("📌 Enregistré dans IndexedDB");
-        } catch { notify("Impossible de rendre ce bloc persistant"); }
+        } catch { notify("Impossible de rendre le bloc persistant"); }
       } else {
         try {
-          await removeSaved(note.id);
-          note.pinned = false;
-          note.ttl = "session";
-          note.expiresAt = null;
+          // Persist first in session, then remove the permanent copy.
+          const changed = { ...note, pinned: false, ttl: "session", expiresAt: null };
+          Object.assign(note, changed);
           saveSession();
+          await unpinDB(note.id);
           notify("Bloc désormais temporaire");
         } catch { notify("Impossible de retirer la persistance"); }
       }
       render();
     }
-
     async function copy(value) {
       try {
-        if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard API unavailable");
+        if (!navigator.clipboard?.writeText) throw new Error("Clipboard API inaccessible");
         await navigator.clipboard.writeText(value);
         notify("✓ Copié !");
       } catch {
-        // Fallback utile sur les pages file:// et les navigateurs plus anciens.
         const element = document.createElement("textarea");
         element.value = value;
         element.style.position = "fixed";
@@ -369,10 +554,7 @@
         notify(ok ? "✓ Copié !" : "Copie indisponible : sélectionne le texte");
       }
     }
-
-    $("#add").addEventListener("click", () => createNote());
-
-    $("#paste").addEventListener("click", async () => {
+    async function pasteNote() {
       try {
         const value = await navigator.clipboard.readText();
         if (!value) { notify("Presse-papiers vide"); return; }
@@ -381,13 +563,22 @@
         await createNote();
         notify("Colle avec Ctrl/⌘ + V dans le nouveau bloc");
       }
-    });
+    }
 
+    $("#add").addEventListener("click", () => { void createNote(); });
+    $("#paste").addEventListener("click", () => { void pasteNote(); });
     $("#search").addEventListener("input", render);
+    $("#tag-filter").addEventListener("change", render);
+    $("#trash-toggle").addEventListener("click", () => setTrashView(!showingTrash));
+    $("#trash-close").addEventListener("click", () => setTrashView(false));
+    $("#trash-empty").addEventListener("click", () => { void emptyTrash(); });
     $("#copy-all").addEventListener("click", () => {
-      copy(notes.map(n => (n.title ? "# " + n.title + "\n" : "") + n.body).join("\n\n---\n\n"));
+      void copy(notes.map(n => (n.title ? "# " + n.title + "\n" : "") + n.body).join("\n\n---\n\n"));
     });
-
+    $("#notes").addEventListener("focusin", event => {
+      const article = event.target.closest(".note");
+      if (article) activeId = article.dataset.id;
+    });
     $("#notes").addEventListener("input", event => {
       const article = event.target.closest(".note");
       if (!article) return;
@@ -399,19 +590,22 @@
       note.updatedAt = Date.now();
       void persist(note);
     });
-
     $("#notes").addEventListener("click", event => {
       const article = event.target.closest(".note");
       if (!article) return;
       const note = notes.find(n => n.id === article.dataset.id);
       if (!note) return;
+      activeId = note.id;
+      const chip = event.target.closest(".tag-chip");
+      if (chip) { $("#tag-filter").value = chip.dataset.tag; render(); return; }
       if (event.target.closest(".delete")) void deleteNote(note);
       else if (event.target.closest(".copy")) void copy(note.body);
       else if (event.target.closest(".duplicate")) void createNote(
-        note.title ? note.title + " (copie)" : "", note.body, note.pinned
+        note.title ? note.title + " (copie)" : "", note.body, note.pinned, note.tags
       );
+      else if (event.target.closest(".move-up")) void moveBy(note.id, -1);
+      else if (event.target.closest(".move-down")) void moveBy(note.id, 1);
     });
-
     $("#notes").addEventListener("change", event => {
       const article = event.target.closest(".note");
       if (!article) return;
@@ -425,7 +619,54 @@
         note.updatedAt = Date.now();
         saveSession();
         render();
+      } else if (event.target.matches(".tags-input")) {
+        note.tags = parseTags(event.target.value);
+        note.updatedAt = Date.now();
+        void persist(note);
+        render();
       }
+    });
+
+    $("#notes").addEventListener("dragstart", event => {
+      const handle = event.target.closest(".drag-handle");
+      const article = event.target.closest(".note");
+      if (!handle || !article || hasFilters() || showingTrash) {
+        event.preventDefault();
+        return;
+      }
+      draggingId = article.dataset.id;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", draggingId);
+    });
+    $("#notes").addEventListener("dragover", event => {
+      const article = event.target.closest(".note");
+      if (!article || !draggingId || hasFilters()) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      document.querySelectorAll(".note.drag-over").forEach(el => el.classList.remove("drag-over"));
+      if (article.dataset.id !== draggingId) article.classList.add("drag-over");
+    });
+    $("#notes").addEventListener("drop", event => {
+      const article = event.target.closest(".note");
+      if (!article || !draggingId) return;
+      event.preventDefault();
+      const from = draggingId;
+      draggingId = null;
+      document.querySelectorAll(".note.drag-over").forEach(el => el.classList.remove("drag-over"));
+      void moveNote(from, article.dataset.id);
+    });
+    $("#notes").addEventListener("dragend", () => {
+      draggingId = null;
+      document.querySelectorAll(".note.drag-over").forEach(el => el.classList.remove("drag-over"));
+    });
+
+    $("#trash-list").addEventListener("click", event => {
+      const article = event.target.closest(".trash-item");
+      if (!article) return;
+      const note = trash.find(n => n.id === article.dataset.id);
+      if (!note) return;
+      if (event.target.closest(".restore")) void restoreNote(note);
+      else if (event.target.closest(".permanent-delete")) void permanentlyDelete(note);
     });
 
     $("#export").addEventListener("click", () => {
@@ -437,10 +678,9 @@
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
-
     $("#import").addEventListener("click", () => $("#import-file").click());
     $("#import-file").addEventListener("change", async event => {
-      const file = event.target.files && event.target.files[0];
+      const file = event.target.files?.[0];
       if (!file) return;
       try {
         const imported = JSON.parse(await file.text());
@@ -449,7 +689,8 @@
         for (const raw of imported) {
           const note = normalize(raw);
           if (!note) continue;
-          note.id = newId(); // Ne jamais écraser une note existante.
+          note.id = newId();
+          note.order = nextTopOrder();
           if (!db) note.pinned = false;
           if (note.expiresAt && note.expiresAt <= Date.now()) continue;
           notes.unshift(note);
@@ -457,6 +698,8 @@
           count++;
         }
         saveSession();
+        $("#search").value = "";
+        $("#tag-filter").value = "";
         render();
         notify(count + " bloc(s) importé(s)");
       } catch (error) {
@@ -467,26 +710,48 @@
     });
 
     document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && showingTrash) {
+        event.preventDefault();
+        setTrashView(false);
+        return;
+      }
+      if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey &&
+        (event.key === "ArrowUp" || event.key === "ArrowDown") && !showingTrash && activeId) {
+        event.preventDefault();
+        void moveBy(activeId, event.key === "ArrowUp" ? -1 : 1);
+        return;
+      }
       if (!(event.ctrlKey || event.metaKey)) return;
       if (event.key.toLowerCase() === "k") {
         event.preventDefault();
+        if (showingTrash) setTrashView(false);
         $("#search").focus();
         $("#search").select();
       } else if (event.key === "Enter") {
         event.preventDefault();
+        if (showingTrash) setTrashView(false);
         void createNote();
+      } else if (event.shiftKey && event.key.toLowerCase() === "c" && activeId && !showingTrash) {
+        event.preventDefault();
+        const note = notes.find(n => n.id === activeId);
+        if (note) void copy(note.body);
+      } else if (event.shiftKey && event.key.toLowerCase() === "v" &&
+        !event.target.closest("input, textarea, [contenteditable]")) {
+        event.preventDefault();
+        if (showingTrash) setTrashView(false);
+        void pasteNote();
       }
     });
 
     async function init() {
       try {
         db = await openDB();
-        const persisted = (await getSaved()).map(normalize).filter(Boolean);
-        const temporary = readSession().map(normalize).filter(n => n && !n.pinned);
-        const ids = new Set(persisted.map(n => n.id));
-        notes = persisted.concat(temporary.filter(n => !ids.has(n.id)));
-
-        // Migration des premières versions autonomes qui utilisaient localStorage.
+        const saved = (await getNotesDB()).map(normalize).filter(Boolean);
+        const temporary = readSession(SESSION_KEY).map(normalize).filter(n => n && !n.pinned);
+        const ids = new Set(saved.map(n => n.id));
+        notes = saved.concat(temporary.filter(n => !ids.has(n.id)));
+        trash = (await getTrashDB()).map(normalizeTrash).filter(Boolean)
+          .concat(readSession(TRASH_SESSION_KEY).map(normalizeTrash).filter(n => n && !n.pinned));
         const legacyRaw = localStorage.getItem(LEGACY_KEY);
         if (legacyRaw) {
           const legacy = JSON.parse(legacyRaw);
@@ -496,12 +761,10 @@
               const oldId = typeof item.id === "string" ? item.id : newId();
               if (ids.has(oldId)) continue;
               const note = normalize({
-                id: oldId,
-                title: item.title || "",
-                body: item.body ?? item.text,
-                pinned: true
+                id: oldId, title: item.title || "",
+                body: item.body ?? item.text, pinned: true
               });
-              await putSaved(note);
+              await putNoteDB(note);
               notes.push(note);
               ids.add(note.id);
             }
@@ -510,18 +773,24 @@
         }
       } catch (error) {
         console.warn("IndexedDB non disponible :", error);
-        // Les notes de session restent utilisables sans IndexedDB.
-        notes = readSession().map(normalize).filter(n => n && !n.pinned);
+        notes = readSession(SESSION_KEY).map(normalize).filter(n => n && !n.pinned);
+        trash = readSession(TRASH_SESSION_KEY).map(normalizeTrash).filter(n => n && !n.pinned);
         notify("IndexedDB indisponible : mode temporaire uniquement");
       }
-      notes.sort((a, b) => b.createdAt - a.createdAt);
+      notes.sort((a, b) =>
+        (a.order === null ? Infinity : a.order) - (b.order === null ? Infinity : b.order) ||
+        b.createdAt - a.createdAt
+      );
+      const needsOrderMigration = notes.some((n, i) => n.order !== i);
+      if (needsOrderMigration) await commitOrder();
+      await expireTrash();
       render();
     }
-
     void init();
     setInterval(() => {
       if (notes.some(n => !n.pinned && n.expiresAt && n.expiresAt <= Date.now())) render();
     }, 30000);
+    setInterval(() => { void expireTrash().then(() => { if (showingTrash) renderTrash(); else updateStats(); }); }, 3600000);
   })();
   </script>
 </body>
