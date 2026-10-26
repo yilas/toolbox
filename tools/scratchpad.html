@@ -758,6 +758,7 @@
           .concat(readSession(TRASH_SESSION_KEY).map(normalizeTrash).filter(n => n && !n.pinned));
         const legacyRaw = localStorage.getItem(LEGACY_KEY);
         if (legacyRaw) {
+          try {
           const legacy = JSON.parse(legacyRaw);
           if (Array.isArray(legacy)) {
             for (const item of legacy) {
@@ -774,6 +775,9 @@
             }
           }
           localStorage.removeItem(LEGACY_KEY);
+          } catch (error) {
+            console.warn("Anciennes notes non migrées :", error);
+          }
         }
       } catch (error) {
         console.warn("IndexedDB non disponible :", error);
