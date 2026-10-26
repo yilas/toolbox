@@ -325,17 +325,12 @@
     async function expireTrash() {
       const now = Date.now();
       const expired = trash.filter(n => now - n.deletedAt >= TRASH_RETENTION);
-      for (const n of expired.filter(n => n.pinned)) {
-        try { await deleteTrashDB(n.id); }
-        catch (error) { console.error(error); continue; }
-      }
       const expiredIds = new Set(expired.filter(n => !n.pinned).map(n => n.id));
       for (const n of expired.filter(n => n.pinned)) {
-        // Keep failed DB deletions visible so they can be retried.
         try {
-          const present = (await getTrashDB()).some(entry => entry.id === n.id);
-          if (!present) expiredIds.add(n.id);
-        } catch {}
+          await deleteTrashDB(n.id);
+          expiredIds.add(n.id);
+        } catch (error) { console.error(error); }
       }
       if (expiredIds.size) {
         trash = trash.filter(n => !expiredIds.has(n.id));
@@ -428,7 +423,10 @@
       notes.forEach((n, i) => { n.order = i; });
       saveSession();
       try {
-        for (const n of notes.filter(n => n.pinned)) await putNoteDB(n);
+        if (db) await transaction([STORE], "readwrite", tx => {
+          const store = tx.objectStore(STORE);
+          for (const note of notes.filter(n => n.pinned)) store.put(note);
+        });
       } catch (error) { console.error(error); notify("Impossible de sauvegarder tout l’ordre"); }
     }
     async function moveNote(id, destination) {
@@ -525,14 +523,18 @@
           notify("📌 Enregistré dans IndexedDB");
         } catch { notify("Impossible de rendre le bloc persistant"); }
       } else {
+        const previous = { ...note };
+        // Keep a session copy until the permanent copy has been removed.
+        Object.assign(note, { pinned: false, ttl: "session", expiresAt: null });
+        saveSession();
         try {
-          // Persist first in session, then remove the permanent copy.
-          const changed = { ...note, pinned: false, ttl: "session", expiresAt: null };
-          Object.assign(note, changed);
-          saveSession();
           await unpinDB(note.id);
           notify("Bloc désormais temporaire");
-        } catch { notify("Impossible de retirer la persistance"); }
+        } catch {
+          Object.assign(note, previous);
+          saveSession();
+          notify("Impossible de retirer la persistance");
+        }
       }
       render();
     }
@@ -715,8 +717,10 @@
         setTrashView(false);
         return;
       }
+      const focusedCard = event.target.closest?.(".note");
       if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey &&
-        (event.key === "ArrowUp" || event.key === "ArrowDown") && !showingTrash && activeId) {
+        (event.key === "ArrowUp" || event.key === "ArrowDown") && !showingTrash &&
+        focusedCard && focusedCard.dataset.id === activeId) {
         event.preventDefault();
         void moveBy(activeId, event.key === "ArrowUp" ? -1 : 1);
         return;
