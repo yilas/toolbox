@@ -18,22 +18,34 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 | **Décodeur & Analyseur JWT** | Décode header et payload JWT, analyse les claims temporels et attendus (`iss`, `aud`, `azp`, etc.), vérifie les signatures HMAC et RSA/PS lorsque les clés sont fournies, affiche une timeline, conserve un historique et permet d'enregistrer des règles de validation. | [`decodeur-analyseur-jwt`](tools/decodeur_analyseur_jwt_standalone.html) |
 | **Générateur de mot de passe** | Génère des mots de passe avec `crypto.getRandomValues()`, longueur et jeux de caractères configurables, estimation d'entropie, indicateur de robustesse et mode Chaos. | [`random-numbers-generator`](tools/random-numbers-generator.html) |
 | **Calculateur de sous-réseaux** | Décompose un réseau CIDR en sous-réseaux, affiche les bornes d'adresses et le nombre d'IP, filtre les tailles de masque et maintient un inventaire persistant des sous-réseaux utilisés par réseau parent. | [`subnets-calculator`](tools/subnets_calculator.html) |
-| **Scratchpad** | Bloc-notes autonomes pour snippets, commandes et liens : copie individuelle ou globale, collage depuis le presse-papiers, duplication, recherche, suppression confirmée, import/export JSON mode jour/nuit mémorisé et persistance optionnelle dans IndexedDB. | [`scratchpad`](tools/scratchpad.html) |
+| **Scratchpad** | Notes HTML autonomes : tags et filtres, réorganisation par glisser-déposer ou flèches, corbeille restaurable 7 jours, raccourcis clavier, copie, import/export JSON, thèmes jour/nuit et persistance sélective IndexedDB. | [`scratchpad`](tools/scratchpad.html) |
 | **Calculateur de temps de travail** | Permet de saisir plusieurs plages entrée/sortie, de les réordonner par glisser-déposer, de calculer automatiquement le temps total travaillé et de conserver les plages localement. | [`worktime-calculator`](tools/worktime-calculator.html) |
 
 > Le tableau ci-dessus correspond aux outils réellement présents dans le répertoire `tools/`. Les idées affichées comme « à venir » sur le portail ne sont pas listées ici tant qu'aucun outil correspondant n'est présent dans ce répertoire.
 
-## ✳ Scratchpad : stockage local
+## ✳ Scratchpad : utilisation et stockage local
 
-Ouvrir [`tools/scratchpad.html`](tools/scratchpad.html) dans le navigateur ou depuis le portail GitHub Pages.
+Ouvrir [`tools/scratchpad.html`](tools/scratchpad.html) dans le navigateur ou depuis le portail GitHub Pages. Aucune installation, aucune dépendance externe.
 
-- **Par défaut**, un bloc reste temporaire dans `sessionStorage` (session de l’onglet). Il peut aussi expirer au bout de 1 h ou 24 h.
-- **📌 Persistant** enregistre le bloc dans **IndexedDB** sur l’origine du site. Décocher l’option retire le bloc de cette base et le remet en mode temporaire.
-- La corbeille supprime définitivement une entrée, après confirmation ; **Export JSON** permet une sauvegarde manuelle et **Import JSON** restaure des blocs sans écraser les existants.
-- **Ctrl/⌘ + Entrée** crée un bloc ; **Ctrl/⌘ + K** ouvre la recherche. La copie utilise une solution de secours si l’API Clipboard n’est pas accessible.
-- **Mode jour/nuit** : bouton de bascule dans l’en-tête. Le thème suit initialement la préférence du système, puis le choix explicite est conservé dans `localStorage` (indépendamment des blocs et de leur persistance).
+- **Tags** : saisir des tags séparés par des virgules dans une carte (ex. `aks, terraform`). La recherche couvre titres, contenu et tags ; le menu **Tous les tags** et les badges **#tag** filtrent les blocs.
+- **Réorganisation** : glisser un bloc avec la poignée `⠿`, ou utiliser les boutons **↑/↓** (également accessibles au clavier). Désactiver les filtres pour modifier l'ordre ; il est enregistré avec les notes.
+- **Corbeille** : supprimer un bloc le place dans la corbeille pour **7 jours**. Il peut être restauré ou supprimé définitivement. Vider la corbeille nécessite une confirmation. Les blocs initialement persistants vont dans un magasin `trash` d'**IndexedDB** (migration v1 → v2 sans supprimer les notes existantes) ; les temporaires vont dans `sessionStorage` et disparaissent à la fermeture de la session.
+- **Persistance** : une note temporaire reste dans `sessionStorage` pendant la session, éventuellement avec expiration 1 h ou 24 h. Cocher **📌 Persistant** enregistre la note dans **IndexedDB** ; décocher la case la replace en session. Les tags et l'ordre suivent la même règle de persistance que leur note.
+- **Import/export JSON** : importe des blocs sans écraser ceux qui existent ; exporte toutes les **notes actives** avec leurs tags et leur ordre, **pas les éléments de la corbeille**.
+- **Mode jour/nuit** : bouton dans l'en-tête ; thème initial déterminé par le système, puis préférence enregistrée dans `localStorage`.
 
-Les données sont **propres au navigateur et à l’origine** (`https://yilas.github.io` sur GitHub Pages). Elles ne sont ni envoyées au dépôt ni synchronisées entre appareils ; vider les données du site les supprime. Ne pas y déposer de mots de passe, tokens ni secrets : le stockage local n’est pas chiffré.
+### Raccourcis
+
+| Raccourci | Action |
+| --- | --- |
+| `Ctrl/⌘ + Entrée` | Créer un bloc |
+| `Ctrl/⌘ + K` | Rechercher |
+| `Ctrl/⌘ + Maj + V` | Nouveau bloc depuis le presse-papiers (hors éditeur de texte) |
+| `Ctrl/⌘ + Maj + C` | Copier le contenu du bloc sélectionné |
+| `Alt + ↑/↓` | Déplacer le bloc ayant le focus (sans filtre actif) |
+| `Échap` | Fermer la corbeille |
+
+Les données sont **propres au navigateur et à l'origine** (`https://yilas.github.io` sur GitHub Pages). Elles ne sont ni envoyées au dépôt ni synchronisées entre appareils ; vider les données du site les supprime. Ne pas y déposer de mots de passe, tokens ni secrets : le stockage local n'est pas chiffré.
 
 ## 🏗️ Structure
 
