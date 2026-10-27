@@ -198,7 +198,7 @@
     const LEGACY_KEY = "scratchpad.v1";
     const THEME_KEY = "toolbox-scratchpad-theme";
     const TRASH_RETENTION = 7 * 24 * 60 * 60 * 1000;
-    const TTL = { session: 0, hour: 3600000, day: 86400000 };
+    const TTL = { session: 0, minute1: 60000, minute5: 300000, minute30: 1800000, hour: 3600000, hour6: 21600000, hour8: 28800000, day: 86400000 };
     const DEFAULT_CATEGORIES = [
       { id:"inbox", label:"À classer", icon:"📥", color:"#b2bcc8" },
       { id:"devops", label:"DevOps", icon:"⚙️", color:"#74b9ff" },
@@ -494,7 +494,12 @@
             '<label class="pin"><input type="checkbox" class="pin-checkbox" ' + (n.pinned ? "checked" : "") + '> 📌 Persistant</label>' +
             '<select class="ttl" aria-label="Durée de conservation" ' + (n.pinned ? "disabled" : "") + '>' +
               '<option value="session" ' + (n.ttl === "session" ? "selected" : "") + '>Session</option>' +
+              '<option value="minute1" ' + (n.ttl === "minute1" ? "selected" : "") + '>1 minute</option>' +
+              '<option value="minute5" ' + (n.ttl === "minute5" ? "selected" : "") + '>5 minutes</option>' +
+              '<option value="minute30" ' + (n.ttl === "minute30" ? "selected" : "") + '>30 minutes</option>' +
               '<option value="hour" ' + (n.ttl === "hour" ? "selected" : "") + '>1 heure</option>' +
+              '<option value="hour6" ' + (n.ttl === "hour6" ? "selected" : "") + '>6 heures</option>' +
+              '<option value="hour8" ' + (n.ttl === "hour8" ? "selected" : "") + '>8 heures</option>' +
               '<option value="day" ' + (n.ttl === "day" ? "selected" : "") + '>24 heures</option>' +
             '</select>' +
             '<div class="actions"><button type="button" class="duplicate">Dupliquer</button>' +
@@ -1014,7 +1019,7 @@
     void init();
     setInterval(() => {
       if (notes.some(n => !n.pinned && n.expiresAt && n.expiresAt <= Date.now())) render();
-    }, 30000);
+    }, 5000);
     setInterval(() => { void expireTrash().then(() => { if (showingTrash) renderTrash(); else updateStats(); }); }, 3600000);
   })();
   </script>
