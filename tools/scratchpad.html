@@ -82,6 +82,15 @@
     .category-bar { display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px; }
     .category-button { border-radius:25px; padding:7px 13px; background:var(--surface); }
     .category-button[aria-pressed="true"] { outline:2px solid var(--accent);outline-offset:1px; }
+    .manage-categories { margin-left:auto; }
+    .category-manager { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px; }
+    .category-manager[hidden] { display:none; }
+    .category-manager-head { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px; }
+    .category-manager h2 { margin:0;font-size:18px; }
+    .category-list { display:grid;gap:9px;margin:12px 0 18px; }
+    .category-row,.category-create { display:flex;gap:9px;align-items:center;flex-wrap:wrap; }
+    .category-row input[type=text],.category-create input[type=text] { background:var(--field);color:var(--text);border:1px solid var(--border);padding:9px;border-radius:8px;flex:1;min-width:160px; }
+    .category-row input[type=color],.category-create input[type=color] { width:46px;height:40px;padding:3px;background:var(--field);border:1px solid var(--border);border-radius:8px; }
     .category-picker { background:var(--field);color:var(--text);border:1px solid var(--border);padding:7px;border-radius:8px; }
     .category-label { background:var(--category-color);color:#10151d;border-radius:18px;padding:4px 10px;font-size:12px;font-weight:700; }
     .category-meta { display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px; }
@@ -140,6 +149,16 @@
     </div>
 
     <nav id="category-bar" class="category-bar" aria-label="Catégories de notes"></nav>
+    <section class="category-manager" id="category-manager" aria-label="Gérer les catégories" hidden>
+      <div class="category-manager-head"><h2>Personnaliser les catégories</h2><button id="category-close" type="button">Fermer</button></div>
+      <p class="help">Change le nom et la couleur de tes catégories. « À classer » reste disponible pour accueillir les notes d'une catégorie supprimée.</p>
+      <div id="category-list" class="category-list"></div>
+      <form id="category-create" class="category-create">
+        <input id="new-category-name" type="text" maxlength="40" required placeholder="Nouvelle catégorie" aria-label="Nom de la catégorie">
+        <input id="new-category-color" type="color" value="#74b9ff" aria-label="Couleur de la catégorie">
+        <button type="submit" class="primary">＋ Ajouter</button>
+      </form>
+    </section>
     <div class="stats" id="stats" aria-live="polite"></div>
     <p class="help" id="order-hint">⠿ Glisse la poignée d'un bloc pour le déplacer, ou utilise les flèches ↑ ↓. Désactive la recherche et les filtres pour réordonner.</p>
     <main class="grid" id="notes"></main>
@@ -180,7 +199,7 @@
     const THEME_KEY = "toolbox-scratchpad-theme";
     const TRASH_RETENTION = 7 * 24 * 60 * 60 * 1000;
     const TTL = { session: 0, hour: 3600000, day: 86400000 };
-    const CATEGORIES = [
+    const DEFAULT_CATEGORIES = [
       { id:"inbox", label:"À classer", icon:"📥", color:"#b2bcc8" },
       { id:"devops", label:"DevOps", icon:"⚙️", color:"#74b9ff" },
       { id:"code", label:"Code", icon:"💻", color:"#b39ddb" },
@@ -188,6 +207,60 @@
       { id:"ideas", label:"Idées", icon:"💡", color:"#f29cac" },
       { id:"personal", label:"Personnel", icon:"🏠", color:"#86d5a5" }
     ];
+    const CATEGORIES_KEY = "toolbox-scratchpad-categories-v1";
+    function loadCategories() {
+      try {
+        const raw = localStorage.getItem(CATEGORIES_KEY);
+        if (!raw) return DEFAULT_CATEGORIES.map(c => ({ ...c }));
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error("Format invalide");
+        const used = new Set();
+        const items = parsed.filter(c => {
+          if (!c || typeof c.id !== "string" || !/^[a-z0-9-]{1,80}$/.test(c.id) || used.has(c.id)) return false;
+          used.add(c.id);
+          return typeof c.label === "string" && c.label.trim().length > 0 &&
+            typeof c.color === "string" && /^#[0-9a-fA-F]{6}$/.test(c.color);
+        }).map(c => ({
+          id:c.id,label:c.label.trim().slice(0,40),color:c.color.toLowerCase(),
+          icon:typeof c.icon === "string" ? c.icon.slice(0,4) : "🗂️"
+        }));
+        if (!items.some(c => c.id === "inbox")) items.unshift({ ...DEFAULT_CATEGORIES[0] });
+        return items;
+      } catch(error) {
+        console.warn("Catégories invalides", error);
+        return DEFAULT_CATEGORIES.map(c => ({ ...c }));
+      }
+    }
+    const CATEGORIES = loadCategories();
+    function saveCategories(items) {
+      try {
+        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(items));
+        CATEGORIES.splice(0, CATEGORIES.length, ...items);
+        return true;
+      } catch(error) {
+        console.error(error);
+        notify("Impossible de sauvegarder les catégories");
+        return false;
+      }
+    }
+    function renderCategoryManager() {
+      $("#category-list").innerHTML = CATEGORIES.map(c =>
+        '<div class="category-row" data-id="' + safe(c.id) + '">' +
+        '<span aria-hidden="true">' + safe(c.icon) + '</span>' +
+        '<input class="category-name" type="text" maxlength="40" aria-label="Nom de ' + safe(c.label) +
+        '" value="' + safe(c.label) + '">' +
+        '<input class="category-color" type="color" aria-label="Couleur de ' + safe(c.label) +
+        '" value="' + safe(c.color) + '">' +
+        '<button type="button" class="category-delete" ' +
+        (c.id === "inbox" ? 'disabled title="Catégorie de secours non supprimable"' : '') +
+        ' aria-label="Supprimer ' + safe(c.label) + '">Supprimer</button></div>'
+      ).join("");
+    }
+    function showCategories(open) {
+      $("#category-manager").hidden = !open;
+      $("#category-manage").setAttribute("aria-expanded", String(open));
+      if (open) renderCategoryManager();
+    }
     let categoryFilter = "";
     const validCategory = id => CATEGORIES.some(c=>c.id===id) ? id : "inbox";
     const categoryOf = id => CATEGORIES.find(c=>c.id===id) || CATEGORIES[0];
@@ -197,7 +270,8 @@
         '<button type="button" class="category-button" data-category="' + safe(c.id) +
         '" aria-pressed="' + (categoryFilter===c.id) + '">' + c.icon + ' ' + safe(c.label) +
         ' (' + (c.id ? notes.filter(n=>n.category===c.id).length : notes.length) + ')</button>'
-      ).join("");
+      ).join("") + '<button id="category-manage" class="manage-categories" type="button" aria-expanded="' +
+        (!$("#category-manager").hidden) + '">⚙ Gérer les catégories</button>';
     }
 
     let db = null;
