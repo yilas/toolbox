@@ -682,6 +682,93 @@
 
     $("#add").addEventListener("click", () => { void createNote(); });
     $("#paste").addEventListener("click", () => { void pasteNote(); });
+    // Les catégories sont globales à ce navigateur ; les notes conservent leur ID de catégorie.
+    $("#category-bar").addEventListener("click", event => {
+      if (event.target.closest("#category-manage")) {
+        showCategories($("#category-manager").hidden);
+      }
+    });
+    $("#category-close").addEventListener("click", () => showCategories(false));
+    $("#category-create").addEventListener("submit", event => {
+      event.preventDefault();
+      const name = $("#new-category-name").value.trim().slice(0,40);
+      const color = $("#new-category-color").value;
+      if (!name || !/^#[0-9a-f]{6}$/i.test(color)) return;
+      if (CATEGORIES.some(c => c.label.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+        notify("Cette catégorie existe déjà");
+        return;
+      }
+      const id = "custom-" + newId().toLowerCase().replace(/[^a-z0-9-]/g,"-");
+      const next = [...CATEGORIES, { id, label:name, color, icon:"🗂️" }];
+      if (!saveCategories(next)) return;
+      $("#new-category-name").value = "";
+      render();
+      renderCategoryManager();
+      notify("Catégorie créée");
+    });
+    $("#category-list").addEventListener("change", event => {
+      const row = event.target.closest(".category-row");
+      if (!row) return;
+      const item = CATEGORIES.find(c => c.id === row.dataset.id);
+      if (!item) return;
+      const next = CATEGORIES.map(c => ({...c}));
+      const changed = next.find(c => c.id === item.id);
+      if (event.target.matches(".category-name")) {
+        const name = event.target.value.trim().slice(0,40);
+        if (!name || next.some(c => c.id !== item.id && c.label.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+          notify("Nom vide ou déjà utilisé");
+          renderCategoryManager();
+          return;
+        }
+        changed.label = name;
+      } else if (event.target.matches(".category-color")) {
+        if (!/^#[0-9a-f]{6}$/i.test(event.target.value)) return;
+        changed.color = event.target.value;
+      } else return;
+      if (!saveCategories(next)) return;
+      render();
+      renderCategoryManager();
+      notify("Catégorie modifiée");
+    });
+    $("#category-list").addEventListener("click", async event => {
+      if (!event.target.closest(".category-delete")) return;
+      const row = event.target.closest(".category-row");
+      if (!row || row.dataset.id === "inbox") return;
+      const category = CATEGORIES.find(c => c.id === row.dataset.id);
+      if (!category) return;
+      const affected = notes.filter(n => n.category === category.id).length;
+      const inTrash = trash.filter(n => n.category === category.id).length;
+      if (!confirm('Supprimer « ' + category.label + ' » ? ' + affected +
+        ' note(s) active(s) et ' + inTrash + ' note(s) dans la corbeille seront reclassées dans « ' +
+        categoryOf("inbox").label + ' ». Aucune note ne sera supprimée.')) return;
+      const previousNotes = notes.filter(n => n.category === category.id);
+      const previousTrash = trash.filter(n => n.category === category.id);
+      const oldFilter = categoryFilter;
+      // Une transaction IndexedDB garantit le reclassement des notes persistantes avant
+      // toute suppression de la catégorie et sans toucher au contenu des notes.
+      try {
+        if (db) await transaction([STORE, TRASH_STORE], "readwrite", tx => {
+          for (const note of previousNotes.filter(n => n.pinned))
+            tx.objectStore(STORE).put({ ...note, category:"inbox" });
+          for (const note of previousTrash.filter(n => n.pinned))
+            tx.objectStore(TRASH_STORE).put({ ...note, category:"inbox" });
+        });
+        for (const note of [...previousNotes, ...previousTrash]) note.category = "inbox";
+        saveSession();
+        saveTrashSession();
+        categoryFilter = categoryFilter === category.id ? "" : categoryFilter;
+        if (!saveCategories(CATEGORIES.filter(c => c.id !== category.id))) {
+          categoryFilter = oldFilter;
+          notify("Reclassement effectué, mais catégorie non supprimée");
+        } else notify("Catégorie supprimée ; notes conservées");
+        render();
+        renderCategoryManager();
+        if (showingTrash) renderTrash();
+      } catch(error) {
+        console.error(error);
+        notify("Impossible de reclasser les notes : catégorie conservée");
+      }
+    });
     $("#search").addEventListener("input", render);
     $("#category-bar").addEventListener("click", event => {
       const button = event.target.closest(".category-button");
