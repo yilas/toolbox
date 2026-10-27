@@ -79,6 +79,22 @@
     .actions { display: flex; gap: 7px; flex-wrap: wrap; }
     .actions button { padding: 7px 10px; font-size: 12px; }
     .delete { color: var(--danger); }
+    .category-bar { display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px; }
+    .category-button { border-radius:25px; padding:7px 13px; background:var(--surface); }
+    .category-button[aria-pressed="true"] { outline:2px solid var(--accent);outline-offset:1px; }
+    .manage-categories { margin-left:auto; }
+    .category-manager { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px; }
+    .category-manager[hidden] { display:none; }
+    .category-manager-head { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px; }
+    .category-manager h2 { margin:0;font-size:18px; }
+    .category-list { display:grid;gap:9px;margin:12px 0 18px; }
+    .category-row,.category-create { display:flex;gap:9px;align-items:center;flex-wrap:wrap; }
+    .category-row input[type=text],.category-create input[type=text] { background:var(--field);color:var(--text);border:1px solid var(--border);padding:9px;border-radius:8px;flex:1;min-width:160px; }
+    .category-row input[type=color],.category-create input[type=color] { width:46px;height:40px;padding:3px;background:var(--field);border:1px solid var(--border);border-radius:8px; }
+    .category-picker { background:var(--field);color:var(--text);border:1px solid var(--border);padding:7px;border-radius:8px; }
+    .category-label { background:var(--category-color);color:var(--category-ink,#10151d);border-radius:18px;padding:4px 10px;font-size:12px;font-weight:700; }
+    .category-meta { display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px; }
+    .note, .note.pinned { border-top-color:var(--category-color,var(--accent)); }
     .tag-filter { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 10px; max-width: 180px; }
     .tags-input { width: 100%; margin: 0 0 10px; padding: 8px 10px; background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
     .tag-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 10px; }
@@ -132,6 +148,17 @@
       <input id="import-file" type="file" accept=".json,application/json" hidden>
     </div>
 
+    <nav id="category-bar" class="category-bar" aria-label="Catégories de notes"></nav>
+    <section class="category-manager" id="category-manager" aria-label="Gérer les catégories" hidden>
+      <div class="category-manager-head"><h2>Personnaliser les catégories</h2><button id="category-close" type="button">Fermer</button></div>
+      <p class="help">Change le nom et la couleur de tes catégories. « À classer » reste disponible pour accueillir les notes d'une catégorie supprimée.</p>
+      <div id="category-list" class="category-list"></div>
+      <form id="category-create" class="category-create">
+        <input id="new-category-name" type="text" maxlength="40" required placeholder="Nouvelle catégorie" aria-label="Nom de la catégorie">
+        <input id="new-category-color" type="color" value="#74b9ff" aria-label="Couleur de la catégorie">
+        <button type="submit" class="primary">＋ Ajouter</button>
+      </form>
+    </section>
     <div class="stats" id="stats" aria-live="polite"></div>
     <p class="help" id="order-hint">⠿ Glisse la poignée d'un bloc pour le déplacer, ou utilise les flèches ↑ ↓. Désactive la recherche et les filtres pour réordonner.</p>
     <main class="grid" id="notes"></main>
@@ -150,6 +177,7 @@
     </section>
 
     <footer>
+      <p>📌 Les nouvelles notes sont persistantes par défaut. Catégories colorées et tags sont enregistrés avec chaque note.</p>
       <p>📌 Les blocs persistants sont enregistrés dans IndexedDB. Les autres sont conservés pendant la session ou jusqu'à expiration.</p>
       <p>Aucun serveur, aucun compte, aucune synchronisation. Les données locales ne sont pas chiffrées : n'y stocke pas de secrets.</p>
       <p>Raccourcis : Ctrl/⌘ + Entrée = nouveau bloc · Ctrl/⌘ + K = recherche · Ctrl/⌘ + Maj + V = coller dans un nouveau bloc (hors éditeur) · Ctrl/⌘ + Maj + C = copier le bloc actif · Alt + ↑/↓ = déplacer un bloc · Échap = fermer la corbeille.</p>
@@ -170,7 +198,86 @@
     const LEGACY_KEY = "scratchpad.v1";
     const THEME_KEY = "toolbox-scratchpad-theme";
     const TRASH_RETENTION = 7 * 24 * 60 * 60 * 1000;
-    const TTL = { session: 0, hour: 3600000, day: 86400000 };
+    const TTL = { session: 0, minute1: 60000, minute5: 300000, minute30: 1800000, hour: 3600000, hour6: 21600000, hour8: 28800000, day: 86400000 };
+    const DEFAULT_CATEGORIES = [
+      { id:"inbox", label:"À classer", icon:"📥", color:"#b2bcc8" },
+      { id:"devops", label:"DevOps", icon:"⚙️", color:"#74b9ff" },
+      { id:"code", label:"Code", icon:"💻", color:"#b39ddb" },
+      { id:"links", label:"Liens", icon:"🔗", color:"#f0c674" },
+      { id:"ideas", label:"Idées", icon:"💡", color:"#f29cac" },
+      { id:"personal", label:"Personnel", icon:"🏠", color:"#86d5a5" }
+    ];
+    const CATEGORIES_KEY = "toolbox-scratchpad-categories-v1";
+    function loadCategories() {
+      try {
+        const raw = localStorage.getItem(CATEGORIES_KEY);
+        if (!raw) return DEFAULT_CATEGORIES.map(c => ({ ...c }));
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error("Format invalide");
+        const used = new Set();
+        const items = parsed.filter(c => {
+          if (!c || typeof c.id !== "string" || !/^[a-z0-9-]{1,80}$/.test(c.id) || used.has(c.id)) return false;
+          used.add(c.id);
+          return typeof c.label === "string" && c.label.trim().length > 0 &&
+            typeof c.color === "string" && /^#[0-9a-fA-F]{6}$/.test(c.color);
+        }).map(c => ({
+          id:c.id,label:c.label.trim().slice(0,40),color:c.color.toLowerCase(),
+          icon:typeof c.icon === "string" ? c.icon.slice(0,4) : "🗂️"
+        }));
+        if (!items.some(c => c.id === "inbox")) items.unshift({ ...DEFAULT_CATEGORIES[0] });
+        return items;
+      } catch(error) {
+        console.warn("Catégories invalides", error);
+        return DEFAULT_CATEGORIES.map(c => ({ ...c }));
+      }
+    }
+    const CATEGORIES = loadCategories();
+    function saveCategories(items) {
+      try {
+        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(items));
+        CATEGORIES.splice(0, CATEGORIES.length, ...items);
+        return true;
+      } catch(error) {
+        console.error(error);
+        notify("Impossible de sauvegarder les catégories");
+        return false;
+      }
+    }
+    function renderCategoryManager() {
+      $("#category-list").innerHTML = CATEGORIES.map(c =>
+        '<div class="category-row" data-id="' + safe(c.id) + '">' +
+        '<span aria-hidden="true">' + safe(c.icon) + '</span>' +
+        '<input class="category-name" type="text" maxlength="40" aria-label="Nom de ' + safe(c.label) +
+        '" value="' + safe(c.label) + '">' +
+        '<input class="category-color" type="color" aria-label="Couleur de ' + safe(c.label) +
+        '" value="' + safe(c.color) + '">' +
+        '<button type="button" class="category-delete" ' +
+        (c.id === "inbox" ? 'disabled title="Catégorie de secours non supprimable"' : '') +
+        ' aria-label="Supprimer ' + safe(c.label) + '">Supprimer</button></div>'
+      ).join("");
+    }
+    function showCategories(open) {
+      $("#category-manager").hidden = !open;
+      $("#category-manage").setAttribute("aria-expanded", String(open));
+      if (open) renderCategoryManager();
+    }
+    let categoryFilter = "";
+    const validCategory = id => CATEGORIES.some(c=>c.id===id) ? id : "inbox";
+    const categoryOf = id => CATEGORIES.find(c=>c.id===id) || CATEGORIES[0];
+    const categoryInk = hex => {
+      const [r,g,b] = [1,3,5].map(i => parseInt(hex.slice(i,i+2),16)/255)
+        .map(v => v <= 0.04045 ? v/12.92 : ((v+0.055)/1.055)**2.4);
+      return 0.2126*r + 0.7152*g + 0.0722*b > 0.179 ? "#10151d" : "#ffffff";
+    };
+    function renderCategories() {
+      const options = [{id:"",label:"Toutes",icon:"🗂️"},...CATEGORIES];
+      $("#category-bar").innerHTML = options.map(c =>
+        '<button type="button" class="category-button" data-category="' + safe(c.id) +
+        '" aria-pressed="' + (categoryFilter===c.id) + '">' + c.icon + ' ' + safe(c.label) +
+        ' (' + (c.id ? notes.filter(n=>n.category===c.id).length : notes.length) + ')</button>'
+      ).join("") + '<button id="category-manage" class="manage-categories" type="button" aria-expanded="' +
+        (!$("#category-manager").hidden) + '">⚙ Gérer les catégories</button>';
+    }
 
     let db = null;
     let notes = [];
@@ -232,6 +339,7 @@
         title: String(value.title || ""),
         body: value.body,
         tags: parseTags(value.tags),
+        category: validCategory(value.category),
         pinned,
         ttl: pinned ? "session" : (Object.hasOwn(TTL, value.ttl) ? value.ttl : "session"),
         expiresAt: pinned ? null : (Number(value.expiresAt) || null),
@@ -315,7 +423,7 @@
     function nextTopOrder() {
       return notes.length ? Math.min(...notes.map(n => Number.isFinite(n.order) ? n.order : 0)) - 1 : 0;
     }
-    function hasFilters() { return Boolean($("#search").value.trim() || $("#tag-filter").value); }
+    function hasFilters() { return Boolean($("#search").value.trim() || $("#tag-filter").value || categoryFilter); }
 
     function expireNotes() {
       const before = notes.length;
@@ -354,15 +462,17 @@
     function render() {
       expireNotes();
       renderTagFilter();
+      renderCategories();
       const query = $("#search").value.toLocaleLowerCase();
       const tag = $("#tag-filter").value;
       const filtered = hasFilters();
       const visible = notes.filter(n =>
         (!tag || n.tags.includes(tag)) &&
-        (n.title + " " + n.body + " " + n.tags.join(" ")).toLocaleLowerCase().includes(query)
+        (!categoryFilter || n.category===categoryFilter) &&
+        (n.title + " " + n.body + " " + n.tags.join(" ") + " " + categoryOf(n.category).label).toLocaleLowerCase().includes(query)
       );
       $("#notes").innerHTML = visible.length ? visible.map((n, i) =>
-        '<article class="note ' + (n.pinned ? "pinned" : "") + '" data-id="' + safe(n.id) + '">' +
+        '<article class="note ' + (n.pinned ? "pinned" : "") + '" style="--category-color:' + categoryOf(n.category).color + ';--category-ink:' + categoryInk(categoryOf(n.category).color) + '" data-id="' + safe(n.id) + '">' +
           '<div class="note-head">' +
             '<input class="title" aria-label="Titre" placeholder="Sans titre" value="' + safe(n.title) + '">' +
             '<div class="note-tools">' +
@@ -373,6 +483,10 @@
               '<button type="button" class="delete" title="Déplacer vers la corbeille" aria-label="Supprimer ce bloc">✕</button>' +
             '</div>' +
           '</div>' +
+          '<div class="category-meta"><span class="category-label">' + categoryOf(n.category).icon + ' ' + safe(categoryOf(n.category).label) + '</span>' +
+            '<select class="category-picker" aria-label="Catégorie du bloc">' + CATEGORIES.map(c =>
+              '<option value="' + safe(c.id) + '" ' + (n.category===c.id ? "selected" : "") + '>' +
+              c.icon + ' ' + safe(c.label) + '</option>').join("") + '</select></div>' +
           '<textarea class="content" aria-label="Contenu" spellcheck="false" placeholder="Colle une commande, du JSON, une URL…">' + safe(n.body) + '</textarea>' +
           '<input class="tags-input" aria-label="Tags séparés par des virgules" placeholder="Tags : aks, terraform, tmp" value="' + safe(n.tags.join(", ")) + '">' +
           '<div class="tag-chips">' + n.tags.map(t => '<button type="button" class="tag-chip" data-tag="' + safe(t) + '" title="Filtrer par #' + safe(t) + '">#' + safe(t) + '</button>').join("") + '</div>' +
@@ -380,7 +494,12 @@
             '<label class="pin"><input type="checkbox" class="pin-checkbox" ' + (n.pinned ? "checked" : "") + '> 📌 Persistant</label>' +
             '<select class="ttl" aria-label="Durée de conservation" ' + (n.pinned ? "disabled" : "") + '>' +
               '<option value="session" ' + (n.ttl === "session" ? "selected" : "") + '>Session</option>' +
+              '<option value="minute1" ' + (n.ttl === "minute1" ? "selected" : "") + '>1 minute</option>' +
+              '<option value="minute5" ' + (n.ttl === "minute5" ? "selected" : "") + '>5 minutes</option>' +
+              '<option value="minute30" ' + (n.ttl === "minute30" ? "selected" : "") + '>30 minutes</option>' +
               '<option value="hour" ' + (n.ttl === "hour" ? "selected" : "") + '>1 heure</option>' +
+              '<option value="hour6" ' + (n.ttl === "hour6" ? "selected" : "") + '>6 heures</option>' +
+              '<option value="hour8" ' + (n.ttl === "hour8" ? "selected" : "") + '>8 heures</option>' +
               '<option value="day" ' + (n.ttl === "day" ? "selected" : "") + '>24 heures</option>' +
             '</select>' +
             '<div class="actions"><button type="button" class="duplicate">Dupliquer</button>' +
@@ -449,10 +568,13 @@
       const button = card && card.querySelector(delta < 0 ? ".move-up" : ".move-down");
       if (button) button.focus();
     }
-    async function createNote(title = "", body = "", pinned = false, tags = []) {
-      if (pinned && !db) pinned = false;
+    async function createNote(title = "", body = "", pinned = true, tags = [], category = categoryFilter || "inbox") {
+      if (pinned && !db) {
+        pinned = false;
+        notify("IndexedDB indisponible : bloc temporaire");
+      }
       const note = {
-        id: newId(), title, body, tags: parseTags(tags), pinned, ttl: "session",
+        id: newId(), title, body, tags: parseTags(tags), category: validCategory(category), pinned, ttl: "session",
         expiresAt: null, order: nextTopOrder(), createdAt: Date.now(), updatedAt: Date.now()
       };
       notes.unshift(note);
@@ -460,6 +582,7 @@
       saveSession();
       $("#search").value = "";
       $("#tag-filter").value = "";
+      categoryFilter = "";
       render();
       activeId = note.id;
       $("#notes .note .content")?.focus();
@@ -569,7 +692,100 @@
 
     $("#add").addEventListener("click", () => { void createNote(); });
     $("#paste").addEventListener("click", () => { void pasteNote(); });
+    // Les catégories sont globales à ce navigateur ; les notes conservent leur ID de catégorie.
+    $("#category-bar").addEventListener("click", event => {
+      if (event.target.closest("#category-manage")) {
+        showCategories($("#category-manager").hidden);
+      }
+    });
+    $("#category-close").addEventListener("click", () => showCategories(false));
+    $("#category-create").addEventListener("submit", event => {
+      event.preventDefault();
+      const name = $("#new-category-name").value.trim().slice(0,40);
+      const color = $("#new-category-color").value;
+      if (!name || !/^#[0-9a-f]{6}$/i.test(color)) return;
+      if (CATEGORIES.some(c => c.label.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+        notify("Cette catégorie existe déjà");
+        return;
+      }
+      const id = "custom-" + newId().toLowerCase().replace(/[^a-z0-9-]/g,"-");
+      const next = [...CATEGORIES, { id, label:name, color, icon:"🗂️" }];
+      if (!saveCategories(next)) return;
+      $("#new-category-name").value = "";
+      render();
+      renderCategoryManager();
+      notify("Catégorie créée");
+    });
+    $("#category-list").addEventListener("change", event => {
+      const row = event.target.closest(".category-row");
+      if (!row) return;
+      const item = CATEGORIES.find(c => c.id === row.dataset.id);
+      if (!item) return;
+      const next = CATEGORIES.map(c => ({...c}));
+      const changed = next.find(c => c.id === item.id);
+      if (event.target.matches(".category-name")) {
+        const name = event.target.value.trim().slice(0,40);
+        if (!name || next.some(c => c.id !== item.id && c.label.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+          notify("Nom vide ou déjà utilisé");
+          renderCategoryManager();
+          return;
+        }
+        changed.label = name;
+      } else if (event.target.matches(".category-color")) {
+        if (!/^#[0-9a-f]{6}$/i.test(event.target.value)) return;
+        changed.color = event.target.value;
+      } else return;
+      if (!saveCategories(next)) return;
+      render();
+      renderCategoryManager();
+      notify("Catégorie modifiée");
+    });
+    $("#category-list").addEventListener("click", async event => {
+      if (!event.target.closest(".category-delete")) return;
+      const row = event.target.closest(".category-row");
+      if (!row || row.dataset.id === "inbox") return;
+      const category = CATEGORIES.find(c => c.id === row.dataset.id);
+      if (!category) return;
+      const affected = notes.filter(n => n.category === category.id).length;
+      const inTrash = trash.filter(n => n.category === category.id).length;
+      if (!confirm('Supprimer « ' + category.label + ' » ? ' + affected +
+        ' note(s) active(s) et ' + inTrash + ' note(s) dans la corbeille seront reclassées dans « ' +
+        categoryOf("inbox").label + ' ». Aucune note ne sera supprimée.')) return;
+      const previousNotes = notes.filter(n => n.category === category.id);
+      const previousTrash = trash.filter(n => n.category === category.id);
+      const oldFilter = categoryFilter;
+      // Une transaction IndexedDB garantit le reclassement des notes persistantes avant
+      // toute suppression de la catégorie et sans toucher au contenu des notes.
+      try {
+        if (db) await transaction([STORE, TRASH_STORE], "readwrite", tx => {
+          for (const note of previousNotes.filter(n => n.pinned))
+            tx.objectStore(STORE).put({ ...note, category:"inbox" });
+          for (const note of previousTrash.filter(n => n.pinned))
+            tx.objectStore(TRASH_STORE).put({ ...note, category:"inbox" });
+        });
+        for (const note of [...previousNotes, ...previousTrash]) note.category = "inbox";
+        saveSession();
+        saveTrashSession();
+        categoryFilter = categoryFilter === category.id ? "" : categoryFilter;
+        if (!saveCategories(CATEGORIES.filter(c => c.id !== category.id))) {
+          categoryFilter = oldFilter;
+          notify("Reclassement effectué, mais catégorie non supprimée");
+        } else notify("Catégorie supprimée ; notes conservées");
+        render();
+        renderCategoryManager();
+        if (showingTrash) renderTrash();
+      } catch(error) {
+        console.error(error);
+        notify("Impossible de reclasser les notes : catégorie conservée");
+      }
+    });
     $("#search").addEventListener("input", render);
+    $("#category-bar").addEventListener("click", event => {
+      const button = event.target.closest(".category-button");
+      if (!button) return;
+      categoryFilter = button.dataset.category || "";
+      render();
+    });
     $("#tag-filter").addEventListener("change", render);
     $("#trash-toggle").addEventListener("click", () => setTrashView(!showingTrash));
     $("#trash-close").addEventListener("click", () => setTrashView(false));
@@ -603,7 +819,7 @@
       if (event.target.closest(".delete")) void deleteNote(note);
       else if (event.target.closest(".copy")) void copy(note.body);
       else if (event.target.closest(".duplicate")) void createNote(
-        note.title ? note.title + " (copie)" : "", note.body, note.pinned, note.tags
+        note.title ? note.title + " (copie)" : "", note.body, note.pinned, note.tags, note.category
       );
       else if (event.target.closest(".move-up")) void moveBy(note.id, -1);
       else if (event.target.closest(".move-down")) void moveBy(note.id, 1);
@@ -620,6 +836,11 @@
         note.expiresAt = TTL[note.ttl] ? Date.now() + TTL[note.ttl] : null;
         note.updatedAt = Date.now();
         saveSession();
+        render();
+      } else if (event.target.matches(".category-picker")) {
+        note.category = validCategory(event.target.value);
+        note.updatedAt = Date.now();
+        void persist(note);
         render();
       } else if (event.target.matches(".tags-input")) {
         note.tags = parseTags(event.target.value);
@@ -702,6 +923,7 @@
         saveSession();
         $("#search").value = "";
         $("#tag-filter").value = "";
+        categoryFilter = "";
         render();
         notify(count + " bloc(s) importé(s)");
       } catch (error) {
@@ -797,7 +1019,7 @@
     void init();
     setInterval(() => {
       if (notes.some(n => !n.pinned && n.expiresAt && n.expiresAt <= Date.now())) render();
-    }, 30000);
+    }, 5000);
     setInterval(() => { void expireTrash().then(() => { if (showingTrash) renderTrash(); else updateStats(); }); }, 3600000);
   })();
   </script>
