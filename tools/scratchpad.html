@@ -66,12 +66,12 @@
     .toolbar { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
     .search { flex: 1; min-width: 210px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px; }
     .stats { color: var(--muted); font-size: 13px; margin: -5px 0 18px; }
-    /* Auto-placement fluide : le nombre de cartes évolue avec la largeur disponible.
+    /* Auto-placement fluide : cartes confortables d'au moins 360 px si possible.
        Contrairement à l'ancienne grille à 12 colonnes, les cartes standard
        ne sont plus limitées à trois par ligne. */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 255px), 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
       gap: 16px;
       align-items: start;
     }
