@@ -57,7 +57,7 @@
     button:disabled, select:disabled { cursor: not-allowed; opacity: .6; }
     .primary { background: var(--accent); color: var(--accent-contrast); font-weight: 700; border-color: transparent; }
     .header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
-    .wrap { max-width: 1260px; padding: 32px 22px 70px; margin: auto; }
+    .wrap { width: 100%; max-width: none; padding: 32px 22px 70px; margin: 0; }
     header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
     header h1 { font-size: clamp(27px, 5vw, 36px); letter-spacing: -1.5px; margin: 0; }
     header p { color: var(--muted); margin: 2px 0 0; }
@@ -89,6 +89,8 @@
       .note.size-standard .content { height:175px; }
       .note.size-large .content { height:320px; }
     }
+    .note { scroll-margin-top: 22px; }
+    .note.last-active { outline:2px solid var(--accent);outline-offset:2px; }
     .note { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--unpin-border); border-radius: 13px; padding: 15px; min-width: 0; }
     .note.pinned { border-top-color: var(--accent); }
     .note-head, .note-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -226,6 +228,7 @@
     const TRASH_SESSION_KEY = "toolbox-scratchpad-trash-v1";
     const LEGACY_KEY = "scratchpad.v1";
     const THEME_KEY = "toolbox-scratchpad-theme";
+    const LAST_NOTE_KEY = "toolbox-scratchpad-last-note-v1";
     const TRASH_RETENTION = 7 * 24 * 60 * 60 * 1000;
     const TTL = { session: 0, minute1: 60000, minute5: 300000, minute30: 1800000, hour: 3600000, hour6: 21600000, hour8: 28800000, day: 86400000 };
     const DEFAULT_CATEGORIES = [
@@ -341,6 +344,31 @@
     let trash = [];
     let draggingId = null;
     let activeId = null;
+    function rememberNote(id) {
+      if (!notes.some(n => n.id === id)) return;
+      activeId = id;
+      try { localStorage.setItem(LAST_NOTE_KEY, id); }
+      catch(error) { console.warn("Impossible de mémoriser le bloc actif", error); }
+    }
+    function clearRememberedNote(id) {
+      try {
+        if (localStorage.getItem(LAST_NOTE_KEY) === id) localStorage.removeItem(LAST_NOTE_KEY);
+      } catch {}
+    }
+    function restoreLastNote() {
+      let id;
+      try { id = localStorage.getItem(LAST_NOTE_KEY); } catch { return; }
+      if (!id || !notes.some(n => n.id === id)) return;
+      // Attendre le layout : scrollIntoView positionne le bloc même après rechargement.
+      requestAnimationFrame(() => {
+        const card = [...document.querySelectorAll("#notes .note")].find(el => el.dataset.id === id);
+        if (!card) return;
+        activeId = id;
+        card.classList.add("last-active");
+        card.scrollIntoView({ block:"start", behavior:"instant" });
+        // Ne pas placer le curseur dans le texte : retrouver le contexte sans l'éditer.
+      });
+    }
     let showingTrash = false;
     let toastTimer;
 
@@ -651,7 +679,7 @@
       $("#tag-filter").value = "";
       categoryFilter = "";
       render();
-      activeId = note.id;
+      rememberNote(note.id);
       $("#notes .note .content")?.focus();
     }
     async function deleteNote(note) {
@@ -663,6 +691,7 @@
       trash.unshift(deleted);
       notes = notes.filter(n => n.id !== note.id);
       if (activeId === note.id) activeId = null;
+      clearRememberedNote(note.id);
       saveSession();
       saveTrashSession();
       render();
@@ -900,7 +929,7 @@
     });
     $("#notes").addEventListener("focusin", event => {
       const article = event.target.closest(".note");
-      if (article) activeId = article.dataset.id;
+      if (article) rememberNote(article.dataset.id);
     });
     $("#notes").addEventListener("input", event => {
       const article = event.target.closest(".note");
@@ -918,7 +947,7 @@
       if (!article) return;
       const note = notes.find(n => n.id === article.dataset.id);
       if (!note) return;
-      activeId = note.id;
+      rememberNote(note.id);
       const chip = event.target.closest(".tag-chip");
       if (chip) { $("#tag-filter").value = chip.dataset.tag; render(); return; }
       if (event.target.closest(".delete")) void deleteNote(note);
@@ -1125,6 +1154,7 @@
       if (needsOrderMigration) await commitOrder();
       await expireTrash();
       render();
+      restoreLastNote();
     }
     void init();
     setInterval(() => {
