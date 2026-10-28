@@ -27,6 +27,8 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 
 Ouvrir [`tools/scratchpad.html`](tools/scratchpad.html) dans le navigateur ou depuis le portail GitHub Pages. Aucune installation, aucune dépendance externe.
 
+- **Reprise de position** : le dernier bloc sélectionné ou visible lors du défilement est mémorisé dans `localStorage`. À l'ouverture d'un nouvel onglet ou d'une nouvelle fenêtre sur la même origine, Scratchpad retrouve ce bloc et le ramène à l'écran après chargement des notes (s'il existe encore). La suppression d'une note retire sa référence mémorisée.
+- **Pleine largeur** : l'interface occupe désormais toute la largeur du navigateur au lieu d'être limitée à 1 260 px ; les cartes compactes, standards et larges restent responsive.
 - **Formats de cartes** : choisir **Compact**, **Standard** ou **Large** sur chaque note. Compact optimise l'espace pour une courte valeur ou un lien ; Large étend la carte et l'éditeur pour du texte long. Le format est enregistré avec la note (IndexedDB pour les blocs persistants, sessionStorage pour les temporaires), conservé lors de la duplication, dans la corbeille et dans les exports/imports JSON. Les anciennes notes restent en format Standard. Les cartes s'adaptent à la largeur de l'écran.
 - **Tags** : saisir des tags séparés par des virgules dans une carte (ex. `aks, terraform`). La recherche couvre titres, contenu et tags ; le menu **Tous les tags** et les badges **#tag** filtrent les blocs.
 - **Réorganisation** : glisser un bloc avec la poignée `⠿`, ou utiliser les boutons **↑/↓** (également accessibles au clavier). Désactiver les filtres pour modifier l'ordre ; il est enregistré avec les notes.
