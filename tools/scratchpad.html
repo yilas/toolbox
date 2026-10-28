@@ -66,31 +66,31 @@
     .toolbar { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
     .search { flex: 1; min-width: 210px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px; }
     .stats { color: var(--muted); font-size: 13px; margin: -5px 0 18px; }
-    .grid { display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:start; }
-    .note.size-compact { grid-column:span 3; }
-    .note.size-standard { grid-column:span 4; }
-    .note.size-large { grid-column:span 8; }
-    .note.size-compact .content { min-height:78px;height:94px; }
-    .note.size-standard .content { min-height:170px;height:200px; }
-    .note.size-large .content { min-height:300px;height:370px; }
+    /* Auto-placement fluide : le nombre de cartes évolue avec la largeur disponible.
+       Contrairement à l'ancienne grille à 12 colonnes, les cartes standard
+       ne sont plus limitées à trois par ligne. */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 255px), 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+    .note.size-compact, .note.size-standard { grid-column: span 1; }
+    .note.size-large { grid-column: span 2; }
+    .note.size-compact .content { min-height: 78px; height: 94px; }
+    .note.size-standard .content { min-height: 170px; height: 200px; }
+    .note.size-large .content { min-height: 300px; height: 370px; }
     .note-size { background:var(--button-bg);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:6px;font-size:12px;max-width:100%; }
     .note.size-compact .note-head { flex-wrap:wrap; }
     .note.size-compact .note-tools { margin-left:auto; }
     .note.size-compact .category-meta { gap:5px; }
     .note.size-compact .content { font-size:12px; }
-    @media (max-width:1000px) {
-      .note.size-compact { grid-column:span 6; }
-      .note.size-standard { grid-column:span 6; }
-      .note.size-large { grid-column:span 12; }
+    @media (max-width: 620px) {
+      .note.size-large { grid-column: span 1; }
+      .note.size-compact .content { height: 90px; }
+      .note.size-standard .content { height: 175px; }
+      .note.size-large .content { height: 320px; }
     }
-    @media (max-width:620px) {
-      .note.size-compact,.note.size-standard,.note.size-large { grid-column:span 12; }
-      .note.size-compact .content { height:90px; }
-      .note.size-standard .content { height:175px; }
-      .note.size-large .content { height:320px; }
-    }
-    .note { scroll-margin-top: 22px; }
-    .note.last-active { outline:2px solid var(--accent);outline-offset:2px; }
     .note { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--unpin-border); border-radius: 13px; padding: 15px; min-width: 0; }
     .note.pinned { border-top-color: var(--accent); }
     .note-head, .note-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
