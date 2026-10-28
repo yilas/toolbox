@@ -144,6 +144,14 @@
     .trash-actions .permanent-delete { color: var(--danger); }
     .help { color: var(--muted); font-size: 12px; margin: 0 0 14px; }
 
+    .help-overlay { position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.65);display:grid;place-items:center;padding:18px; }
+    .help-dialog { width:min(100%,680px);max-height:85vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:22px;box-shadow:0 16px 65px #0008; }
+    .help-dialog h2 { margin:0;font-size:23px; }
+    .help-dialog h3 { font-size:15px;margin:20px 0 7px; }
+    .help-dialog p { margin:5px 0 10px;color:var(--muted); }
+    .help-dialog li { margin:6px 0; }
+    .help-dialog kbd { display:inline-block;padding:2px 6px;border-radius:5px;border:1px solid var(--border);background:var(--field);font:12px ui-monospace,monospace;color:var(--text); }
+    .help-dialog-head { display:flex;align-items:center;justify-content:space-between;gap:12px; }
     .empty { grid-column: 1 / -1; text-align: center; padding: 75px 20px; color: var(--muted); border: 1px dashed var(--border); border-radius: 13px; }
     .empty strong { display: block; color: var(--text); font-size: 22px; margin-bottom: 6px; }
     footer { margin-top: 35px; color: var(--muted); font-size: 12px; }
@@ -162,6 +170,7 @@
         <p>Un coin pour tes commandes, idées, liens et bouts de code.</p>
       </div>
       <div class="header-actions">
+        <button id="help-trigger" type="button" title="Aide (touche ?)" aria-label="Ouvrir l’aide" aria-haspopup="dialog">?</button>
         <button id="theme-toggle" type="button" aria-label="Changer le thème">☀️ Mode jour</button>
         <button class="primary" id="add" type="button">＋ Nouveau bloc</button>
       </div>
@@ -190,7 +199,6 @@
       </form>
     </section>
     <div class="stats" id="stats" aria-live="polite"></div>
-    <p class="help" id="order-hint">⠿ Glisse la poignée d'un bloc pour le déplacer, ou utilise les flèches ↑ ↓. Désactive la recherche et les filtres pour réordonner.</p>
     <main class="grid" id="notes"></main>
     <section id="trash-view" class="trash-panel" aria-label="Corbeille" hidden>
       <div class="trash-head">
@@ -206,13 +214,36 @@
       <div id="trash-list" class="trash-list"></div>
     </section>
 
-    <footer>
-      <p>▤ Chaque carte peut être Compacte, Standard ou Large ; le format est sauvegardé avec la note.</p>
-      <p>📌 Les nouvelles notes sont persistantes par défaut. Catégories colorées et tags sont enregistrés avec chaque note.</p>
-      <p>📌 Les blocs persistants sont enregistrés dans IndexedDB. Les autres sont conservés pendant la session ou jusqu'à expiration.</p>
-      <p>Aucun serveur, aucun compte, aucune synchronisation. Les données locales ne sont pas chiffrées : n'y stocke pas de secrets.</p>
-      <p>Raccourcis : Ctrl/⌘ + Entrée = nouveau bloc · Ctrl/⌘ + K = recherche · Ctrl/⌘ + Maj + V = coller dans un nouveau bloc (hors éditeur) · Ctrl/⌘ + Maj + C = copier le bloc actif · Alt + ↑/↓ = déplacer un bloc · Échap = fermer la corbeille.</p>
-    </footer>
+  </div>
+  <div id="help-overlay" class="help-overlay" hidden>
+    <section id="help-dialog" class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="help-dialog-head">
+        <h2 id="help-title">Aide Scratchpad</h2>
+        <button id="help-close" type="button">✕ Fermer</button>
+      </div>
+      <p>Appuie sur <kbd>?</kbd> depuis la page pour afficher cette aide ; <kbd>Échap</kbd> pour la fermer.</p>
+      <h3>Notes et organisation</h3>
+      <ul>
+        <li>Les nouvelles notes sont persistantes par défaut dans IndexedDB. Décoche « 📌 Persistant » pour une note temporaire et choisir éventuellement une expiration (1 min à 24 h).</li>
+        <li>Choisis le format Compact, Standard ou Large sur chaque note.</li>
+        <li>Classe les notes par catégories colorées et tags. Le bouton « ⚙ Gérer les catégories » permet de personnaliser les catégories.</li>
+        <li>Déplace les cartes avec la poignée ⠿ ou les flèches ↑/↓, sans recherche ni filtre actifs.</li>
+        <li>Les notes supprimées peuvent être restaurées depuis la corbeille pendant 7 jours.</li>
+      </ul>
+      <h3>Copie et stockage</h3>
+      <ul>
+        <li>Copie une note ou toutes les notes, colle le presse-papiers dans une nouvelle carte, ou utilise l'import/export JSON.</li>
+        <li>Le dernier bloc consulté est mémorisé pour le retrouver après un rechargement ou dans un autre onglet lorsqu'il est disponible.</li>
+        <li>Les données restent dans le navigateur sans synchronisation. ⚠️ Stockage local non chiffré : ne conserve pas de tokens sensibles.</li>
+      </ul>
+      <h3>Raccourcis</h3>
+      <ul>
+        <li><kbd>?</kbd> Ouvrir l'aide · <kbd>Échap</kbd> Fermer</li>
+        <li><kbd>Ctrl/⌘ + Entrée</kbd> Nouveau bloc · <kbd>Ctrl/⌘ + K</kbd> Rechercher</li>
+        <li><kbd>Ctrl/⌘ + Maj + V</kbd> Créer un bloc du presse-papiers (hors éditeur)</li>
+        <li><kbd>Ctrl/⌘ + Maj + C</kbd> Copier le bloc actif · <kbd>Alt + ↑/↓</kbd> Déplacer le bloc actif</li>
+      </ul>
+    </section>
   </div>
   <div id="toast" role="status" hidden></div>
 
@@ -635,7 +666,6 @@
       $("#trash-view").hidden = !open;
       $("#notes").hidden = open;
       $("#stats").hidden = open;
-      $("#order-hint").hidden = open;
       $("#search").disabled = open;
       $("#tag-filter").disabled = open;
       $("#trash-toggle").setAttribute("aria-expanded", String(open));
@@ -1099,7 +1129,39 @@
       event.target.value = "";
     });
 
+    let helpPreviousFocus = null;
+    function setHelp(open) {
+      if (open === !$("#help-overlay").hidden) return;
+      $("#help-overlay").hidden = !open;
+      if (open) {
+        helpPreviousFocus = document.activeElement;
+        $("#help-close").focus();
+      } else {
+        const previous = helpPreviousFocus;
+        helpPreviousFocus = null;
+        if (previous?.isConnected && !previous.closest("#help-overlay")) previous.focus();
+        else $("#help-trigger").focus();
+      }
+    }
+    $("#help-trigger").addEventListener("click", () => setHelp(true));
+    $("#help-close").addEventListener("click", () => setHelp(false));
+    $("#help-overlay").addEventListener("click", event => {
+      if (event.target === $("#help-overlay")) setHelp(false);
+    });
     document.addEventListener("keydown", event => {
+      if (!$("#help-overlay").hidden) {
+        if (event.key === "Escape") { event.preventDefault(); setHelp(false); }
+        else if (event.key === "Tab") { event.preventDefault(); $("#help-close").focus(); }
+        return;
+      }
+      const editing = event.target?.isContentEditable ||
+        event.target?.closest?.("input, textarea, select, [contenteditable]");
+      if (event.key === "?" && !event.ctrlKey && !event.metaKey && !event.altKey &&
+          !editing && !event.repeat) {
+        event.preventDefault();
+        setHelp(true);
+        return;
+      }
       if (event.key === "Escape" && showingTrash) {
         event.preventDefault();
         setTrashView(false);

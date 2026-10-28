@@ -25,6 +25,8 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 
 ## ✳ Scratchpad : utilisation et stockage local
 
+**Aide discrète :** la page principale n'affiche plus les longs messages d'aide. Appuyer sur **?** en dehors d'un champ de saisie (ou cliquer sur le bouton **?** de l'en-tête) ouvre une fenêtre contenant les explications, les conseils de stockage et les raccourcis. **Échap**, le bouton « Fermer » ou un clic sur l'arrière-plan referme la fenêtre. La saisie de « ? » dans une note n'ouvre jamais l'aide.
+
 Ouvrir [`tools/scratchpad.html`](tools/scratchpad.html) dans le navigateur ou depuis le portail GitHub Pages. Aucune installation, aucune dépendance externe.
 
 - **Reprise de position** : le dernier bloc sélectionné ou visible lors du défilement est mémorisé dans `localStorage`. À l'ouverture d'un nouvel onglet ou d'une nouvelle fenêtre sur la même origine, Scratchpad retrouve ce bloc et le ramène à l'écran après chargement des notes (s'il existe encore). Le retour se fait après calcul de la grille responsive et évite que le défilement automatique remplace prématurément le bloc mémorisé. Les blocs temporaires d'un onglet ne sont pas nécessairement accessibles dans un autre onglet ; les blocs persistants le sont. La suppression d'une note retire sa référence mémorisée.
