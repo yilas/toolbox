@@ -18,7 +18,7 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 | **Décodeur & Analyseur JWT** | Décode header et payload JWT, analyse les claims temporels et attendus (`iss`, `aud`, `azp`, etc.), vérifie les signatures HMAC et RSA/PS lorsque les clés sont fournies, affiche une timeline, conserve un historique et permet d'enregistrer des règles de validation. | [`decodeur-analyseur-jwt`](tools/decodeur_analyseur_jwt_standalone.html) |
 | **Générateur de mot de passe** | Génère des mots de passe avec `crypto.getRandomValues()`, longueur et jeux de caractères configurables, estimation d'entropie, indicateur de robustesse et mode Chaos. | [`random-numbers-generator`](tools/random-numbers-generator.html) |
 | **Calculateur de sous-réseaux** | Décompose un réseau CIDR en sous-réseaux, affiche les bornes d'adresses et le nombre d'IP, filtre les tailles de masque et maintient un inventaire persistant des sous-réseaux utilisés par réseau parent. | [`subnets-calculator`](tools/subnets_calculator.html) |
-| **Scratchpad** | Notes persistantes par défaut (IndexedDB), catégories visuelles personnalisables, tags, réorganisation, corbeille restaurable, raccourcis, mode jour/nuit, import/export JSON. | [`scratchpad`](tools/scratchpad.html) |
+| **Scratchpad** | Notes persistantes par défaut (IndexedDB), blocs compacts/standards/larges, catégories visuelles personnalisables, tags, réorganisation, corbeille restaurable, raccourcis, mode jour/nuit, import/export JSON. | [`scratchpad`](tools/scratchpad.html) |
 | **Calculateur de temps de travail** | Permet de saisir plusieurs plages entrée/sortie, de les réordonner par glisser-déposer, de calculer automatiquement le temps total travaillé et de conserver les plages localement. | [`worktime-calculator`](tools/worktime-calculator.html) |
 
 > Le tableau ci-dessus correspond aux outils réellement présents dans le répertoire `tools/`. Les idées affichées comme « à venir » sur le portail ne sont pas listées ici tant qu'aucun outil correspondant n'est présent dans ce répertoire.
@@ -27,6 +27,7 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 
 Ouvrir [`tools/scratchpad.html`](tools/scratchpad.html) dans le navigateur ou depuis le portail GitHub Pages. Aucune installation, aucune dépendance externe.
 
+- **Formats de cartes** : choisir **Compact**, **Standard** ou **Large** sur chaque note. Compact optimise l'espace pour une courte valeur ou un lien ; Large étend la carte et l'éditeur pour du texte long. Le format est enregistré avec la note (IndexedDB pour les blocs persistants, sessionStorage pour les temporaires), conservé lors de la duplication, dans la corbeille et dans les exports/imports JSON. Les anciennes notes restent en format Standard. Les cartes s'adaptent à la largeur de l'écran.
 - **Tags** : saisir des tags séparés par des virgules dans une carte (ex. `aks, terraform`). La recherche couvre titres, contenu et tags ; le menu **Tous les tags** et les badges **#tag** filtrent les blocs.
 - **Réorganisation** : glisser un bloc avec la poignée `⠿`, ou utiliser les boutons **↑/↓** (également accessibles au clavier). Désactiver les filtres pour modifier l'ordre ; il est enregistré avec les notes.
 - **Corbeille** : supprimer un bloc le place dans la corbeille pour **7 jours**. Il peut être restauré ou supprimé définitivement. Vider la corbeille nécessite une confirmation. Les blocs initialement persistants vont dans un magasin `trash` d'**IndexedDB** (migration v1 → v2 sans supprimer les notes existantes) ; les temporaires vont dans `sessionStorage` et disparaissent à la fermeture de la session.
@@ -48,7 +49,7 @@ Ouvrir [`tools/scratchpad.html`](tools/scratchpad.html) dans le navigateur ou de
 | `Alt + ↑/↓` | Déplacer le bloc ayant le focus (sans filtre actif) |
 | `Échap` | Fermer la corbeille |
 
-Les données sont **propres au navigateur et à l'origine** (`https://yilas.github.io` sur GitHub Pages). Elles ne sont ni envoyées au dépôt ni synchronisées entre appareils ; vider les données du site les supprime. Ne pas y déposer de mots de passe, tokens ni secrets : le stockage local n'est pas chiffré.
+Les données sont **propres au navigateur et à l'origine** (`https://yilas.github.io` sur GitHub Pages). Elles ne sont ni envoyées au dépôt ni synchronisées entre appareils ; vider les données du site les supprime. Ne pas y déposer de mots de passe, tokens ni secrets sensibles : le stockage local n'est pas chiffré, même pour les petites cartes.
 
 ## 🏗️ Structure
 
