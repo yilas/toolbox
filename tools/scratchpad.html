@@ -260,6 +260,7 @@
     const LEGACY_KEY = "scratchpad.v1";
     const THEME_KEY = "toolbox-scratchpad-theme";
     const LAST_NOTE_KEY = "toolbox-scratchpad-last-note-v1";
+    const ACTIVE_CATEGORY_KEY = "toolbox-scratchpad-active-category-v1";
     const TRASH_RETENTION = 7 * 24 * 60 * 60 * 1000;
     const TTL = { session: 0, minute1: 60000, minute5: 300000, minute30: 1800000, hour: 3600000, hour6: 21600000, hour8: 28800000, day: 86400000 };
     const DEFAULT_CATEGORIES = [
@@ -352,7 +353,18 @@
       $("#category-manage").setAttribute("aria-expanded", String(open));
       if (open) renderCategoryManager();
     }
-    let categoryFilter = "";
+    function readCategoryFilter() {
+      try {
+        const stored = localStorage.getItem(ACTIVE_CATEGORY_KEY);
+        return CATEGORIES.some(c => c.id === stored) ? stored : "";
+      } catch { return ""; }
+    }
+    let categoryFilter = readCategoryFilter();
+    function selectCategory(id) {
+      categoryFilter = CATEGORIES.some(c => c.id === id) ? id : "";
+      try { localStorage.setItem(ACTIVE_CATEGORY_KEY, categoryFilter); }
+      catch(error) { console.warn("Filtre de catégorie non sauvegardé", error); }
+    }
     const validCategory = id => CATEGORIES.some(c=>c.id===id) ? id : "inbox";
     const categoryOf = id => CATEGORIES.find(c=>c.id===id) || CATEGORIES[0];
     const categoryInk = hex => {
@@ -716,7 +728,6 @@
       saveSession();
       $("#search").value = "";
       $("#tag-filter").value = "";
-      categoryFilter = "";
       render();
       rememberNote(note.id);
       $("#notes .note .content")?.focus();
@@ -910,9 +921,9 @@
         for (const note of [...previousNotes, ...previousTrash]) note.category = "inbox";
         saveSession();
         saveTrashSession();
-        categoryFilter = categoryFilter === category.id ? "" : categoryFilter;
+        if (categoryFilter === category.id) selectCategory("");
         if (!saveCategories(CATEGORIES.filter(c => c.id !== category.id))) {
-          categoryFilter = oldFilter;
+          selectCategory(oldFilter);
           notify("Reclassement effectué, mais catégorie non supprimée");
         } else notify("Catégorie supprimée ; notes conservées");
         render();
@@ -956,7 +967,7 @@
     $("#category-bar").addEventListener("click", event => {
       const button = event.target.closest(".category-button");
       if (!button) return;
-      categoryFilter = button.dataset.category || "";
+      selectCategory(button.dataset.category || "");
       render();
     });
     $("#tag-filter").addEventListener("change", render);
@@ -1119,7 +1130,6 @@
         saveSession();
         $("#search").value = "";
         $("#tag-filter").value = "";
-        categoryFilter = "";
         render();
         notify(count + " bloc(s) importé(s)");
       } catch (error) {
