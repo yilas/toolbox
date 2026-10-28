@@ -344,6 +344,10 @@
     let trash = [];
     let draggingId = null;
     let activeId = null;
+    // Éviter que le navigateur ou les évènements scroll du chargement remplacent
+    // l'ID sauvegardé avant que le retour au bloc soit terminé.
+    let restoringPosition = true;
+    try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch {}
     function rememberNote(id) {
       if (!notes.some(n => n.id === id)) return;
       activeId = id;
@@ -356,18 +360,23 @@
       } catch {}
     }
     function restoreLastNote() {
-      let id;
-      try { id = localStorage.getItem(LAST_NOTE_KEY); } catch { return; }
-      if (!id || !notes.some(n => n.id === id)) return;
-      // Attendre le layout : scrollIntoView positionne le bloc même après rechargement.
-      requestAnimationFrame(() => {
-        const card = [...document.querySelectorAll("#notes .note")].find(el => el.dataset.id === id);
-        if (!card) return;
-        activeId = id;
-        card.classList.add("last-active");
-        card.scrollIntoView({ block:"start", behavior:"instant" });
-        // Ne pas placer le curseur dans le texte : retrouver le contexte sans l'éditer.
-      });
+      let id = null;
+      try { id = localStorage.getItem(LAST_NOTE_KEY); } catch {}
+      // Deux frames : le DOM et la grille responsive doivent être calculés.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const card = id && [...document.querySelectorAll("#notes .note")]
+          .find(el => el.dataset.id === id);
+        if (card && !card.closest("[hidden]")) {
+          activeId = id;
+          card.classList.add("last-active");
+          const rect = card.getBoundingClientRect();
+          const desiredY = window.scrollY + rect.top - 20;
+          window.scrollTo({ top: Math.max(0, desiredY), behavior: "instant" });
+        }
+        // Les scroll déclenchés par le retour automatique ne doivent pas écraser
+        // le bloc cible mémorisé. Reprendre le suivi ensuite.
+        setTimeout(() => { restoringPosition = false; }, 250);
+      }));
     }
     let showingTrash = false;
     let toastTimer;
@@ -930,11 +939,11 @@
     // Le défilement manuel actualise également le dernier bloc, même sans clic.
     let scrollScheduled = false;
     window.addEventListener("scroll", () => {
-      if (scrollScheduled || showingTrash) return;
+      if (scrollScheduled || showingTrash || restoringPosition) return;
       scrollScheduled = true;
       requestAnimationFrame(() => {
         scrollScheduled = false;
-        if (!notes.length) return;
+        if (restoringPosition || !notes.length) return;
         const cards = [...document.querySelectorAll("#notes .note")];
         const threshold = Math.min(window.innerHeight * 0.35, 240);
         const candidate = cards.find(card => {
@@ -947,7 +956,7 @@
 
     $("#notes").addEventListener("focusin", event => {
       const article = event.target.closest(".note");
-      if (article) rememberNote(article.dataset.id);
+      if (article && !restoringPosition) rememberNote(article.dataset.id);
     });
     $("#notes").addEventListener("input", event => {
       const article = event.target.closest(".note");
@@ -965,7 +974,7 @@
       if (!article) return;
       const note = notes.find(n => n.id === article.dataset.id);
       if (!note) return;
-      rememberNote(note.id);
+      if (!restoringPosition) rememberNote(note.id);
       const chip = event.target.closest(".tag-chip");
       if (chip) { $("#tag-filter").value = chip.dataset.tag; render(); return; }
       if (event.target.closest(".delete")) void deleteNote(note);
