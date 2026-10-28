@@ -93,7 +93,28 @@
     }
     .note { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--unpin-border); border-radius: 13px; padding: 15px; min-width: 0; }
     .note.pinned { border-top-color: var(--accent); }
-    .note-head, .note-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .note-head, .note-foot { display:flex;align-items:center;justify-content:space-between;gap:9px; }
+    .note-head { min-height:32px; }
+    .note-head .drag-handle { opacity:.65; }
+    .note:hover .drag-handle, .note:focus-within .drag-handle { opacity:1; }
+    .note-foot { margin-top:9px; }
+    .note-foot .copy { flex:1; }
+    .note-settings { min-width:0; margin-top:10px; }
+    .note-settings > summary { display:inline-block;list-style:none;cursor:pointer;border:1px solid var(--border);background:var(--button-bg);border-radius:8px;padding:7px 12px;line-height:1.4;user-select:none; }
+    .note-settings > summary::-webkit-details-marker { display:none; }
+    .note-settings > summary:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
+    .note-settings[open] > summary { border-color:var(--accent); }
+    .note-settings-body { display:grid;gap:10px;margin-top:10px;padding:12px;border:1px solid var(--border);background:var(--field);border-radius:9px; }
+    .setting-row { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px; }
+    .setting-row > label { color:var(--muted);font-size:12px; }
+    .setting-row select { max-width:100%;min-width:115px; }
+    .setting-actions { display:flex;flex-wrap:wrap;gap:7px; }
+    .setting-actions button { flex:1;min-width:70px; }
+    .note-category { font-size:11px;font-weight:650;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42%; }
+    .note-category::before { content:"●";color:var(--category-color);margin-right:5px; }
+    .note.size-compact { padding:12px; }
+    .note.size-compact .content { margin:8px 0 0; }
+
     .title { flex: 1; min-width: 0; background: transparent; color: var(--text); border: none; border-radius: 4px; padding: 5px; font-weight: 650; }
     .content { display: block; width: 100%; min-height: 170px; resize: vertical; background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin: 12px 0; font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 2; }
     .note-foot { flex-wrap: wrap; align-items: start; }
@@ -614,43 +635,63 @@
         (n.title + " " + n.body + " " + n.tags.join(" ") + " " + categoryOf(n.category).label).toLocaleLowerCase().includes(query)
       );
       $("#notes").innerHTML = visible.length ? visible.map((n, i) =>
-        '<article class="note size-' + validSize(n.size) + ' ' + (n.pinned ? "pinned" : "") + '" style="--category-color:' + categoryOf(n.category).color + ';--category-ink:' + categoryInk(categoryOf(n.category).color) + '" data-id="' + safe(n.id) + '">' +
+        '<article class="note size-' + validSize(n.size) + ' ' + (n.pinned ? "pinned" : "") +
+          '" style="--category-color:' + categoryOf(n.category).color + ';--category-ink:' +
+          categoryInk(categoryOf(n.category).color) + '" data-id="' + safe(n.id) + '">' +
           '<div class="note-head">' +
+            '<button class="drag-handle" draggable="' + (!filtered) + '" type="button" aria-label="Déplacer ce bloc" title="' +
+              (filtered ? "Retire les filtres pour réordonner" : "Glisser pour déplacer") + '">⠿</button>' +
             '<input class="title" aria-label="Titre" placeholder="Sans titre" value="' + safe(n.title) + '">' +
-            '<div class="note-tools">' +
-              '<button class="drag-handle" draggable="' + (!filtered) + '" type="button" aria-label="Glisser ce bloc" title="' +
-                (filtered ? "Enlever les filtres pour réordonner" : "Glisser pour réordonner") + '">⠿</button>' +
-              '<button class="move-up" type="button" aria-label="Monter le bloc" ' + (filtered || i === 0 ? "disabled" : "") + '>↑</button>' +
-              '<button class="move-down" type="button" aria-label="Descendre le bloc" ' + (filtered || i === visible.length - 1 ? "disabled" : "") + '>↓</button>' +
-              '<button type="button" class="delete" title="Déplacer vers la corbeille" aria-label="Supprimer ce bloc">✕</button>' +
-            '</div>' +
+            '<span class="note-category" title="' + safe(categoryOf(n.category).label) + '">' +
+              safe(categoryOf(n.category).label) + '</span>' +
           '</div>' +
-          '<div class="category-meta"><span class="category-label">' + categoryOf(n.category).icon + ' ' + safe(categoryOf(n.category).label) + '</span>' +
-            '<select class="category-picker" aria-label="Catégorie du bloc">' + CATEGORIES.map(c =>
-              '<option value="' + safe(c.id) + '" ' + (n.category===c.id ? "selected" : "") + '>' +
-              c.icon + ' ' + safe(c.label) + '</option>').join("") + '</select></div>' +
-          '<textarea class="content" aria-label="Contenu" spellcheck="false" placeholder="Colle une commande, du JSON, une URL…">' + safe(n.body) + '</textarea>' +
-          '<input class="tags-input" aria-label="Tags séparés par des virgules" placeholder="Tags : aks, terraform, tmp" value="' + safe(n.tags.join(", ")) + '">' +
-          '<div class="tag-chips">' + n.tags.map(t => '<button type="button" class="tag-chip" data-tag="' + safe(t) + '" title="Filtrer par #' + safe(t) + '">#' + safe(t) + '</button>').join("") + '</div>' +
+          '<textarea class="content" aria-label="Contenu" spellcheck="false" placeholder="Colle une commande, du JSON, une URL…">' +
+            safe(n.body) + '</textarea>' +
           '<div class="note-foot">' +
-            '<select class="note-size" aria-label="Format du bloc">' +
-              Object.entries(NOTE_SIZES).map(([key,label]) =>
-                '<option value="' + key + '"' + (validSize(n.size) === key ? ' selected' : '') +
-                '>' + label + '</option>').join('') +
-            '</select>' +
-            '<label class="pin"><input type="checkbox" class="pin-checkbox" ' + (n.pinned ? "checked" : "") + '> 📌 Persistant</label>' +
-            '<select class="ttl" aria-label="Durée de conservation" ' + (n.pinned ? "disabled" : "") + '>' +
-              '<option value="session" ' + (n.ttl === "session" ? "selected" : "") + '>Session</option>' +
-              '<option value="minute1" ' + (n.ttl === "minute1" ? "selected" : "") + '>1 minute</option>' +
-              '<option value="minute5" ' + (n.ttl === "minute5" ? "selected" : "") + '>5 minutes</option>' +
-              '<option value="minute30" ' + (n.ttl === "minute30" ? "selected" : "") + '>30 minutes</option>' +
-              '<option value="hour" ' + (n.ttl === "hour" ? "selected" : "") + '>1 heure</option>' +
-              '<option value="hour6" ' + (n.ttl === "hour6" ? "selected" : "") + '>6 heures</option>' +
-              '<option value="hour8" ' + (n.ttl === "hour8" ? "selected" : "") + '>8 heures</option>' +
-              '<option value="day" ' + (n.ttl === "day" ? "selected" : "") + '>24 heures</option>' +
-            '</select>' +
-            '<div class="actions"><button type="button" class="duplicate">Dupliquer</button>' +
-              '<button type="button" class="copy">⧉ Copier</button></div>' +
+            '<button class="copy" type="button" aria-label="Copier le contenu">⧉ Copier</button>' +
+            '<details class="note-settings">' +
+              '<summary aria-label="Options du bloc" title="Options du bloc">⋯</summary>' +
+              '<div class="note-settings-body">' +
+                '<div class="setting-row"><label>Catégorie</label>' +
+                  '<select class="category-picker" aria-label="Catégorie du bloc">' +
+                    CATEGORIES.map(c => '<option value="' + safe(c.id) + '" ' +
+                      (n.category === c.id ? "selected" : "") + '>' + safe(c.label) + '</option>').join("") +
+                  '</select></div>' +
+                '<div class="setting-row"><label>Format</label>' +
+                  '<select class="note-size" aria-label="Format du bloc">' +
+                    Object.entries(NOTE_SIZES).map(([key, label]) =>
+                      '<option value="' + key + '"' + (validSize(n.size) === key ? ' selected' : '') +
+                      '>' + label + '</option>').join("") + '</select></div>' +
+                '<div class="setting-row"><label class="pin"><input type="checkbox" class="pin-checkbox" ' +
+                  (n.pinned ? "checked" : "") + '> 📌 Persistant</label></div>' +
+                '<div class="setting-row"><label>Expiration</label>' +
+                  '<select class="ttl" aria-label="Durée de conservation" ' + (n.pinned ? "disabled" : "") + '>' +
+                    '<option value="session" ' + (n.ttl === "session" ? "selected" : "") + '>Session</option>' +
+                    '<option value="minute1" ' + (n.ttl === "minute1" ? "selected" : "") + '>1 minute</option>' +
+                    '<option value="minute5" ' + (n.ttl === "minute5" ? "selected" : "") + '>5 minutes</option>' +
+                    '<option value="minute30" ' + (n.ttl === "minute30" ? "selected" : "") + '>30 minutes</option>' +
+                    '<option value="hour" ' + (n.ttl === "hour" ? "selected" : "") + '>1 heure</option>' +
+                    '<option value="hour6" ' + (n.ttl === "hour6" ? "selected" : "") + '>6 heures</option>' +
+                    '<option value="hour8" ' + (n.ttl === "hour8" ? "selected" : "") + '>8 heures</option>' +
+                    '<option value="day" ' + (n.ttl === "day" ? "selected" : "") + '>24 heures</option>' +
+                  '</select></div>' +
+                '<label for="tags-' + safe(n.id) + '">Tags</label>' +
+                '<input id="tags-' + safe(n.id) + '" class="tags-input" aria-label="Tags séparés par des virgules" placeholder="aks, terraform, tmp" value="' +
+                  safe(n.tags.join(", ")) + '">' +
+                '<div class="tag-chips">' +
+                  n.tags.map(t => '<button type="button" class="tag-chip" data-tag="' + safe(t) +
+                    '" title="Filtrer par #' + safe(t) + '">#' + safe(t) + '</button>').join("") +
+                '</div>' +
+                '<div class="setting-actions">' +
+                  '<button class="move-up" type="button" aria-label="Monter le bloc" ' +
+                    (filtered || i === 0 ? "disabled" : "") + '>↑</button>' +
+                  '<button class="move-down" type="button" aria-label="Descendre le bloc" ' +
+                    (filtered || i === visible.length - 1 ? "disabled" : "") + '>↓</button>' +
+                  '<button class="duplicate" type="button">Dupliquer</button>' +
+                  '<button class="delete" type="button" aria-label="Déplacer vers la corbeille">Supprimer</button>' +
+                '</div>' +
+              '</div>' +
+            '</details>' +
           '</div>' +
         '</article>'
       ).join("") : '<div class="empty"><strong>' +
