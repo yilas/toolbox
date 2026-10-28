@@ -927,6 +927,24 @@
     $("#copy-all").addEventListener("click", () => {
       void copy(notes.map(n => (n.title ? "# " + n.title + "\n" : "") + n.body).join("\n\n---\n\n"));
     });
+    // Le défilement manuel actualise également le dernier bloc, même sans clic.
+    let scrollScheduled = false;
+    window.addEventListener("scroll", () => {
+      if (scrollScheduled || showingTrash) return;
+      scrollScheduled = true;
+      requestAnimationFrame(() => {
+        scrollScheduled = false;
+        if (!notes.length) return;
+        const cards = [...document.querySelectorAll("#notes .note")];
+        const threshold = Math.min(window.innerHeight * 0.35, 240);
+        const candidate = cards.find(card => {
+          const bounds = card.getBoundingClientRect();
+          return bounds.top <= threshold && bounds.bottom > threshold;
+        }) || cards.find(card => card.getBoundingClientRect().top >= 0);
+        if (candidate) rememberNote(candidate.dataset.id);
+      });
+    }, { passive:true });
+
     $("#notes").addEventListener("focusin", event => {
       const article = event.target.closest(".note");
       if (article) rememberNote(article.dataset.id);
