@@ -208,7 +208,7 @@ a { color: inherit; }
 .overview-card-main {
   display: flex; flex-direction: column; gap: 7px; align-items: flex-start;
   width: 100%; min-width: 0; flex: 1; text-align: left; border: 0;
-  padding: 12px 10px 31px; background: transparent; color: var(--text);
+  padding: 12px 10px 9px; background: transparent; color: var(--text);
   cursor: pointer;
 }
 .overview-card-main:hover { color: var(--accent-ink); }
@@ -226,13 +226,19 @@ a { color: inherit; }
 .overview-card-meter > span { display: block; height: 100%; background: var(--accent); }
 .overview-card[data-status="partial"] .overview-card-meter > span { background: var(--amber); }
 .overview-card[data-status="free"] .overview-card-meter > span { background: var(--green); }
-.overview-card-hide {
-  position: absolute; bottom: 7px; right: 7px;
-  font-size: .69rem; font-weight: 650; color: var(--muted);
-  border: 1px solid var(--border); border-radius: 6px;
-  background: var(--surface); padding: 3px 7px;
+.overview-card-footer {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+  gap: 6px; padding: 1px 9px 9px;
 }
-.overview-card-hide:hover { color: var(--accent-ink); border-color: var(--accent); }
+.overview-card-edit, .overview-card-hide {
+  font-size: .69rem; font-weight: 680; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); padding: 4px 7px;
+}
+.overview-card-edit { color: var(--accent-ink); }
+.overview-card-edit:hover, .overview-card-hide:hover {
+  color: var(--accent-ink); border-color: var(--accent); background: var(--accent-soft);
+}
 .overview-empty {
   margin: 0; width: 100%; color: var(--muted); font-size: .85rem;
   padding: 17px; background: var(--soft); border: 1px dashed var(--border);
@@ -258,7 +264,8 @@ a { color: inherit; }
 .grid-top { margin-bottom: 9px; }
 .grid-bottom { margin-top: 9px; font-size: .71rem; color: var(--muted); }
 .grid-main { font: 740 .82rem/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap: anywhere; }
-.grid-action { display: flex; align-items: center; gap: 6px; }
+.grid-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+.grid-bottom > span { min-width: 0; overflow-wrap: anywhere; }
 .pager { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 9px; margin-top: 16px; }
 .pager-info { color: var(--muted); font-size: .78rem; }
 .side .card-pad { padding: 21px; }
