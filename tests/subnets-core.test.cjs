@@ -191,7 +191,7 @@ test("HTML et UI : retour Toolbox, deux vues, aucune injection HTML dynamique", 
     assert.ok(fs.existsSync(path.join(dir, file)));
     assert.ok(html.includes(file));
   }
-  for (const id of ["hierarchyTree", "subnetGrid", "maskSelect", "statusFilter",
+  for (const id of ["maskOverview", "overviewMode", "subnetGrid", "maskSelect", "statusFilter",
     "networkInput", "savedNetworks", "importFile", "exportJson", "exportCsv",
     "allocationDialog", "summarySection", "occupationBar"]) {
     assert.ok(html.includes('id="' + id + '"'));
