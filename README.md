@@ -121,7 +121,7 @@ La hiérarchie utilise cinq états : **Libre**, **Réservé** (sélection direct
 Les fichiers `tools/subnets-core.js`, `tools/subnets-storage.js`, `tools/subnets-ui.js` et `tools/subnets-calculator.css` sont natifs, sans dépendance. Tests :
 
 ```bash
-node --test tests/subnets-core.test.cjs
+node --test tests/subnets-core.test.cjs tests/subnets-ui.test.cjs
 ```
 
 ## 🏗️ Structure
