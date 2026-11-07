@@ -230,15 +230,17 @@ a { color: inherit; }
   display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end;
   gap: 6px; padding: 1px 9px 9px;
 }
-.overview-card-edit, .overview-card-hide {
+.overview-card-edit, .overview-card-release, .overview-card-hide {
   font-size: .69rem; font-weight: 680; color: var(--muted);
   border: 1px solid var(--border); border-radius: 6px;
   background: var(--surface); padding: 4px 7px;
 }
 .overview-card-edit { color: var(--accent-ink); }
+.overview-card-release { color: var(--red); }
 .overview-card-edit:hover, .overview-card-hide:hover {
   color: var(--accent-ink); border-color: var(--accent); background: var(--accent-soft);
 }
+.overview-card-release:hover { border-color: var(--red); background: var(--red-soft); }
 .overview-empty {
   margin: 0; width: 100%; color: var(--muted); font-size: .85rem;
   padding: 17px; background: var(--soft); border: 1px dashed var(--border);
