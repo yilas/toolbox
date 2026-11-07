@@ -137,10 +137,18 @@
       .toolbar .spacer { display: none; }
       .filename { width: 100%; max-width: none; }
     }
+    /* Retour au portail, dans la même palette que l'outil */
+    .toolbox-return-nav { margin-bottom: 18px; }
+    .toolbox-return-nav a { display: inline-block; padding: 5px 0; color: var(--muted); font-size: .88rem; font-weight: 650; text-decoration: none; }
+    .toolbox-return-nav a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+    .toolbox-return-nav a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 3px; }
   </style>
 </head>
 <body>
   <main class="app">
+    <nav class="toolbox-return-nav" aria-label="Navigation">
+      <a href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a>
+    </nav>
     <header>
       <div>
         <h1>Clean Text</h1>
