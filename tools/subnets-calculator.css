@@ -168,6 +168,13 @@ a { color: inherit; }
 .overview-cell[data-status="partial"] { background: var(--amber-soft); border-color: var(--amber); }
 .overview-cell[data-status="full"] { background: var(--soft2); border-color: var(--muted); }
 .overview-cell-fill { display: block; height: 100%; width: 0; pointer-events: none; }
+.overview-cell-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; padding: 0 5px; color: var(--text);
+  font: 710 .67rem/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  white-space: nowrap; text-overflow: ellipsis; pointer-events: none;
+}
+
 .overview-cell[data-status="reserved"] .overview-cell-fill,
 .overview-cell[data-status="inherited"] .overview-cell-fill { background: var(--accent); opacity: .45; }
 .overview-cell[data-status="partial"] .overview-cell-fill { background: var(--amber); opacity: .65; }
