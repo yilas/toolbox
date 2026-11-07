@@ -164,38 +164,111 @@ test("Chargement : CIDR canonique et six niveaux lisibles par défaut", () => {
   assert.ok(page.store.getItem("toolbox-subnets-v2"));
 });
 
-test("Réserver depuis la vue d’ensemble sans modifier accidentellement le réseau actif", () => {
+test("Réservation immédiate sans dialogue ni métadonnées, même si la saisie change", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.0/24";
   submit(page.elements.networkForm);
   page.elements.networkInput.value = "192.0.2.0/24";
   page.elements.networkInput.dispatch("input");
-  const root = findNode(page, "10.0.0.0/24");
-  assert.ok(root);
-  click(root);
-  assert.equal(page.elements.allocationDialog.open, true);
-  page.elements.allocationName.value = "Service API";
-  submit(page.elements.allocationForm);
+  click(findNode(page, "10.0.0.0/24"));
+  assert.equal(page.elements.allocationDialog.open, false);
   assert.equal(page.elements.metricOccupied.textContent, "256");
   const saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
   assert.equal(saved.active, "10.0.0.0/24");
-  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "Service API");
   assert.equal(saved.networks["192.0.2.0/24"], undefined);
+  const allocation = saved.networks["10.0.0.0/24"].allocations[0];
+  assert.equal(allocation.cidr, "10.0.0.0/24");
+  assert.equal(allocation.name, "");
+  assert.equal(allocation.description, "");
   assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "reserved");
   assert.equal(findNode(page, "10.0.0.0/25").parent.dataset.status, "inherited");
 });
 
-test("Libération : l'occupation des cartes est recalculée", () => {
+test("Libération sans formulaire : occupation recalculée et inventaire vidé", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.0/24";
   submit(page.elements.networkForm);
   click(findNode(page, "10.0.0.0/24"));
-  submit(page.elements.allocationForm);
-  click(findNode(page, "10.0.0.0/24"));
-  assert.equal(page.elements.releaseButton.hidden, false);
-  click(page.elements.releaseButton);
+  assert.equal(page.elements.metricOccupied.textContent, "256");
+  const reserved = findNode(page, "10.0.0.0/24").parent;
+  const release = reserved.children[1].children[0];
+  assert.equal(release.textContent, "Libérer");
+  click(release);
+  assert.equal(page.elements.allocationDialog.open, false);
   assert.equal(page.elements.metricOccupied.textContent, "0");
   assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "free");
+  const stored = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
+  assert.equal(stored.networks["10.0.0.0/24"].allocations.length, 0);
+});
+
+test("Détails optionnels : réserver avec description, puis modifier une réservation directe", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.0.0.0/24";
+  submit(page.elements.networkForm);
+  const emptyCard = findNode(page, "10.0.0.0/24").parent;
+  const withDetails = emptyCard.children[1].children[0];
+  assert.equal(withDetails.textContent, "Avec détails");
+  click(withDetails);
+  assert.equal(page.elements.allocationDialog.open, true);
+  page.elements.allocationName.value = "Service API";
+  page.elements.allocationDescription.value = "Plage réservée au service";
+  submit(page.elements.allocationForm);
+  let saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
+  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "Service API");
+  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].description, "Plage réservée au service");
+
+  click(findNode(page, "10.0.0.0/24")); // CIDR réservé : éditer les détails.
+  assert.equal(page.elements.allocationDialog.open, true);
+  assert.equal(page.elements.allocationName.value, "Service API");
+  page.elements.allocationName.value = "Service API v2";
+  submit(page.elements.allocationForm);
+  saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
+  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "Service API v2");
+});
+
+test("Libérer une réservation annotée demande confirmation, annuler conserve les données", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.0.0.0/24";
+  submit(page.elements.networkForm);
+  click(findNode(page, "10.0.0.0/24").parent.children[1].children[0]); // Avec détails
+  page.elements.allocationName.value = "Production";
+  submit(page.elements.allocationForm);
+  page.window.confirm = () => false;
+  click(findNode(page, "10.0.0.0/24").parent.children[1].children[0]); // Libérer
+  assert.equal(page.elements.metricOccupied.textContent, "256");
+  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["10.0.0.0/24"].allocations[0].name, "Production");
+  page.window.confirm = () => true;
+  click(findNode(page, "10.0.0.0/24").parent.children[1].children[0]);
+  assert.equal(page.elements.metricOccupied.textContent, "0");
+});
+
+test("Grille : la case réserve et libère sans ouvrir de dialogue, les détails restent accessibles", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "192.0.2.0/24";
+  submit(page.elements.networkForm);
+  click(page.elements.gridMode);
+  const firstCard = findNode(page, "192.0.2.0/26");
+  assert.ok(firstCard); // La grille démarre au masque /26.
+  const checkbox = firstCard.parent.children[0].children[0];
+  assert.equal(checkbox.checked, false);
+  checkbox.checked = true;
+  checkbox.dispatch("change");
+  assert.equal(page.elements.allocationDialog.open, false);
+  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["192.0.2.0/24"].allocations.length, 1);
+
+  const reserved = findNode(page, "192.0.2.0/26");
+  const checkAgain = reserved.parent.children[0].children[0];
+  assert.equal(checkAgain.checked, true);
+  checkAgain.checked = false;
+  checkAgain.dispatch("change");
+  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["192.0.2.0/24"].allocations.length, 0);
+
+  const free = findNode(page, "192.0.2.0/26");
+  const buttons = free.parent.children[2].children[1];
+  assert.equal(buttons.children[0].textContent, "Réserver");
+  assert.equal(buttons.children[1].textContent, "Avec détails");
+  click(buttons.children[1]);
+  assert.equal(page.elements.allocationDialog.open, true);
 });
 
 test("Régression capture : /19 affiche les 32 CIDR /24 entièrement lisibles", () => {
