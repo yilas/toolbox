@@ -250,7 +250,7 @@
   // Vue par niveaux : aucune branche à ouvrir, chaque masque est affiché.
   // Au-delà de 64 sous-réseaux, les cellules représentent des groupes
   // contigus alignés sur la même plage d'adresses que les niveaux parents.
-  function createOverviewCell(bucket, prefix, aggregated, subnetCount) {
+  function createOverviewCell(bucket, prefix, aggregated, subnetCount, showLabel) {
     const node = core.describeNode(bucket, state.coverage);
     const cell = document.createElement("button");
     cell.type = "button";
@@ -262,6 +262,12 @@
     fill.className = "overview-cell-fill";
     fill.style.width = node.percent.toFixed(4) + "%";
     cell.append(fill);
+    if (showLabel) {
+      const label = document.createElement("span");
+      label.className = "overview-cell-label";
+      label.textContent = node.cidr;
+      cell.append(label);
+    }
 
     const groupInfo = aggregated
       ? " · " + formatNumber(subnetCount) + " sous-réseaux /" + prefix + " regroupés"
@@ -329,7 +335,7 @@
       const size = 2 ** (32 - bucketPrefix);
       for (let i = 0; i < buckets; i++) {
         const bucket = core.cidrFromStart(parent.start + i * size, bucketPrefix);
-        track.append(createOverviewCell(bucket, prefix, aggregated, grouped));
+        track.append(createOverviewCell(bucket, prefix, aggregated, grouped, !aggregated && buckets <= 8));
       }
 
       band.append(heading, track);
