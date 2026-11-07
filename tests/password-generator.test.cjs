@@ -70,7 +70,7 @@ test("Génération sécurisée : longueur, groupes et entropie exacte", () => {
     assert.match(result.value, /[A-Z]/);
     assert.match(result.value, /[a-z]/);
     assert.match(result.value, /[0-9]/);
-    assert.match(result.value, /[!@#$%^&*()\-_=+\[\]{}|;:,.<>?/]/);
+    assert.ok([...result.value].some(char => "!@#$%^&*()-_=+[]{}|;:,.<>?/".includes(char)));
   }
   assert.equal(core.countValidPasswords(2, [2, 2]), 8n);
   const short = core.generatePassword({ ...balanced, length: 4 });
