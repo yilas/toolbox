@@ -7,6 +7,7 @@ on:
       - 'tools/jwt-analyzer-*.js'
       - 'tools/jwt-analyzer.css'
       - 'tests/jwt-analyzer.test.cjs'
+      - 'tests/jwt-analyzer-ui.test.cjs'
       - '.github/workflows/jwt-analyzer.yml'
   push:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'tools/jwt-analyzer-*.js'
       - 'tools/jwt-analyzer.css'
       - 'tests/jwt-analyzer.test.cjs'
+      - 'tests/jwt-analyzer-ui.test.cjs'
 
 permissions:
   contents: read
@@ -30,4 +32,4 @@ jobs:
           node --check tools/jwt-analyzer-core.js
           node --check tools/jwt-analyzer-ui.js
       - name: JWT analyzer tests
-        run: node --test tests/jwt-analyzer.test.cjs
+        run: node --test tests/jwt-analyzer.test.cjs tests/jwt-analyzer-ui.test.cjs
