@@ -433,14 +433,18 @@
     const footer = document.createElement("div");
     footer.className = "overview-card-footer";
     if (canManage) {
-      const details = document.createElement("button");
-      details.type = "button";
-      details.className = "overview-card-edit";
-      details.textContent = node.status === "reserved" ? "Détails" : "Avec détails";
-      details.setAttribute("aria-label", (node.status === "reserved"
-        ? "Modifier les détails de " : "Réserver avec détails ") + node.cidr);
-      details.addEventListener("click", () => openAllocationDialog(node.cidr));
-      footer.append(details);
+      const secondary = document.createElement("button");
+      secondary.type = "button";
+      secondary.className = node.status === "reserved"
+        ? "overview-card-release" : "overview-card-edit";
+      secondary.textContent = node.status === "reserved" ? "Libérer" : "Avec détails";
+      secondary.setAttribute("aria-label", (node.status === "reserved"
+        ? "Libérer le réseau " : "Réserver avec détails ") + node.cidr);
+      secondary.addEventListener("click", () => {
+        if (node.status === "reserved") quickRelease(node.cidr);
+        else openAllocationDialog(node.cidr);
+      });
+      footer.append(secondary);
     }
     const hide = document.createElement("button");
     hide.type = "button";
