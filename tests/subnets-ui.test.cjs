@@ -112,14 +112,14 @@ function createPage(initial = {}) {
       function walk(node) {
         return [node, ...node.children.flatMap(walk)];
       }
-      return [elements.hierarchyTree, elements.subnetGrid].flatMap(walk)
+      return [elements.maskOverview, elements.subnetGrid].flatMap(walk)
         .filter(node => node.dataset.netCidr);
     }
   };
   const parentMap = [
-    ["hierarchyTree","treeView"],
+    ["maskOverview","overviewView"],
     ["subnetGrid","gridView"],
-    ["treeView","workspace"],
+    ["overviewView","workspace"],
     ["gridView","workspace"]
   ];
   for (const [id, parent] of parentMap) elements[parent].append(elements[id]);
@@ -148,7 +148,7 @@ function flatten(root) {
   return [root, ...root.children.flatMap(flatten)];
 }
 
-test("Chargement : normalisation canonique et arbre parent/enfant dépliable", () => {
+test("Chargement : normalisation et tous les masques affichés sans dépliage", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.13/24";
   submit(page.elements.networkForm);
@@ -158,19 +158,20 @@ test("Chargement : normalisation canonique et arbre parent/enfant dépliable", (
   assert.equal(page.elements.workspace.hidden, false);
   assert.ok(findNode(page, "10.0.0.0/24"));
   assert.ok(findNode(page, "10.0.0.0/25"));
+  assert.equal(page.elements.maskOverview.children.length, 9); // /24 à /32
+  assert.equal(page.elements.overviewView.hidden, false);
   assert.equal(page.store.getItem("toolbox-subnets-v2") !== null, true);
 });
 
-test("Réserver via l'arbre et garder l'inventaire actif malgré une saisie modifiée", () => {
+test("Réserver depuis la vue d’ensemble sans changer accidentellement de réseau", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.0/24";
   submit(page.elements.networkForm);
   page.elements.networkInput.value = "192.0.2.0/24";
   page.elements.networkInput.dispatch("input");
   const root = findNode(page, "10.0.0.0/24");
-  const reserve = flatten(root).find(x => x.tagName === "BUTTON" && x.textContent === "Réserver");
-  assert.ok(reserve);
-  click(reserve);
+  assert.ok(root);
+  click(root);
   assert.equal(page.elements.allocationDialog.open, true);
   page.elements.allocationName.value = "Service API";
   submit(page.elements.allocationForm);
@@ -187,17 +188,55 @@ test("Libération : occupation recalculée et nœuds redevenus libres", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.0/24";
   submit(page.elements.networkForm);
-  const reserve = flatten(findNode(page, "10.0.0.0/24"))
-    .find(x => x.tagName === "BUTTON" && x.textContent === "Réserver");
-  click(reserve);
+  click(findNode(page, "10.0.0.0/24"));
   submit(page.elements.allocationForm);
-  const modify = flatten(findNode(page, "10.0.0.0/24"))
-    .find(x => x.tagName === "BUTTON" && x.textContent === "Modifier");
-  click(modify);
+  click(findNode(page, "10.0.0.0/24"));
   assert.equal(page.elements.releaseButton.hidden, false);
   click(page.elements.releaseButton);
   assert.equal(page.elements.metricOccupied.textContent, "0");
   assert.equal(findNode(page, "10.0.0.0/24").dataset.status, "free");
+});
+
+test("Vue d'ensemble : toutes les lignes CIDR visibles et blocs alignés", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.105.196.0/22";
+  submit(page.elements.networkForm);
+  const bands = page.elements.maskOverview.children;
+  assert.equal(bands.length, 11); // /22, /23, …, /32
+  assert.equal(page.elements.overviewView.hidden, false);
+  assert.equal(page.elements.gridView.hidden, true);
+  const counts = bands.map(band => band.children[1].children.length);
+  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32, 64, 64, 64, 64, 64]);
+  assert.ok(bands[0].children[1].children[0].children.some(x => x.className === "overview-cell-label"));
+  assert.ok(!bands[7].children[1].children[0].children.some(x => x.className === "overview-cell-label"));
+  assert.match(bands[7].children[0].children[2].textContent, /Condensé/);
+  assert.doesNotMatch(uiSource, /state\.expanded|renderTree|createTreeRow/);
+  assert.doesNotMatch(html, /id="treeView"|id="hierarchyTree"/);
+});
+
+test("Clique sur un bloc condensé : ouverture des détails au bon masque", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.105.196.0/22";
+  submit(page.elements.networkForm);
+  const lastBand = page.elements.maskOverview.children.at(-1);
+  const firstBucket = lastBand.children[1].children[0];
+  assert.match(firstBucket.title, /sous-réseaux \/32 regroupés/);
+  click(firstBucket);
+  assert.equal(page.elements.overviewView.hidden, true);
+  assert.equal(page.elements.gridView.hidden, false);
+  assert.equal(page.elements.maskSelect.value, "32");
+  assert.equal(page.elements.pageInfo.textContent.includes("Page 1"), true);
+  assert.ok(findNode(page, "10.105.196.0/32"));
+});
+
+test("Réseau /0 : 33 niveaux, 64 blocs maximum par niveau", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.105.196.0/0";
+  submit(page.elements.networkForm);
+  const bands = page.elements.maskOverview.children;
+  assert.equal(bands.length, 33);
+  assert.ok(bands.every(band => band.children[1].children.length <= 64));
+  assert.equal(page.elements.activeNetwork.textContent, "0.0.0.0/0");
 });
 
 test("Grille : préfixes /31 /32 et recherche IP vers la bonne page", () => {
