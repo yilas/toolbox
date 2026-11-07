@@ -6,7 +6,7 @@
   const core = window.SubnetsCore;
   const storage = window.SubnetsStorage;
   const PAGE_SIZE = 64;
-  const MAX_TREE_ROWS = 300;
+  const MAX_OVERVIEW_CELLS = 64;
   const STATUS = Object.freeze({
     free: "Libre", reserved: "Réservé", inherited: "Hérité",
     partial: "Partiel", full: "Complet"
@@ -15,8 +15,7 @@
     data: storage.emptyState(),
     active: null,
     coverage: null,
-    view: "tree",
-    expanded: new Set(),
+    view: "overview",
     gridPrefix: 32,
     gridPage: 0,
     gridFilter: "all",
@@ -129,7 +128,6 @@
       const parent = core.parseCIDR(value);
       const next = storage.withNetwork(state.data, parent.cidr);
       state.active = parent;
-      state.expanded = new Set([parent.cidr]);
       state.selected = null;
       state.gridPrefix = Math.min(32, parent.prefix + 2);
       state.gridPage = 0;
@@ -249,94 +247,95 @@
     return button;
   }
 
-  function createTreeRow(net, expanded) {
-    const node = core.describeNode(net, state.coverage);
-    const row = document.createElement("div");
-    row.className = "tree-node";
-    row.dataset.status = node.status;
-    bindHighlight(row, node.cidr);
+  // Vue par niveaux : aucune branche à ouvrir, chaque masque est affiché.
+  // Au-delà de 64 sous-réseaux, les cellules représentent des groupes
+  // contigus alignés sur la même plage d'adresses que les niveaux parents.
+  function createOverviewCell(bucket, prefix, aggregated, subnetCount) {
+    const node = core.describeNode(bucket, state.coverage);
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "overview-cell";
+    cell.dataset.status = node.status;
+    bindHighlight(cell, node.cidr);
 
-    if (node.prefix < 32) {
-      const toggle = document.createElement("button");
-      toggle.type = "button";
-      toggle.className = "expand";
-      toggle.textContent = expanded ? "▾" : "▸";
-      toggle.setAttribute("aria-label", (expanded ? "Replier " : "Déplier ") + node.cidr);
-      toggle.setAttribute("aria-expanded", String(expanded));
-      toggle.addEventListener("click", () => {
-        if (state.expanded.has(node.cidr)) state.expanded.delete(node.cidr);
-        else state.expanded.add(node.cidr);
-        renderTree();
-      });
-      row.append(toggle);
-    } else {
-      const spacer = document.createElement("span");
-      spacer.className = "expand-spacer";
-      row.append(spacer);
-    }
-
-    row.append(checkboxFor(node));
-    const label = document.createElement("div");
-    label.className = "node-label";
-    const cidr = document.createElement("span");
-    cidr.className = "node-cidr";
-    cidr.textContent = node.cidr;
-    const description = document.createElement("span");
-    description.className = "node-description";
-    description.textContent = nodeDescription(node);
-    label.append(cidr, description);
-    row.append(label);
-
-    const actionBox = document.createElement("div");
-    actionBox.className = "node-actions";
-    const meter = document.createElement("div");
-    meter.className = "node-bar";
-    meter.dataset.status = node.status;
-    meter.title = formatPercent(node.percent) + " occupé";
     const fill = document.createElement("span");
+    fill.className = "overview-cell-fill";
     fill.style.width = node.percent.toFixed(4) + "%";
-    meter.append(fill);
-    actionBox.append(meter, createBadge(node.status));
+    cell.append(fill);
 
-    if (node.overlap) actionBox.append(createBadge("conflict"));
-    const action = nodeAction(node);
-    if (action) actionBox.append(action);
-    row.append(actionBox);
-    return row;
+    const groupInfo = aggregated
+      ? " · " + formatNumber(subnetCount) + " sous-réseaux /" + prefix + " regroupés"
+      : "";
+    const info = node.cidr + groupInfo + " · " +
+      STATUS[node.status] + " · " + formatPercent(node.percent) + " occupé";
+    cell.title = info;
+    const canReserve = !aggregated && (node.status === "free" || node.status === "reserved");
+    cell.setAttribute("aria-label", info + " — " +
+      (canReserve ? (node.status === "reserved" ? "Modifier la réservation" : "Réserver") : "Voir dans la grille détaillée"));
+
+    cell.addEventListener("click", () => {
+      if (canReserve) {
+        openAllocationDialog(node.cidr);
+      } else {
+        // Pour un groupe agrégé, la grille s'ouvre au masque de la ligne
+        // et à la première page appartenant à la plage cliquée.
+        navigateTo(core.cidrFromStart(bucket.start, prefix).cidr);
+      }
+    });
+    return cell;
   }
 
-  function renderTree() {
-    const container = $("hierarchyTree");
+  function renderOverview() {
+    const container = $("maskOverview");
     container.replaceChildren();
     if (!state.active) return;
-    const rootList = document.createElement("ul");
-    rootList.className = "tree-group root";
-    let count = 0;
-    let capped = false;
 
-    function append(net, parent) {
-      if (count >= MAX_TREE_ROWS) { capped = true; return; }
-      count++;
-      const li = document.createElement("li");
-      const expanded = state.expanded.has(net.cidr);
-      li.append(createTreeRow(net, expanded));
-      if (expanded && net.prefix < 32) {
-        const group = document.createElement("ul");
-        group.className = "tree-group";
-        core.children(net).forEach(child => append(child, group));
-        li.append(group);
+    const parent = state.active;
+    const fragment = document.createDocumentFragment();
+    for (let prefix = parent.prefix; prefix <= 32; prefix++) {
+      const total = 2 ** (prefix - parent.prefix);
+      const bucketPrefix = Math.min(prefix, parent.prefix + 6);
+      const buckets = Math.min(MAX_OVERVIEW_CELLS, total);
+      const grouped = 2 ** (prefix - bucketPrefix);
+      const aggregated = grouped > 1;
+
+      const band = document.createElement("section");
+      band.className = "overview-band";
+      band.setAttribute("aria-label", "Occupation des sous-réseaux /" + prefix);
+
+      const heading = document.createElement("div");
+      heading.className = "overview-band-heading";
+      const title = document.createElement("strong");
+      title.className = "overview-band-name";
+      title.textContent = "/" + prefix;
+      const meta = document.createElement("span");
+      meta.className = "overview-band-meta";
+      meta.textContent = formatNumber(total) + " sous-réseau" +
+        (total > 1 ? "x" : "") + " · " +
+        formatNumber(2 ** (32 - prefix)) + " adresse" +
+        (prefix === 32 ? "" : "s") + " / réseau";
+      const stat = document.createElement("span");
+      stat.className = "overview-band-stat";
+      stat.textContent = aggregated
+        ? "Condensé : " + buckets + " blocs × " + formatNumber(grouped)
+        : formatNumber(buckets) + " bloc" + (buckets > 1 ? "s" : "");
+      heading.append(title, meta, stat);
+
+      const track = document.createElement("div");
+      track.className = "overview-track";
+      track.style.gridTemplateColumns = "repeat(" + buckets + ", minmax(0, 1fr))";
+      track.setAttribute("role", "group");
+      track.setAttribute("aria-label", "Répartition IPv4 à /" + prefix);
+      const size = 2 ** (32 - bucketPrefix);
+      for (let i = 0; i < buckets; i++) {
+        const bucket = core.cidrFromStart(parent.start + i * size, bucketPrefix);
+        track.append(createOverviewCell(bucket, prefix, aggregated, grouped));
       }
-      parent.append(li);
-    }
 
-    append(state.active, rootList);
-    container.append(rootList);
-    if (capped) {
-      const warning = document.createElement("p");
-      warning.className = "hint";
-      warning.textContent = "Affichage limité à 300 nœuds. Repliez une branche ou utilisez la grille par masque.";
-      container.append(warning);
+      band.append(heading, track);
+      fragment.append(band);
     }
+    container.append(fragment);
   }
 
   function createGridCard(net) {
@@ -393,11 +392,11 @@
 
   function showMode(view) {
     state.view = view;
-    $("treeView").hidden = view !== "tree";
+    $("overviewView").hidden = view !== "overview";
     $("gridView").hidden = view !== "grid";
-    $("treeMode").setAttribute("aria-pressed", String(view === "tree"));
+    $("overviewMode").setAttribute("aria-pressed", String(view === "overview"));
     $("gridMode").setAttribute("aria-pressed", String(view === "grid"));
-    if (view === "tree") renderTree();
+    if (view === "overview") renderOverview();
     else renderGrid();
   }
 
@@ -412,7 +411,7 @@
       const heading = document.createElement("strong");
       heading.textContent = "Aucune réservation";
       const text = document.createElement("span");
-      text.textContent = "Sélectionnez un sous-réseau libre dans l'arborescence ou la grille.";
+      text.textContent = "Sélectionnez un bloc libre dans la vue d'ensemble ou la grille détaillée.";
       empty.append(heading, text);
       container.append(empty);
       return;
@@ -544,7 +543,6 @@
       state.gridFilter = "all";
       $("statusFilter").value = "all";
       state.selected = target.cidr;
-      core.ancestors(target, state.active).forEach(node => state.expanded.add(node.cidr));
       render();
       showMode("grid");
       const match = [...document.querySelectorAll("[data-net-cidr]")]
@@ -610,7 +608,6 @@
         state.active = core.parseCIDR(active);
         state.gridPrefix = Math.min(32, state.active.prefix + 2);
         state.gridPage = 0;
-        state.expanded = new Set([active]);
         populateMasks();
         $("networkInput").value = active;
       }
@@ -637,7 +634,7 @@
         say("Saisie modifiée : cliquez sur Analyser pour charger ce réseau. L'inventaire actif n'a pas changé.", "warning");
       }
     });
-    $("treeMode").addEventListener("click", () => showMode("tree"));
+    $("overviewMode").addEventListener("click", () => showMode("overview"));
     $("gridMode").addEventListener("click", () => showMode("grid"));
     $("maskSelect").addEventListener("change", () => {
       state.gridPrefix = Number($("maskSelect").value);
@@ -688,7 +685,6 @@
     if (loaded.data.active) {
       state.active = core.parseCIDR(loaded.data.active);
       $("networkInput").value = state.active.cidr;
-      state.expanded = new Set([state.active.cidr]);
       state.gridPrefix = Math.min(32, state.active.prefix + 2);
       populateMasks();
     }
