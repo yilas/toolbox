@@ -249,7 +249,7 @@ test("Grille : la case réserve et libère sans ouvrir de dialogue, les détails
   click(page.elements.gridMode);
   const firstCard = findNode(page, "192.0.2.0/26");
   assert.ok(firstCard); // La grille démarre au masque /26.
-  const checkbox = firstCard.parent.children[0].children[0];
+  const checkbox = firstCard.children[0].children[0];
   assert.equal(checkbox.checked, false);
   checkbox.checked = true;
   checkbox.dispatch("change");
@@ -257,14 +257,14 @@ test("Grille : la case réserve et libère sans ouvrir de dialogue, les détails
   assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["192.0.2.0/24"].allocations.length, 1);
 
   const reserved = findNode(page, "192.0.2.0/26");
-  const checkAgain = reserved.parent.children[0].children[0];
+  const checkAgain = reserved.children[0].children[0];
   assert.equal(checkAgain.checked, true);
   checkAgain.checked = false;
   checkAgain.dispatch("change");
   assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["192.0.2.0/24"].allocations.length, 0);
 
   const free = findNode(page, "192.0.2.0/26");
-  const buttons = free.parent.children[2].children[1];
+  const buttons = free.children[2].children[1];
   assert.equal(buttons.children[0].textContent, "Réserver");
   assert.equal(buttons.children[1].textContent, "Avec détails");
   click(buttons.children[1]);
