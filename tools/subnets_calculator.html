@@ -229,10 +229,18 @@
       .summary-item strong {
         color: #333;
       }
+      /* Lien de retour dans le conteneur pour préserver le layout flex du body */
+      .toolbox-return-nav { margin: 0 0 20px; }
+      .toolbox-return-nav a { display: inline-block; color: #475569; font-size: 14px; font-weight: 650; text-decoration: none; }
+      .toolbox-return-nav a:hover { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; }
+      .toolbox-return-nav a:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; border-radius: 3px; }
     </style>
   </head>
   <body>
     <div class="container">
+      <nav class="toolbox-return-nav" aria-label="Navigation">
+        <a href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a>
+      </nav>
       <div class="toolbar">
         <div class="input-group">
           <select id="savedNetworks" onchange="loadFromHistory(this.value)">

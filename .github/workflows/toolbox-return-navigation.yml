@@ -1,0 +1,29 @@
+name: Toolbox return navigation
+
+on:
+  pull_request:
+    paths:
+      - 'tools/**/*.html'
+      - 'tools/password-generator.css'
+      - 'index.html'
+      - 'tests/toolbox-return-navigation.test.cjs'
+      - '.github/workflows/toolbox-return-navigation.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/**/*.html'
+      - 'tools/password-generator.css'
+      - 'index.html'
+      - 'tests/toolbox-return-navigation.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  check-back-navigation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate return links to Toolbox
+        run: node --test tests/toolbox-return-navigation.test.cjs
