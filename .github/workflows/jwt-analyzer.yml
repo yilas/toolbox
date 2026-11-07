@@ -1,0 +1,33 @@
+name: JWT Analyzer V2 tests
+
+on:
+  pull_request:
+    paths:
+      - 'tools/decodeur_analyseur_jwt_standalone.html'
+      - 'tools/jwt-analyzer-*.js'
+      - 'tools/jwt-analyzer.css'
+      - 'tests/jwt-analyzer.test.cjs'
+      - '.github/workflows/jwt-analyzer.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/decodeur_analyseur_jwt_standalone.html'
+      - 'tools/jwt-analyzer-*.js'
+      - 'tools/jwt-analyzer.css'
+      - 'tests/jwt-analyzer.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: |
+          node --check tools/jwt-analyzer-core.js
+          node --check tools/jwt-analyzer-ui.js
+      - name: JWT analyzer tests
+        run: node --test tests/jwt-analyzer.test.cjs
