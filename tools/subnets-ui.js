@@ -6,7 +6,10 @@
   const core = window.SubnetsCore;
   const storage = window.SubnetsStorage;
   const PAGE_SIZE = 64;
-  const MAX_OVERVIEW_CELLS = 64;
+  const MAX_PREVIEW_SUBNETS = 128;
+  const MAX_GROUPED_CARDS = 64;
+  const MAX_HIDDEN_CARDS = 200;
+  const VIEW_PREF_KEY = "toolbox-subnets-view-";
   const STATUS = Object.freeze({
     free: "Libre", reserved: "Réservé", inherited: "Hérité",
     partial: "Partiel", full: "Complet"
@@ -16,6 +19,8 @@
     active: null,
     coverage: null,
     view: "overview",
+    visibleMasks: new Set(),
+    hiddenCards: new Set(),
     gridPrefix: 32,
     gridPage: 0,
     gridFilter: "all",
@@ -129,6 +134,7 @@
       const next = storage.withNetwork(state.data, parent.cidr);
       state.active = parent;
       state.selected = null;
+      loadViewPreferences();
       state.gridPrefix = Math.min(32, parent.prefix + 2);
       state.gridPage = 0;
       state.gridFilter = "all";
@@ -153,6 +159,88 @@
       select.append(option);
     }
     select.value = String(state.gridPrefix);
+  }
+
+  // Préférences purement visuelles, indépendantes des réservations réseau.
+  function defaultVisibleMasks(parent) {
+    const masks = new Set();
+    for (let prefix = parent.prefix; prefix <= Math.min(32, parent.prefix + 5); prefix++) {
+      masks.add(prefix);
+    }
+    return masks;
+  }
+
+  function viewPreferenceKey() {
+    return VIEW_PREF_KEY + state.active.cidr;
+  }
+
+  function loadViewPreferences() {
+    state.visibleMasks = defaultVisibleMasks(state.active);
+    state.hiddenCards = new Set();
+    try {
+      const saved = JSON.parse(localStorage.getItem(viewPreferenceKey()) || "null");
+      if (!saved || typeof saved !== "object") return;
+      if (Array.isArray(saved.masks)) {
+        state.visibleMasks = new Set(saved.masks.filter(prefix =>
+          Number.isInteger(prefix) && prefix >= state.active.prefix && prefix <= 32));
+      }
+      if (Array.isArray(saved.hidden)) {
+        state.hiddenCards = new Set(saved.hidden
+          .filter(key => typeof key === "string" && key.length < 70)
+          .slice(0, MAX_HIDDEN_CARDS));
+      }
+    } catch (_) {
+      // Une préférence illisible ne doit jamais gêner le calcul ou l'inventaire.
+    }
+  }
+
+  function saveViewPreferences() {
+    try {
+      localStorage.setItem(viewPreferenceKey(), JSON.stringify({
+        masks: [...state.visibleMasks].sort((a, b) => a - b),
+        hidden: [...state.hiddenCards]
+      }));
+    } catch (_) {}
+  }
+
+  function hiddenCardKey(prefix, cidr) {
+    return prefix + "|" + cidr;
+  }
+
+  function setVisibleMasks(masks) {
+    state.visibleMasks = new Set(masks);
+    saveViewPreferences();
+    renderMaskFilters();
+    renderOverview();
+  }
+
+  function renderMaskFilters() {
+    const list = $("maskFilterList");
+    list.replaceChildren();
+    if (!state.active) return;
+    const total = 33 - state.active.prefix;
+    for (let prefix = state.active.prefix; prefix <= 32; prefix++) {
+      const label = document.createElement("label");
+      label.className = "mask-filter-item";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = state.visibleMasks.has(prefix);
+      checkbox.setAttribute("aria-label", "Afficher les sous-réseaux /" + prefix);
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) state.visibleMasks.add(prefix);
+        else state.visibleMasks.delete(prefix);
+        saveViewPreferences();
+        renderMaskFilters();
+        renderOverview();
+      });
+      const name = document.createElement("span");
+      name.textContent = "/" + prefix;
+      label.append(checkbox, name);
+      list.append(label);
+    }
+    $("visibleMaskCount").textContent = state.visibleMasks.size + " / " + total + " niveaux";
+    $("restoreHidden").hidden = state.hiddenCards.size === 0;
+    $("restoreHidden").textContent = "Réafficher " + state.hiddenCards.size + " bloc(s) masqué(s)";
   }
 
   function currentCoverage() {
@@ -247,67 +335,91 @@
     return button;
   }
 
-  // Vue par niveaux : aucune branche à ouvrir, chaque masque est affiché.
-  // Au-delà de 64 sous-réseaux, les cellules représentent des groupes
-  // contigus alignés sur la même plage d'adresses que les niveaux parents.
-  function createOverviewCell(bucket, prefix, aggregated, subnetCount, showLabel) {
+  // Les CIDR sont lisibles dans des cartes, sans réduire les textes en microcases.
+  // Les niveaux > 128 sous-réseaux deviennent des cartes de plages agrégées.
+  // Masquer un bloc n'affecte jamais son état de réservation.
+  function createOverviewCard(bucket, prefix, aggregated, groupSize) {
     const node = core.describeNode(bucket, state.coverage);
-    const cell = document.createElement("button");
-    cell.type = "button";
-    cell.className = "overview-cell";
-    cell.dataset.status = node.status;
-    bindHighlight(cell, node.cidr);
+    const card = document.createElement("div");
+    card.className = "overview-card";
+    card.dataset.status = node.status;
+    const main = document.createElement("button");
+    main.type = "button";
+    main.className = "overview-card-main";
+    bindHighlight(main, node.cidr);
 
+    const cidr = document.createElement("strong");
+    cidr.className = "overview-card-cidr";
+    cidr.textContent = node.cidr;
+    const detail = document.createElement("span");
+    detail.className = "overview-card-detail";
+    detail.textContent = aggregated
+      ? formatNumber(groupSize) + " sous-réseaux /" + prefix + " · " + formatPercent(node.percent)
+      : STATUS[node.status] + " · " + formatPercent(node.percent);
+
+    const meter = document.createElement("span");
+    meter.className = "overview-card-meter";
     const fill = document.createElement("span");
-    fill.className = "overview-cell-fill";
     fill.style.width = node.percent.toFixed(4) + "%";
-    cell.append(fill);
-    if (showLabel) {
-      const label = document.createElement("span");
-      label.className = "overview-cell-label";
-      label.textContent = node.cidr;
-      cell.append(label);
-    }
+    meter.append(fill);
+    main.append(cidr, detail, meter);
 
-    const groupInfo = aggregated
-      ? " · " + formatNumber(subnetCount) + " sous-réseaux /" + prefix + " regroupés"
-      : "";
-    const info = node.cidr + groupInfo + " · " +
-      STATUS[node.status] + " · " + formatPercent(node.percent) + " occupé";
-    cell.title = info;
-    const canReserve = !aggregated && (node.status === "free" || node.status === "reserved");
-    cell.setAttribute("aria-label", info + " — " +
-      (canReserve ? (node.status === "reserved" ? "Modifier la réservation" : "Réserver") : "Voir dans la grille détaillée"));
-
-    cell.addEventListener("click", () => {
-      if (canReserve) {
-        openAllocationDialog(node.cidr);
-      } else {
-        // Pour un groupe agrégé, la grille s'ouvre au masque de la ligne
-        // et à la première page appartenant à la plage cliquée.
-        navigateTo(core.cidrFromStart(bucket.start, prefix).cidr);
-      }
+    const canManage = !aggregated && (node.status === "free" || node.status === "reserved");
+    main.title = node.cidr + " — " + STATUS[node.status] + " — " +
+      formatPercent(node.percent) + " occupé" +
+      (aggregated ? " (" + groupSize + " sous-réseaux /" + prefix + ")" : "");
+    main.setAttribute("aria-label", main.title + " : " +
+      (canManage ? "gérer la réservation" : "ouvrir la grille détaillée"));
+    main.addEventListener("click", () => {
+      if (canManage) openAllocationDialog(node.cidr);
+      else navigateTo(core.cidrFromStart(bucket.start, prefix).cidr);
     });
-    return cell;
+
+    const hide = document.createElement("button");
+    hide.type = "button";
+    hide.className = "overview-card-hide";
+    hide.textContent = "Masquer";
+    hide.title = "Masquer uniquement la carte " + node.cidr + " de la vue";
+    hide.setAttribute("aria-label", hide.title);
+    hide.addEventListener("click", () => {
+      if (state.hiddenCards.size >= MAX_HIDDEN_CARDS) {
+        say("Limite de blocs masqués atteinte : réaffichez-en certains.", "warning");
+        return;
+      }
+      state.hiddenCards.add(hiddenCardKey(prefix, bucket.cidr));
+      saveViewPreferences();
+      renderMaskFilters();
+      renderOverview();
+    });
+    card.append(main, hide);
+    return card;
   }
 
   function renderOverview() {
     const container = $("maskOverview");
     container.replaceChildren();
     if (!state.active) return;
-
+    renderMaskFilters();
     const parent = state.active;
     const fragment = document.createDocumentFragment();
+    let visibleBands = 0;
+
     for (let prefix = parent.prefix; prefix <= 32; prefix++) {
+      if (!state.visibleMasks.has(prefix)) continue;
+      visibleBands++;
       const total = 2 ** (prefix - parent.prefix);
-      const bucketPrefix = Math.min(prefix, parent.prefix + 6);
-      const buckets = Math.min(MAX_OVERVIEW_CELLS, total);
-      const grouped = 2 ** (prefix - bucketPrefix);
-      const aggregated = grouped > 1;
+      const aggregated = total > MAX_PREVIEW_SUBNETS;
+      // Comme tous les CIDR sont des blocs explicites tant que total <= 128,
+      // un /19 → /24 présente réellement ses 32 sous-réseaux nommés.
+      const bucketCount = aggregated ? MAX_GROUPED_CARDS : total;
+      const groupingPrefix = aggregated ? parent.prefix + 6 : prefix;
+      const grouped = aggregated ? 2 ** (prefix - groupingPrefix) : 1;
+      const subnetSize = 2 ** (32 - groupingPrefix);
 
       const band = document.createElement("section");
       band.className = "overview-band";
-      band.setAttribute("aria-label", "Occupation des sous-réseaux /" + prefix);
+      band.dataset.prefix = String(prefix);
+      band.setAttribute("aria-label", "Sous-réseaux /" + prefix);
 
       const heading = document.createElement("div");
       heading.className = "overview-band-heading";
@@ -316,30 +428,50 @@
       title.textContent = "/" + prefix;
       const meta = document.createElement("span");
       meta.className = "overview-band-meta";
-      meta.textContent = formatNumber(total) + " sous-réseau" +
-        (total > 1 ? "x" : "") + " · " +
-        formatNumber(2 ** (32 - prefix)) + " adresse" +
-        (prefix === 32 ? "" : "s") + " / réseau";
-      const stat = document.createElement("span");
-      stat.className = "overview-band-stat";
-      stat.textContent = aggregated
-        ? "Condensé : " + buckets + " blocs × " + formatNumber(grouped)
-        : formatNumber(buckets) + " bloc" + (buckets > 1 ? "s" : "");
-      heading.append(title, meta, stat);
+      meta.textContent = formatNumber(total) + " sous-réseau" + (total > 1 ? "x" : "") +
+        " · " + formatNumber(2 ** (32 - prefix)) + " IP / sous-réseau";
+      const counter = document.createElement("span");
+      counter.className = "overview-band-stat";
+      counter.textContent = aggregated
+        ? "Regroupés par " + formatNumber(grouped) + " (ouvrir pour le détail)"
+        : formatNumber(total) + " CIDR lisibles";
 
+      heading.append(title, meta, counter);
       const track = document.createElement("div");
       track.className = "overview-track";
-      track.style.gridTemplateColumns = "repeat(" + buckets + ", minmax(0, 1fr))";
       track.setAttribute("role", "group");
-      track.setAttribute("aria-label", "Répartition IPv4 à /" + prefix);
-      const size = 2 ** (32 - bucketPrefix);
-      for (let i = 0; i < buckets; i++) {
-        const bucket = core.cidrFromStart(parent.start + i * size, bucketPrefix);
-        track.append(createOverviewCell(bucket, prefix, aggregated, grouped, !aggregated && buckets <= 8));
-      }
+      track.setAttribute("aria-label", "Cartes /" + prefix);
 
+      let hidden = 0;
+      for (let i = 0; i < bucketCount; i++) {
+        const bucket = core.cidrFromStart(parent.start + i * subnetSize, groupingPrefix);
+        if (state.hiddenCards.has(hiddenCardKey(prefix, bucket.cidr))) {
+          hidden++;
+          continue;
+        }
+        track.append(createOverviewCard(bucket, prefix, aggregated, grouped));
+      }
+      if (hidden) {
+        const hiddenCounter = document.createElement("span");
+        hiddenCounter.className = "overview-band-hidden";
+        hiddenCounter.textContent = hidden + " bloc(s) masqué(s) dans ce niveau (réaffichage en haut)";
+        heading.append(hiddenCounter);
+      }
+      if (!track.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "overview-empty";
+        empty.textContent = "Tous les blocs de ce niveau sont masqués.";
+        track.append(empty);
+      }
       band.append(heading, track);
       fragment.append(band);
+    }
+
+    if (!visibleBands) {
+      const empty = document.createElement("p");
+      empty.className = "overview-empty";
+      empty.textContent = "Aucun masque affiché. Utilisez « Choisir les masques » pour en réactiver.";
+      fragment.append(empty);
     }
     container.append(fragment);
   }
@@ -612,6 +744,7 @@
       if (active) {
         result.data.active = active;
         state.active = core.parseCIDR(active);
+        loadViewPreferences();
         state.gridPrefix = Math.min(32, state.active.prefix + 2);
         state.gridPage = 0;
         populateMasks();
@@ -641,6 +774,19 @@
       }
     });
     $("overviewMode").addEventListener("click", () => showMode("overview"));
+    $("showAllMasks").addEventListener("click", () => {
+      setVisibleMasks(Array.from({ length: 33 - state.active.prefix }, (_, i) => state.active.prefix + i));
+    });
+    $("showDefaultMasks").addEventListener("click", () => {
+      setVisibleMasks(defaultVisibleMasks(state.active));
+    });
+    $("hideAllMasks").addEventListener("click", () => setVisibleMasks([]));
+    $("restoreHidden").addEventListener("click", () => {
+      state.hiddenCards.clear();
+      saveViewPreferences();
+      renderMaskFilters();
+      renderOverview();
+    });
     $("gridMode").addEventListener("click", () => showMode("grid"));
     $("maskSelect").addEventListener("change", () => {
       state.gridPrefix = Number($("maskSelect").value);
@@ -691,6 +837,7 @@
     if (loaded.data.active) {
       state.active = core.parseCIDR(loaded.data.active);
       $("networkInput").value = state.active.cidr;
+      loadViewPreferences();
       state.gridPrefix = Math.min(32, state.active.prefix + 2);
       populateMasks();
     }
