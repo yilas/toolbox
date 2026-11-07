@@ -268,7 +268,7 @@ test("Au-delà de 128 CIDR : regroupements nommés avec accès au détail", () =
   const bands = page.elements.maskOverview.children;
   assert.equal(bands.length, 11); // /22 à /32
   const counts = bands.map(band => band.children[1].children.length);
-  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32, 64, 64, 64, 64, 64]);
+  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32, 64, 128, 64, 64, 64]);
   const dense = bands.at(-1);
   const first = dense.children[1].children[0].children[0]; // Bouton principal
   assert.equal(first.children[0].className, "overview-card-cidr");
@@ -321,7 +321,7 @@ test("Migration ancienne : l'occupation hiérarchique reste exacte", () => {
   const page = createPage(initial);
   assert.equal(page.elements.metricOccupied.textContent, "192");
   assert.equal(page.elements.overlapNotice.hidden, false);
-  assert.equal(findNode(page, "10.0.0.0/24").dataset.status, "partial");
+  assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "partial");
   assert.equal(page.store.getItem("snet_calc_inventory_10.0.0.0/24"),
     initial["snet_calc_inventory_10.0.0.0/24"]);
 });
