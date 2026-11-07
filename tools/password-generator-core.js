@@ -1,6 +1,6 @@
 /*
  * Password Studio — moteur indépendant de l'interface.
- * API Web Crypto native, sans Math.random(), sans ressource réseau.
+ * API Web Crypto native, sans générateur pseudo-aléatoire classique ni ressource réseau.
  * Les tirages conditionnels sont uniformes grâce au rejet.
  */
 (function (root) {
