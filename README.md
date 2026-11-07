@@ -19,6 +19,18 @@ Pour vérifier les liens et les interactions de base :
 node --test tests/portal.test.cjs
 ```
 
+## ↩️ Navigation entre les outils
+
+Chaque page HTML du répertoire `tools/` doit proposer, au début de son interface, un **lien natif** `← Retour à Toolbox` vers `../index.html`. Le lien reste accessible sans JavaScript et ne doit pas être dupliqué sur une même page.
+
+Le test ci-dessous vérifie automatiquement cette convention pour **tous les outils HTML présents**, y compris ceux qui seront ajoutés ultérieurement :
+
+```bash
+node --test tests/toolbox-return-navigation.test.cjs
+```
+
+La vérification est également lancée par GitHub Actions sur les pull requests modifiant les pages d'outils.
+
 ## 🧩 Outils disponibles
 
 | Outil | Fonctionnalités principales | Lien |
