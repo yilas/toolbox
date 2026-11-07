@@ -1,332 +1,214 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-    <link rel="icon" href="../favicon.ico" type="image/x-icon" />
-<title>🔐 Générateur de mot de passe</title>
-  <style>
-    :root {
-      --bg-color: #f3f4f7;
-      --text-color: #000;
-      --panel-bg: #fff;
-      --panel-border: #ccc;
-      --textarea-bg: #fafafa;
-      --btn-bg: #0a66c2;
-      --btn-text: #fff;
-    }
-
-    body.dark {
-      --bg-color: #121212;
-      --text-color: #f3f3f3;
-      --panel-bg: #1e1e1e;
-      --panel-border: #444;
-      --textarea-bg: #2a2a2a;
-      --btn-bg: #0a66c2;
-      --btn-text: #fff;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0; padding: 0;
-    }
-
-    .top-banner {
-      background-color: #0a66c2; color: white;
-      padding: 16px 32px; font-size: 16px; font-weight: bold;
-      display: flex; align-items: center;
-    }
-
-    .top-banner a { color: white; text-decoration: none; margin-left: 12px; font-weight: bold; }
-
-    header {
-      background-color: #0a66c2; color: white;
-      padding: 20px 40px; font-size: 24px; font-weight: bold;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-
-    .theme-toggle {
-      font-size: 20px; background: none; border: none;
-      color: white; cursor: pointer;
-    }
-
-    main { display: flex; flex-direction: column; gap: 20px; padding: 40px; }
-
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-
-    button {
-      padding: 10px 16px; background-color: var(--btn-bg); color: var(--btn-text);
-      border: none; border-radius: 6px; cursor: pointer; font-size: 14px;
-    }
-    button:hover { opacity: 0.9; }
-
-    label { font-weight: bold; margin-top: 20px; display: block; }
-
-    input[type="range"] { width: 300px; }
-    input[type="checkbox"] { transform: scale(1.2); margin-right: 6px; }
-
-    .output {
-      font-family: monospace; font-size: 20px;
-      background: var(--textarea-bg); padding: 12px;
-      border: 1px solid var(--panel-border); border-radius: 8px;
-      min-height: 60px; white-space: break-word;
-    }
-
-    .form-group { margin-bottom: 10px; }
-    #message { margin-top: 10px; font-size: 14px; min-height: 1.2em; }
-
-    /* Switch Chaos */
-    .switch { position: relative; display: inline-block; width: 60px; height: 30px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc; transition: .4s; border-radius: 34px;
-    }
-    .slider:before {
-      position: absolute; content: "";
-      height: 22px; width: 22px; left: 4px; bottom: 4px;
-      background-color: white; transition: .4s; border-radius: 50%;
-    }
-    input:checked + .slider { background-color: #0a66c2; }
-    input:checked + .slider:before { transform: translateX(28px); }
-
-    #chaosPanel {
-      display: none;
-      border: 1px dashed #0a66c2;
-      background: #eef5ff;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 13px;
-      white-space: pre-line;
-    }
-    #chaosSources { margin-top: 5px; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fc">
+  <meta name="description" content="Générez localement des mots de passe et phrases de passe avec l'API cryptographique de votre navigateur.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="./password-generator.css">
+  <title>Password Studio — Générateur sécurisé</title>
+  <script src="./password-wordlists.js" defer></script>
+  <script src="./password-generator-core.js" defer></script>
+  <script src="./password-generator-ui.js" defer></script>
 </head>
 <body>
+  <svg class="sr-only" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 2 20 5v6c0 5-3.5 8.7-8 11-4.5-2.3-8-6-8-11V5l8-3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="m8 12 2.6 2.6L16 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24">
+      <rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24">
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path d="M20 8V3l-3 3A8.5 8.5 0 0 0 4 10M4 16v5l3-3a8.5 8.5 0 0 0 13-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M15 8h5M4 16h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+  </svg>
 
-  <div class="top-banner">
-    🔙 <a href="../index.html">Retour au portail</a>
-  </div>
-
-  <header>
-    🔐 Générateur de mot de passe
-    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+  <header class="site-nav">
+    <div class="nav-left">
+      <a class="back-link" href="../index.html" aria-label="Retour à la boîte à outils">
+        ← <span class="back-text">Retour aux outils</span>
+      </a>
+      <span class="nav-separator" aria-hidden="true"></span>
+      <span class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg><use href="#i-shield"></use></svg></span>
+        Password Studio
+      </span>
+    </div>
+    <div class="nav-actions">
+      <button class="icon-button" type="button" id="themeToggle" aria-label="Changer le thème" title="Changer le thème">
+        <span id="themeIcon" aria-hidden="true">☾</span>
+      </button>
+    </div>
   </header>
 
-  <main>
-    <div class="form-group">
-      <label for="length">🔢 Longueur du mot de passe : <span id="lengthValue">16</span> caractères</label>
-      <input type="range" id="length" min="4" max="128" value="16" oninput="updateLengthLabel(); generatePassword()" />
+  <main class="shell">
+    <div class="hero">
+      <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Sécurité locale · Aucun compte</span>
+      <h1>Un secret solide.<br>En quelques secondes.</h1>
+      <p>Créez des mots de passe ou des phrases de passe uniques, directement dans votre navigateur. Rien n'est envoyé à un serveur.</p>
     </div>
 
-    <div class="form-group">
-      <label><input type="checkbox" id="includeUpper" checked /> Majuscules (A-Z)</label><br />
-      <label><input type="checkbox" id="includeLower" checked /> Minuscules (a-z)</label><br />
-      <label><input type="checkbox" id="includeDigits" checked /> Chiffres (0-9)</label><br />
-      <label><input type="checkbox" id="includeSymbols" /> Symboles (!@#...)</label>
-    </div>
-
-    <div class="actions">
-      <button onclick="generatePassword()">🎲 Générer</button>
-      <button onclick="copyPassword()">📋 Copier</button>
-
-      <!-- Switch Chaos -->
-      <label class="switch">
-        <input type="checkbox" id="chaosSwitch" onchange="toggleChaosMode()" />
-        <span class="slider"></span>
-      </label>
-      <span style="align-self: center;">⚡ Mode Chaos</span>
-    </div>
-
-    <div id="message"></div>
-
-    <div class="output" id="password"></div>
-
-    <div id="entropyInfo" style="margin-top: 10px; font-size: 14px;">
-      🔒 Entropie estimée : <strong id="entropyValue">0</strong> bits (<span id="strengthLabel">–</span>)
-      <div style="margin-top: 6px; height: 10px; width: 100%; background: #ccc; border-radius: 5px;">
-        <div id="strengthBar" style="height: 100%; width: 0%; background: green; border-radius: 5px;"></div>
+    <section class="studio" aria-labelledby="studioTitle">
+      <div class="studio-head">
+        <h2 id="studioTitle">Choisissez votre méthode</h2>
+        <div class="tabs" role="tablist" aria-label="Méthode de génération">
+          <button class="tab" type="button" id="passwordTab" role="tab" aria-selected="true" aria-controls="passwordOptions" tabindex="0" data-mode="password">Mot de passe</button>
+          <button class="tab" type="button" id="passphraseTab" role="tab" aria-selected="false" aria-controls="passphraseOptions" tabindex="-1" data-mode="passphrase">Phrase de passe</button>
+        </div>
       </div>
-    </div>
 
-    <div id="chaosPanel">
-      <strong>⚡ Mode Chaos actif</strong><br/>
-      Vos mouvements et frappes clavier renforcent l’aléa.<br/>
-      <div id="chaosSources">En attente d'événements…</div>
-    </div>
+      <div class="output-wrap">
+        <div class="output-card" id="outputCard">
+          <div class="output-top">
+            <span class="eyelabel">Résultat sécurisé</span>
+            <span class="strength-pill" id="strengthPill" data-tone="empty">—</span>
+          </div>
+          <div class="output-main">
+            <div id="primaryValue" class="output-value secret-value" aria-label="Mot de passe généré">Génération…</div>
+            <div class="output-action-group">
+              <button class="icon-button" type="button" id="visibilityToggle" aria-label="Masquer le résultat" aria-pressed="false" title="Masquer le résultat"><svg aria-hidden="true"><use href="#i-eye"></use></svg></button>
+              <button class="icon-button" type="button" id="copyPrimary" aria-label="Copier le résultat" title="Copier le résultat"><svg aria-hidden="true"><use href="#i-copy"></use></svg></button>
+            </div>
+          </div>
+          <div class="meter" id="strengthMeter" data-tone="empty" role="img" aria-label="Robustesse non évaluée">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="output-bottom">
+            <span>Entropie théorique <strong id="entropyValue">—</strong></span>
+            <span id="entropyDescription">Source : Web Crypto</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="config">
+        <div class="section-head">
+          <div>
+            <h3>Préréglages</h3>
+            <p>Un bon point de départ, personnalisable ensuite.</p>
+          </div>
+        </div>
+        <div class="preset-grid" role="group" aria-label="Préréglages">
+          <button type="button" class="preset" data-preset="balanced" aria-pressed="true">Équilibré</button>
+          <button type="button" class="preset" data-preset="readable" aria-pressed="false">Lisible</button>
+          <button type="button" class="preset" data-preset="strong" aria-pressed="false">Renforcé</button>
+          <button type="button" class="preset" data-preset="memorable" aria-pressed="false">Mémorisable</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <section id="passwordOptions" class="controls-area" role="tabpanel" aria-labelledby="passwordTab">
+          <div>
+            <div class="field-top">
+              <label for="passwordLength" class="block-title">Longueur du mot de passe</label>
+              <span class="counter"><output id="passwordLengthValue" for="passwordLength">18</output> caractères</span>
+            </div>
+            <input class="range" id="passwordLength" type="range" min="4" max="128" value="18">
+            <div class="range-labels"><span>4</span><span>128</span></div>
+          </div>
+
+          <div>
+            <h3 class="block-title">Caractères autorisés</h3>
+            <p class="hint">Les catégories cochées sont utilisées pour la génération.</p>
+            <div class="choice-grid">
+              <label class="choice"><input type="checkbox" id="useUpper" checked><span class="choice-code">A-Z</span><span class="choice-label">Majuscules</span></label>
+              <label class="choice"><input type="checkbox" id="useLower" checked><span class="choice-code">a-z</span><span class="choice-label">Minuscules</span></label>
+              <label class="choice"><input type="checkbox" id="useDigits" checked><span class="choice-code">0-9</span><span class="choice-label">Chiffres</span></label>
+              <label class="choice"><input type="checkbox" id="useSymbols" checked><span class="choice-code">#&amp;!</span><span class="choice-label">Symboles</span></label>
+            </div>
+          </div>
+
+          <details class="advanced" id="passwordAdvanced">
+            <summary>Options avancées</summary>
+            <div class="advanced-content">
+              <label class="check-row"><input type="checkbox" id="guarantee" checked><span>Garantir chaque catégorie sélectionnée<small>Le mot de passe contient au moins un caractère de chaque groupe coché.</small></span></label>
+              <label class="check-row"><input type="checkbox" id="excludeAmbiguous"><span>Écarter les caractères ambigus<small>Exclut notamment 0, O, 1, l, I et |.</small></span></label>
+            </div>
+          </details>
+        </section>
+
+        <section id="passphraseOptions" class="controls-area" role="tabpanel" aria-labelledby="passphraseTab" hidden>
+          <div>
+            <div class="field-top">
+              <label for="wordCount" class="block-title">Nombre de mots</label>
+              <span class="counter"><output id="wordCountValue" for="wordCount">7</output> mots</span>
+            </div>
+            <input class="range" id="wordCount" type="range" min="4" max="12" value="7">
+            <div class="range-labels"><span>4</span><span>12</span></div>
+          </div>
+          <div class="passphrase-row">
+            <div>
+              <label for="language" class="select-label">Langue du dictionnaire</label>
+              <select id="language" class="select">
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div>
+              <label for="separator" class="select-label">Séparateur</label>
+              <select id="separator" class="select">
+                <option value="-">Trait d'union ( - )</option>
+                <option value=" ">Espace</option>
+                <option value=".">Point ( . )</option>
+              </select>
+            </div>
+          </div>
+          <details class="advanced" id="passphraseAdvanced">
+            <summary>Options avancées</summary>
+            <div class="advanced-content">
+              <label class="check-row"><input type="checkbox" id="capitalize"><span>Mettre une majuscule à chaque mot<small>Mise en forme uniquement : n'ajoute pas d'entropie.</small></span></label>
+              <label class="check-row"><input type="checkbox" id="appendDigit"><span>Ajouter un chiffre aléatoire à la fin<small>Ajoute environ 3,3 bits d'entropie.</small></span></label>
+            </div>
+          </details>
+          <p class="hint">Mots tirés indépendamment parmi 2 048 entrées d'un dictionnaire hors ligne. Ce n'est pas une phrase de récupération de portefeuille.</p>
+        </section>
+      </div>
+
+      <div class="bottom-controls">
+        <div class="generate-row">
+          <div class="quantity-group">
+            <label for="quantity" class="select-label">Quantité</label>
+            <select id="quantity" class="select">
+              <option value="1" selected>1 résultat</option>
+              <option value="3">3 résultats</option>
+              <option value="5">5 résultats</option>
+              <option value="10">10 résultats</option>
+            </select>
+          </div>
+          <button type="button" class="generate-btn" id="generateButton">
+            <svg aria-hidden="true"><use href="#i-refresh"></use></svg>
+            <span id="generateLabel">Générer un mot de passe</span>
+          </button>
+        </div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </div>
+
+      <section class="batch" id="batchSection" aria-labelledby="batchTitle" hidden>
+        <div class="batch-top">
+          <h3 id="batchTitle">Autres résultats</h3>
+          <button class="secondary-btn" type="button" id="copyAll"><svg aria-hidden="true"><use href="#i-copy"></use></svg> Tout copier</button>
+        </div>
+        <div id="batchList" class="batch-list"></div>
+      </section>
+
+      <div class="security-note">
+        <svg aria-hidden="true"><use href="#i-shield"></use></svg>
+        <span><strong>Conçu pour préserver vos secrets.</strong> Tirages cryptographiques locaux, aucun service externe, aucun stockage des résultats. Attention : le presse-papiers reste accessible aux autres applications autorisées sur votre appareil.</span>
+      </div>
+    </section>
+    <p class="page-footer">
+      100 % HTML · CSS · JavaScript natifs · Dictionnaires <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki" target="_blank" rel="noopener noreferrer">BIP-0039 (MIT)</a>
+    </p>
   </main>
-
-  <script>
-    let chaosMode = false;
-    let entropyPool = 0;
-    let sources = new Set();
-    let lastMouse = null;
-    let lastKey = null;
-
-    // Entropie souris
-    document.addEventListener("mousemove", e => {
-      if (chaosMode) {
-        entropyPool ^= (e.screenX + e.screenY + Date.now());
-        sources.add("🖱️ Souris");
-        lastMouse = { x: e.screenX, y: e.screenY, t: new Date().toLocaleTimeString() };
-        updateChaosInfo();
-      }
-    });
-
-    // Entropie clavier
-    document.addEventListener("keydown", e => {
-      if (chaosMode) {
-        entropyPool ^= (e.keyCode + Date.now());
-        sources.add("⌨️ Clavier");
-        lastKey = { key: e.key, t: new Date().toLocaleTimeString() };
-        updateChaosInfo();
-      }
-    });
-
-    function toggleTheme() {
-      const body = document.body;
-      const btn = document.querySelector('.theme-toggle');
-      body.classList.toggle('dark');
-      btn.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
-    }
-
-    function toggleChaosMode() {
-      chaosMode = document.getElementById("chaosSwitch").checked;
-      sources.clear();
-      lastMouse = null;
-      lastKey = null;
-      updateChaosInfo();
-      const panel = document.getElementById("chaosPanel");
-      panel.style.display = chaosMode ? "block" : "none";
-      if (chaosMode) {
-        showMessage("⚡ Mode Chaos activé : entropie renforcée", false);
-      } else {
-        showMessage("🔒 Mode Chaos désactivé", false);
-      }
-    }
-
-    function updateChaosInfo() {
-      const chaosSources = document.getElementById("chaosSources");
-      if (!chaosMode) {
-        chaosSources.textContent = "";
-        return;
-      }
-
-      let text = "";
-      if (sources.size === 0) {
-        text = "En attente d'événements…";
-      } else {
-        text = "Entropie captée : " + Array.from(sources).join(", ");
-      }
-
-      // Détails supplémentaires
-      if (lastMouse) {
-        text += `\nDernier mouvement souris → X=${lastMouse.x}, Y=${lastMouse.y} (${lastMouse.t})`;
-      }
-      if (lastKey) {
-        text += `\nDernière touche pressée → "${lastKey.key}" (${lastKey.t})`;
-      }
-
-      chaosSources.textContent = text;
-    }
-
-    function updateLengthLabel() {
-      const slider = document.getElementById("length");
-      const label = document.getElementById("lengthValue");
-      label.textContent = slider.value;
-    }
-
-    function showMessage(msg, isError = true) {
-      const messageEl = document.getElementById("message");
-      messageEl.textContent = msg;
-      messageEl.style.color = isError ? "crimson" : "green";
-      if (msg) {
-        setTimeout(() => { messageEl.textContent = ""; }, 3000);
-      }
-    }
-
-    function getRandomInt(max) {
-      const array = new Uint32Array(1);
-      window.crypto.getRandomValues(array);
-      let val = array[0];
-      if (chaosMode) {
-        val ^= entropyPool;
-      }
-      return Math.abs(val) % max;
-    }
-
-    function generatePassword() {
-      const length = parseInt(document.getElementById("length").value);
-      const useUpper = document.getElementById("includeUpper").checked;
-      const useLower = document.getElementById("includeLower").checked;
-      const useDigits = document.getElementById("includeDigits").checked;
-      const useSymbols = document.getElementById("includeSymbols").checked;
-
-      const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      const lower = "abcdefghijklmnopqrstuvwxyz";
-      const digits = "0123456789";
-      const symbols = "!@#$%^&*()-_=+[]{}|;:,.<>?/";
-
-      let allChars = "";
-      if (useUpper) allChars += upper;
-      if (useLower) allChars += lower;
-      if (useDigits) allChars += digits;
-      if (useSymbols) allChars += symbols;
-
-      if (!allChars) {
-        showMessage("❌ Sélectionnez au moins un type de caractère.");
-        return;
-      }
-
-      let password = "";
-      for (let i = 0; i < length; i++) {
-        const index = getRandomInt(allChars.length);
-        password += allChars.charAt(index);
-      }
-
-      document.getElementById("password").textContent = password;
-      showMessage("✅ Mot de passe généré", false);
-
-      updateEntropy(length, allChars.length);
-    }
-
-    function copyPassword() {
-      const pwd = document.getElementById("password").textContent;
-      if (!pwd) {
-        showMessage("❌ Rien à copier.");
-        return;
-      }
-      navigator.clipboard.writeText(pwd).then(() => {
-        showMessage("📋 Mot de passe copié !", false);
-      });
-    }
-
-    function updateEntropy(length, alphabetSize) {
-      const entropy = Math.round(length * Math.log2(alphabetSize));
-      const entropyLabel = document.getElementById("entropyValue");
-      const strengthLabel = document.getElementById("strengthLabel");
-      const strengthBar = document.getElementById("strengthBar");
-
-      entropyLabel.textContent = entropy;
-
-      let strength = "", barColor = "", barWidth = 0;
-      if (entropy < 40) { strength = "Très faible"; barColor = "red"; barWidth = "25%"; }
-      else if (entropy < 60) { strength = "Moyenne"; barColor = "orange"; barWidth = "50%"; }
-      else if (entropy < 80) { strength = "Bonne"; barColor = "gold"; barWidth = "75%"; }
-      else { strength = "Excellente"; barColor = "green"; barWidth = "100%"; }
-
-      strengthLabel.textContent = strength;
-      strengthBar.style.backgroundColor = barColor;
-      strengthBar.style.width = barWidth;
-    }
-
-    // Init
-    updateLengthLabel();
-    generatePassword();
-  </script>
-
+  <noscript><p>JavaScript est nécessaire pour générer les mots de passe localement.</p></noscript>
 </body>
 </html>
