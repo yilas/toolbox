@@ -303,7 +303,7 @@ test("Masquer un niveau et un CIDR, puis restaurer sans effacer la réservation"
 
   const band24 = page.elements.maskOverview.children.at(-1);
   const firstCard = band24.children[1].children[0];
-  const hide = firstCard.children[1];
+  const hide = firstCard.children[1].children.at(-1);
   assert.equal(hide.textContent, "Masquer");
   click(hide);
   assert.equal(band24.children[1].children.length, 32); // Ancien DOM hors vue
