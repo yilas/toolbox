@@ -7,6 +7,7 @@ on:
       - 'tools/subnets-*.js'
       - 'tools/subnets-calculator.css'
       - 'tests/subnets-core.test.cjs'
+      - 'tests/subnets-ui.test.cjs'
       - '.github/workflows/subnets-calculator.yml'
   push:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'tools/subnets-*.js'
       - 'tools/subnets-calculator.css'
       - 'tests/subnets-core.test.cjs'
+      - 'tests/subnets-ui.test.cjs'
 
 permissions:
   contents: read
@@ -31,4 +33,4 @@ jobs:
           node --check tools/subnets-storage.js
           node --check tools/subnets-ui.js
       - name: Run IPv4 and migration tests (no dependencies)
-        run: node --test tests/subnets-core.test.cjs
+        run: node --test tests/subnets-core.test.cjs tests/subnets-ui.test.cjs
