@@ -7,6 +7,18 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 
 👉 [**Consulter le portail**](https://yilas.github.io/toolbox/)
 
+## 🧭 Accueil du portail
+
+La page `index.html` présente les neuf outils disponibles dans une grille responsive, avec une recherche locale insensible aux accents et un raccourci `/` pour ouvrir la recherche. La préférence de thème clair/sombre est partagée avec le générateur de mots de passe (stockée sous la clé `password-studio-theme`). Les outils en préparation sont affichés sans lien fictif.
+
+L'accueil utilise uniquement `index.html`, `portal.css` et `portal.js`, sans bibliothèque ni appel réseau. Les cartes restent consultables même si JavaScript est désactivé.
+
+Pour vérifier les liens et les interactions de base :
+
+```bash
+node --test tests/portal.test.cjs
+```
+
 ## 🧩 Outils disponibles
 
 | Outil | Fonctionnalités principales | Lien |
@@ -16,7 +28,7 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 | **Break Reminder** | Minuteur de rappel de pause active avec intervalle configurable, mode Hardcore bloquant l'écran, notifications, signal sonore, clignotement de l'onglet, suivi des pauses validées et streak. | [`break-reminder`](tools/break-reminder.html) |
 | **Clean Text** | Nettoie et normalise du texte en préservant les zones Markdown sensibles. Propose conversion ASCII, simplification stylistique, linter de formulations répétitives, statistiques, chargement/téléchargement de fichiers et diff unifié façon Linux pour visualiser les lignes ajoutées ou supprimées. | [`clean-text`](tools/clean-text.html) |
 | **Décodeur & Analyseur JWT** | Décode header et payload JWT, analyse les claims temporels et attendus (`iss`, `aud`, `azp`, etc.), vérifie les signatures HMAC et RSA/PS lorsque les clés sont fournies, affiche une timeline, conserve un historique et permet d'enregistrer des règles de validation. | [`decodeur-analyseur-jwt`](tools/decodeur_analyseur_jwt_standalone.html) |
-| **Générateur de mot de passe** | Génère des mots de passe avec `crypto.getRandomValues()`, longueur et jeux de caractères configurables, estimation d'entropie, indicateur de robustesse et mode Chaos. | [`random-numbers-generator`](tools/random-numbers-generator.html) |
+| **Générateur de mot de passe** | Génère localement des mots de passe et des phrases de passe (FR/EN) avec l’API Web Crypto, tirages uniformes, préréglages, contraintes de caractères, estimation d’entropie et génération multiple. | [`random-numbers-generator`](tools/random-numbers-generator.html) |
 | **Calculateur de sous-réseaux** | Décompose un réseau CIDR en sous-réseaux, affiche les bornes d'adresses et le nombre d'IP, filtre les tailles de masque et maintient un inventaire persistant des sous-réseaux utilisés par réseau parent. | [`subnets-calculator`](tools/subnets_calculator.html) |
 | **Scratchpad** | Notes persistantes par défaut (IndexedDB), blocs compacts/standards/larges, catégories visuelles personnalisables, tags, réorganisation, corbeille restaurable, raccourcis, mode jour/nuit, import/export JSON. | [`scratchpad`](tools/scratchpad.html) |
 | **Calculateur de temps de travail** | Permet de saisir plusieurs plages entrée/sortie, de les réordonner par glisser-déposer, de calculer automatiquement le temps total travaillé et de conserver les plages localement. | [`worktime-calculator`](tools/worktime-calculator.html) |
