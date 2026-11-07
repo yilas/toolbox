@@ -39,7 +39,7 @@ La vérification est également lancée par GitHub Actions sur les pull requests
 | **Encodeur / Décodeur Base64** | Encode et décode du texte UTF-8 en Base64, avec validation, copie du résultat, historique des opérations, consultation détaillée d'une entrée et affichage de l'état interne de l'outil. | [`base64-encoder-decoder`](tools/base64-encoder-decoder.html) |
 | **Break Reminder** | Minuteur de rappel de pause active avec intervalle configurable, mode Hardcore bloquant l'écran, notifications, signal sonore, clignotement de l'onglet, suivi des pauses validées et streak. | [`break-reminder`](tools/break-reminder.html) |
 | **Clean Text** | Nettoie et normalise du texte en préservant les zones Markdown sensibles. Propose conversion ASCII, simplification stylistique, linter de formulations répétitives, statistiques, chargement/téléchargement de fichiers et diff unifié façon Linux pour visualiser les lignes ajoutées ou supprimées. | [`clean-text`](tools/clean-text.html) |
-| **Décodeur & Analyseur JWT** | Décode header et payload JWT, analyse les claims temporels et attendus (`iss`, `aud`, `azp`, etc.), vérifie les signatures HMAC et RSA/PS lorsque les clés sont fournies, affiche une timeline, conserve un historique et permet d'enregistrer des règles de validation. | [`decodeur-analyseur-jwt`](tools/decodeur_analyseur_jwt_standalone.html) |
+| **Décodeur & Analyseur JWT** | Décode les JWT compacts signés, distingue décodage et vérification, valide les claims temporels et règles (`iss`, `aud`, `azp`, algorithme), vérifie HS/RS/PS/ES avec Web Crypto (clé publique PEM ou JWK), propose une chronologie et un historique temporaire **sans stockage de JWT ni de secrets**. | [`decodeur-analyseur-jwt`](tools/decodeur_analyseur_jwt_standalone.html) |
 | **Générateur de mot de passe** | Génère localement des mots de passe et des phrases de passe (FR/EN) avec l’API Web Crypto, tirages uniformes, préréglages, contraintes de caractères, estimation d’entropie et génération multiple. | [`random-numbers-generator`](tools/random-numbers-generator.html) |
 | **Calculateur de sous-réseaux** | Décompose un réseau CIDR en sous-réseaux, affiche les bornes d'adresses et le nombre d'IP, filtre les tailles de masque et maintient un inventaire persistant des sous-réseaux utilisés par réseau parent. | [`subnets-calculator`](tools/subnets_calculator.html) |
 | **Scratchpad** | Notes persistantes par défaut (IndexedDB), blocs compacts/standards/larges, catégories visuelles personnalisables, tags, réorganisation, corbeille restaurable, raccourcis, mode jour/nuit, import/export JSON. | [`scratchpad`](tools/scratchpad.html) |
@@ -80,6 +80,24 @@ Ouvrir [`tools/scratchpad.html`](tools/scratchpad.html) dans le navigateur ou de
 | `Échap` | Fermer la corbeille |
 
 Les données sont **propres au navigateur et à l'origine** (`https://yilas.github.io` sur GitHub Pages). Elles ne sont ni envoyées au dépôt ni synchronisées entre appareils ; vider les données du site les supprime. Ne pas y déposer de mots de passe, tokens ni secrets sensibles : le stockage local n'est pas chiffré, même pour les petites cartes.
+
+## 🔏 Analyseur JWT : sécurité, données et usage
+
+L'outil `tools/decodeur_analyseur_jwt_standalone.html` utilise les fichiers locaux `jwt-analyzer.css`, `jwt-analyzer-core.js` et `jwt-analyzer-ui.js`. Il ne charge ni dépendance externe, ni JWKS depuis une URL présente dans le JWT. Il fonctionne sur GitHub Pages (HTTPS) ou sur un serveur `localhost`.
+
+- **Décodage ≠ authentification** : les claims sont visibles même sans clé, mais la signature est alors indiquée **Non vérifiée**. Un échec cryptographique est distingué d'une clé manquante ou mal formée.
+- **Signatures** : HMAC `HS256/384/512`, RSA `RS256/384/512`, RSA-PSS `PS256/384/512`, ECDSA `ES256/384/512`. Les clés publiques RSA/EC sont acceptées en PEM SPKI (`BEGIN PUBLIC KEY`) ou JWK JSON, avec contrôle de compatibilité avec l'algorithme choisi.
+- **Règles** : issuer, audiences (au moins une / toutes), authorized party, algorithme attendu et tolérance d'horloge.
+- **Confidentialité** : les JWT, secrets HMAC et clés fournies sont conservés uniquement dans les champs et en mémoire pendant la session de l'onglet. L'historique est limité à vingt entrées et n'est **jamais persistant**. Les règles et la préférence de thème peuvent rester dans le navigateur.
+- **Migration depuis l'ancien analyseur** : au premier chargement, les anciennes entrées d'historique conservées en clair (incluant éventuellement les secrets HMAC) sont **supprimées de `localStorage`** ; seules les règles sont conservées. Cette suppression ne permet pas de récupérer ensuite l'ancien historique. Un message en avertit l'utilisateur.
+- **Périmètre** : les JWT chiffrés à 5 segments (JWE), le mode `b64=false` et les en-têtes `crit` non interprétés ne sont pas validés. Ce diagnostic local ne se substitue pas aux vérifications de sécurité et de politique de l'application utilisatrice.
+- **Test rapide** : cliquer sur **Exemple** crée un JWT HS256 local, signé avec une clé connue de démonstration ; cette clé ne doit jamais servir en production.
+
+Pour exécuter les tests automatisés (sans dépendances tierces) :
+
+```bash
+node --test tests/jwt-analyzer.test.cjs
+```
 
 ## 🏗️ Structure
 
