@@ -1,0 +1,31 @@
+name: Toolbox portal tests
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'portal.css'
+      - 'portal.js'
+      - 'tests/portal.test.cjs'
+      - '.github/workflows/portal.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'portal.css'
+      - 'portal.js'
+      - 'tests/portal.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  portal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript syntax
+        run: node --check portal.js
+      - name: Test homepage (no dependencies)
+        run: node --test tests/portal.test.cjs
