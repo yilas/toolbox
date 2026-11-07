@@ -148,7 +148,7 @@ function flatten(root) {
   return [root, ...root.children.flatMap(flatten)];
 }
 
-test("Chargement : normalisation et tous les masques affichés sans dépliage", () => {
+test("Chargement : CIDR canonique et six niveaux lisibles par défaut", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.13/24";
   submit(page.elements.networkForm);
@@ -158,12 +158,13 @@ test("Chargement : normalisation et tous les masques affichés sans dépliage", 
   assert.equal(page.elements.workspace.hidden, false);
   assert.ok(findNode(page, "10.0.0.0/24"));
   assert.ok(findNode(page, "10.0.0.0/25"));
-  assert.equal(page.elements.maskOverview.children.length, 9); // /24 à /32
+  assert.equal(page.elements.maskOverview.children.length, 6); // /24 à /29
   assert.equal(page.elements.overviewView.hidden, false);
-  assert.equal(page.store.getItem("toolbox-subnets-v2") !== null, true);
+  assert.equal(page.elements.visibleMaskCount.textContent, "6 / 9 niveaux");
+  assert.ok(page.store.getItem("toolbox-subnets-v2"));
 });
 
-test("Réserver depuis la vue d’ensemble sans changer accidentellement de réseau", () => {
+test("Réserver depuis la vue d’ensemble sans modifier accidentellement le réseau actif", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.0/24";
   submit(page.elements.networkForm);
@@ -180,11 +181,11 @@ test("Réserver depuis la vue d’ensemble sans changer accidentellement de rés
   assert.equal(saved.active, "10.0.0.0/24");
   assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "Service API");
   assert.equal(saved.networks["192.0.2.0/24"], undefined);
-  assert.equal(findNode(page, "10.0.0.0/24").dataset.status, "reserved");
-  assert.equal(findNode(page, "10.0.0.0/25").dataset.status, "inherited");
+  assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "reserved");
+  assert.equal(findNode(page, "10.0.0.0/25").parent.dataset.status, "inherited");
 });
 
-test("Libération : occupation recalculée et nœuds redevenus libres", () => {
+test("Libération : l'occupation des cartes est recalculée", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.0/24";
   submit(page.elements.networkForm);
@@ -194,34 +195,85 @@ test("Libération : occupation recalculée et nœuds redevenus libres", () => {
   assert.equal(page.elements.releaseButton.hidden, false);
   click(page.elements.releaseButton);
   assert.equal(page.elements.metricOccupied.textContent, "0");
-  assert.equal(findNode(page, "10.0.0.0/24").dataset.status, "free");
+  assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "free");
 });
 
-test("Vue d'ensemble : toutes les lignes CIDR visibles et blocs alignés", () => {
+test("Régression capture : /19 affiche les 32 CIDR /24 entièrement lisibles", () => {
   const page = createPage();
-  page.elements.networkInput.value = "10.105.196.0/22";
+  page.elements.networkInput.value = "10.105.64.0/19";
   submit(page.elements.networkForm);
   const bands = page.elements.maskOverview.children;
-  assert.equal(bands.length, 11); // /22, /23, …, /32
-  assert.equal(page.elements.overviewView.hidden, false);
-  assert.equal(page.elements.gridView.hidden, true);
-  const counts = bands.map(band => band.children[1].children.length);
-  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32, 64, 64, 64, 64, 64]);
-  assert.ok(bands[0].children[1].children[0].children.some(x => x.className === "overview-cell-label"));
-  assert.ok(!bands[7].children[1].children[0].children.some(x => x.className === "overview-cell-label"));
-  assert.match(bands[7].children[0].children[2].textContent, /Condensé/);
-  assert.doesNotMatch(uiSource, /state\.expanded|renderTree|createTreeRow/);
+  assert.equal(bands.length, 6); // /19 à /24 affichés immédiatement
+  const counts = bands.map(b => b.children[1].children.length);
+  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32]);
+  const cards = bands[5].children[1].children;
+  assert.equal(cards[0].children[0].children[0].textContent, "10.105.64.0/24");
+  assert.equal(cards[31].children[0].children[0].textContent, "10.105.95.0/24");
+  assert.ok(cards.every(card => card.children[0].children[0].className === "overview-card-cidr"));
+  assert.ok(cards.every(card => card.children[0].children[0].textContent.includes("/24")));
   assert.doesNotMatch(html, /id="treeView"|id="hierarchyTree"/);
+  assert.doesNotMatch(uiSource, /state\.expanded|renderTree|createTreeRow/);
 });
 
-test("Clique sur un bloc condensé : ouverture des détails au bon masque", () => {
+test("Masquer un niveau et un CIDR, puis restaurer sans effacer la réservation", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.105.64.0/19";
+  submit(page.elements.networkForm);
+
+  // Les filtres de niveaux s'appliquent indépendamment des réservations.
+  const mask23 = page.elements.maskFilterList.children[4].children[0];
+  assert.equal(mask23.checked, true);
+  mask23.checked = false;
+  mask23.dispatch("change");
+  assert.equal(page.elements.maskOverview.children.length, 5);
+  assert.ok(page.elements.maskOverview.children.every(band => band.dataset.prefix !== "23"));
+
+  const band24 = page.elements.maskOverview.children.at(-1);
+  const firstCard = band24.children[1].children[0];
+  const hide = firstCard.children[1];
+  assert.equal(hide.textContent, "Masquer");
+  click(hide);
+  assert.equal(band24.children[1].children.length, 32); // Ancien DOM hors vue
+  const current24 = page.elements.maskOverview.children.at(-1);
+  assert.equal(current24.children[1].children.length, 31);
+  assert.equal(findNode(page, "10.105.64.0/24"), undefined);
+  assert.equal(page.elements.restoreHidden.hidden, false);
+  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["10.105.64.0/19"].allocations.length, 0);
+  click(page.elements.restoreHidden);
+  assert.equal(page.elements.maskOverview.children.at(-1).children[1].children.length, 32);
+  assert.ok(findNode(page, "10.105.64.0/24"));
+});
+
+test("Les préférences de visibilité sont conservées par réseau, hors inventaire", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.105.64.0/19";
+  submit(page.elements.networkForm);
+  click(page.elements.hideAllMasks);
+  assert.equal(page.elements.maskOverview.children.length, 1); // Message aucun masque
+  assert.equal(page.elements.visibleMaskCount.textContent, "0 / 14 niveaux");
+  click(page.elements.showDefaultMasks);
+  assert.equal(page.elements.maskOverview.children.length, 6);
+  const preference = page.store.getItem("toolbox-subnets-view-10.105.64.0/19");
+  assert.equal(JSON.parse(preference).masks.length, 6);
+  const reloaded = createPage(Object.fromEntries(page.store.values.entries()));
+  assert.equal(reloaded.elements.maskOverview.children.length, 6);
+  assert.equal(reloaded.elements.visibleMaskCount.textContent, "6 / 14 niveaux");
+});
+
+test("Au-delà de 128 CIDR : regroupements nommés avec accès au détail", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.105.196.0/22";
   submit(page.elements.networkForm);
-  const lastBand = page.elements.maskOverview.children.at(-1);
-  const firstBucket = lastBand.children[1].children[0];
-  assert.match(firstBucket.title, /sous-réseaux \/32 regroupés/);
-  click(firstBucket);
+  click(page.elements.showAllMasks);
+  const bands = page.elements.maskOverview.children;
+  assert.equal(bands.length, 11); // /22 à /32
+  const counts = bands.map(band => band.children[1].children.length);
+  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32, 64, 64, 64, 64, 64]);
+  const dense = bands.at(-1);
+  const first = dense.children[1].children[0].children[0]; // Bouton principal
+  assert.equal(first.children[0].className, "overview-card-cidr");
+  assert.match(first.children[1].textContent, /sous-réseaux \/32/);
+  click(first);
   assert.equal(page.elements.overviewView.hidden, true);
   assert.equal(page.elements.gridView.hidden, false);
   assert.equal(page.elements.maskSelect.value, "32");
@@ -229,13 +281,15 @@ test("Clique sur un bloc condensé : ouverture des détails au bon masque", () =
   assert.ok(findNode(page, "10.105.196.0/32"));
 });
 
-test("Réseau /0 : 33 niveaux, 64 blocs maximum par niveau", () => {
+test("Réseau /0 : les 33 niveaux restent disponibles avec un plafond de 128 cartes", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.105.196.0/0";
   submit(page.elements.networkForm);
+  assert.equal(page.elements.maskOverview.children.length, 6);
+  click(page.elements.showAllMasks);
   const bands = page.elements.maskOverview.children;
   assert.equal(bands.length, 33);
-  assert.ok(bands.every(band => band.children[1].children.length <= 64));
+  assert.ok(bands.every(band => band.children[1].children.length <= 128));
   assert.equal(page.elements.activeNetwork.textContent, "0.0.0.0/0");
 });
 
