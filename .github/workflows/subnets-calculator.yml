@@ -1,0 +1,34 @@
+name: IPv4 subnet calculator V2 tests
+
+on:
+  pull_request:
+    paths:
+      - 'tools/subnets_calculator.html'
+      - 'tools/subnets-*.js'
+      - 'tools/subnets-calculator.css'
+      - 'tests/subnets-core.test.cjs'
+      - '.github/workflows/subnets-calculator.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/subnets_calculator.html'
+      - 'tools/subnets-*.js'
+      - 'tools/subnets-calculator.css'
+      - 'tests/subnets-core.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  subnet-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check tools/subnets-core.js
+          node --check tools/subnets-storage.js
+          node --check tools/subnets-ui.js
+      - name: Run IPv4 and migration tests (no dependencies)
+        run: node --test tests/subnets-core.test.cjs
