@@ -113,7 +113,7 @@
       <section class="card visual-section" aria-labelledby="visualTitle">
         <div class="visual-header">
           <h2 id="visualTitle">Vue d'ensemble des sous-réseaux</h2>
-          <p>Tous les masques visibles, du réseau parent jusqu'à /32. Les blocs conservent la même position dans l'espace IPv4.</p>
+          <p>Les CIDR restent lisibles, quel que soit le masque. Choisissez les niveaux à afficher.</p>
           <div class="view-selector" role="group" aria-label="Mode d'affichage">
             <button class="view-button" id="overviewMode" type="button" aria-pressed="true">Vue d'ensemble</button>
             <button class="view-button" id="gridMode" type="button" aria-pressed="false">Grille détaillée</button>
@@ -121,7 +121,28 @@
         </div>
 
         <div class="visual-body" id="overviewView">
-          <p class="hint">Chaque ligne correspond à un masque. Cliquez sur un bloc libre ou réservé pour le gérer, ou sur un bloc partiel pour afficher ses détails. Les niveaux volumineux sont condensés en 64 blocs maximum, sans masquer leur occupation.</p>
+          <div class="overview-toolbar">
+            <div>
+              <strong class="overview-toolbar-title">Masques affichés</strong>
+              <span class="overview-filter-summary" id="visibleMaskCount"></span>
+            </div>
+            <div class="overview-toolbar-actions">
+              <button class="btn small" type="button" id="restoreHidden" hidden>Réafficher les sous-réseaux masqués</button>
+              <details class="mask-filter" id="maskFilterPanel">
+                <summary>Choisir les masques</summary>
+                <div class="mask-filter-body">
+                  <p class="hint">Masquez un niveau de masque sans modifier les réservations.</p>
+                  <div class="mask-filter-actions">
+                    <button type="button" class="btn small" id="showAllMasks">Tout afficher</button>
+                    <button type="button" class="btn small" id="showDefaultMasks">Vue recommandée</button>
+                    <button type="button" class="btn small" id="hideAllMasks">Tout masquer</button>
+                  </div>
+                  <div class="mask-filter-grid" id="maskFilterList" role="group" aria-label="Visibilité des niveaux CIDR"></div>
+                </div>
+              </details>
+            </div>
+          </div>
+          <p class="hint">Chaque carte affiche son CIDR complet et son état d'occupation. « Masquer » retire uniquement le bloc de la vue, sans toucher à l'inventaire. Au-delà de 128 sous-réseaux par niveau, des cartes regroupées donnent accès à la grille détaillée.</p>
           <div class="overview-stack" id="maskOverview" aria-label="Occupation IPv4 par niveau de masque"></div>
         </div>
 
