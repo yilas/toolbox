@@ -41,7 +41,7 @@ La vérification est également lancée par GitHub Actions sur les pull requests
 | **Clean Text** | Nettoie et normalise du texte en préservant les zones Markdown sensibles. Propose conversion ASCII, simplification stylistique, linter de formulations répétitives, statistiques, chargement/téléchargement de fichiers et diff unifié façon Linux pour visualiser les lignes ajoutées ou supprimées. | [`clean-text`](tools/clean-text.html) |
 | **Décodeur & Analyseur JWT** | Décode les JWT compacts signés, distingue décodage et vérification, valide les claims temporels et règles (`iss`, `aud`, `azp`, algorithme), vérifie HS/RS/PS/ES avec Web Crypto (clé publique PEM ou JWK), propose une chronologie et un historique temporaire **sans stockage de JWT ni de secrets**. | [`decodeur-analyseur-jwt`](tools/decodeur_analyseur_jwt_standalone.html) |
 | **Générateur de mot de passe** | Génère localement des mots de passe et des phrases de passe (FR/EN) avec l’API Web Crypto, tirages uniformes, préréglages, contraintes de caractères, estimation d’entropie et génération multiple. | [`random-numbers-generator`](tools/random-numbers-generator.html) |
-| **Calculateur de sous-réseaux** | Vérifie et normalise les CIDR IPv4 de `/0` à `/32`, visualise l'occupation parent/enfant dans une arborescence ou une grille paginée, gère les réservations annotées, calcule l'union exacte des plages et exporte les inventaires JSON/CSV. | [`subnets-calculator`](tools/subnets_calculator.html) |
+| **Calculateur de sous-réseaux** | Vérifie et normalise les CIDR IPv4 de `/0` à `/32`, visualise simultanément tous les niveaux de masque dans une carte d'occupation alignée ou via une grille détaillée paginée, gère les réservations annotées, calcule l'union exacte des plages et exporte les inventaires JSON/CSV. | [`subnets-calculator`](tools/subnets_calculator.html) |
 | **Scratchpad** | Notes persistantes par défaut (IndexedDB), blocs compacts/standards/larges, catégories visuelles personnalisables, tags, réorganisation, corbeille restaurable, raccourcis, mode jour/nuit, import/export JSON. | [`scratchpad`](tools/scratchpad.html) |
 | **Calculateur de temps de travail** | Permet de saisir plusieurs plages entrée/sortie, de les réordonner par glisser-déposer, de calculer automatiquement le temps total travaillé et de conserver les plages localement. | [`worktime-calculator`](tools/worktime-calculator.html) |
 
@@ -101,12 +101,14 @@ node --test tests/jwt-analyzer.test.cjs
 
 ## 🌐 Calculateur IPv4 : inventaire hiérarchique V2
 
-Le calculateur conserve **deux représentations complémentaires** :
+Le calculateur conserve **deux représentations complémentaires**, sans arborescence à déplier :
 
-- **Arborescence IPv4 dépliable** : chaque réseau peut révéler ses deux enfants (`/n+1`), jusqu'à `/32`. Les liens parent-enfant restent visibles et les plages associées sont mises en évidence au survol.
-- **Grille par masque** : sélection de `/0` à `/32` selon le réseau parent, affichage de 64 sous-réseaux par page, navigation et recherche directe par IP, CIDR ou description de réservation.
+- **Vue d'ensemble permanente** (affichage initial) : tous les masques du réseau parent à `/32` sont affichés sous forme de bandes horizontales alignées sur les mêmes plages d'adresses. Chaque bloc indique l'occupation réelle (libre, réservé, hérité, partiel, complet). Les premiers niveaux peu denses affichent les CIDR directement dans les blocs. Aucun clic pour déplier une branche.
+- **Grille détaillée par masque** : sélection de `/0` à `/32` selon le réseau parent, affichage de 64 sous-réseaux par page, navigation et recherche directe par IP, CIDR ou description de réservation. Cliquer un bloc condensé dans la vue d'ensemble ouvre la grille au masque et à la page correspondants.
 
-La hiérarchie utilise cinq états : **Libre**, **Réservé** (sélection directe), **Hérité** (réservation d'un ancêtre), **Partiel** (couverture incomplète par les descendants) et **Complet** (100 % couvert par les descendants). Le nombre d'adresses occupées est calculé par **union des intervalles**, sans double comptage : `/26 + /25` imbriqués ne sont pas additionnés deux fois.
+La cartographie conserve la hiérarchie parent/enfant avec cinq états : **Libre**, **Réservé** (sélection directe), **Hérité** (réservation d'un ancêtre), **Partiel** (couverture incomplète par les descendants) et **Complet** (100 % couvert par les descendants). Le nombre d'adresses occupées est calculé par **union des intervalles**, sans double comptage : `/26 + /25` imbriqués ne sont pas additionnés deux fois.
+
+Pour éviter de générer des millions de cases sur les très grands réseaux, chaque ligne représente au maximum **64 blocs** : au-delà, un bloc résume plusieurs sous-réseaux contigus. La taille du regroupement est affichée et un clic mène à la page détaillée correspondante. Tous les niveaux restent visibles sans interaction préalable.
 
 **Contraintes et stockage :**
 
