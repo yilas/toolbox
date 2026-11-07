@@ -142,7 +142,7 @@
               </details>
             </div>
           </div>
-          <p class="hint">Chaque carte affiche son CIDR complet et son état d'occupation. « Masquer » retire uniquement le bloc de la vue, sans toucher à l'inventaire. Au-delà de 128 sous-réseaux par niveau, des cartes regroupées donnent accès à la grille détaillée.</p>
+          <p class="hint">Cliquez sur un CIDR libre pour le réserver immédiatement, sans formulaire. « Avec détails » permet d'ajouter un nom ou une description, uniquement si besoin. « Libérer » retire la réservation et « Masquer » cache seulement la carte. Au-delà de 128 sous-réseaux, utilisez la grille détaillée.</p>
           <div class="overview-stack" id="maskOverview" aria-label="Occupation IPv4 par niveau de masque"></div>
         </div>
 
@@ -164,7 +164,7 @@
               </select>
             </div>
           </div>
-          <p class="hint" id="gridDescription">64 réseaux maximum par page. Utilisez la recherche pour aller directement à un CIDR.</p>
+          <p class="hint" id="gridDescription">Cochez une case pour réserver immédiatement ou décochez-la pour libérer le CIDR. Les détails sont facultatifs. La recherche permet d'atteindre directement un réseau.</p>
           <div class="grid-list" id="subnetGrid"></div>
           <div class="pager">
             <div class="pager-info" id="pageInfo"></div>
@@ -226,6 +226,7 @@
     <form id="allocationForm" novalidate>
       <h2 id="dialogTitle">Réservation IPv4</h2>
       <p>Réseau : <strong class="mono" id="dialogCidr"></strong></p>
+      <p class="dialog-hint">Nom et description sont entièrement facultatifs. Vous pouvez réserver un CIDR sans ouvrir cette fenêtre.</p>
       <div class="field">
         <label class="field-label" for="allocationName">Nom (facultatif)</label>
         <input class="input" id="allocationName" type="text" maxlength="100" placeholder="Application / environnement" autocomplete="off">
