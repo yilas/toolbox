@@ -282,6 +282,44 @@
     return formatNumber(node.size) + " adresses IPv4";
   }
 
+  // Réservation sans formulaire : seul le CIDR est nécessaire.
+  // Les informations métier restent facultatives et modifiables plus tard.
+  function quickReserve(cidr) {
+    if (!state.active) return false;
+    try {
+      const nextAllocations = core.addAllocation(allocations(), state.active, cidr);
+      persistData(storage.withAllocations(state.data, state.active.cidr, nextAllocations));
+      say("Sous-réseau réservé : " + cidr + " · détails facultatifs.", "success");
+      return true;
+    } catch (error) {
+      say(error && error.message || "Réservation impossible.", "error");
+      return false;
+    }
+  }
+
+  function quickRelease(cidr) {
+    if (!state.active) return false;
+    const existing = allocations().find(item => item.cidr === cidr);
+    if (!existing) {
+      say("Aucune réservation directe à libérer.", "warning");
+      return false;
+    }
+    // Une réserve annotée demande confirmation avant de perdre ses détails.
+    if ((existing.name || existing.description) &&
+        !window.confirm("Libérer " + cidr + " et supprimer ses informations enregistrées ?")) {
+      return false;
+    }
+    try {
+      const nextAllocations = core.removeAllocation(allocations(), state.active, cidr);
+      persistData(storage.withAllocations(state.data, state.active.cidr, nextAllocations));
+      say("Sous-réseau libéré : " + cidr, "success");
+      return true;
+    } catch (error) {
+      say(error && error.message || "Libération impossible.", "error");
+      return false;
+    }
+  }
+
   function checkboxFor(node) {
     const cb = document.createElement("input");
     cb.className = "node-checkbox";
@@ -295,8 +333,8 @@
         : "Des réservations descendantes existent : gérer les enfants d'abord.";
     }
     cb.addEventListener("change", () => {
-      cb.checked = node.status === "reserved";
-      openAllocationDialog(node.cidr);
+      const success = cb.checked ? quickReserve(node.cidr) : quickRelease(node.cidr);
+      if (!success) cb.checked = node.status === "reserved";
     });
     return cb;
   }
@@ -329,8 +367,22 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = "btn small";
-    button.textContent = node.status === "reserved" ? "Modifier" : "Réserver";
+    button.textContent = node.status === "reserved" ? "Détails" : "Réserver";
     button.setAttribute("aria-label", button.textContent + " " + node.cidr);
+    button.addEventListener("click", () => {
+      if (node.status === "free") quickReserve(node.cidr);
+      else openAllocationDialog(node.cidr);
+    });
+    return button;
+  }
+
+  function detailsAction(node) {
+    if (node.status !== "free") return null;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn small";
+    button.textContent = "Avec détails";
+    button.setAttribute("aria-label", "Réserver avec détails " + node.cidr);
     button.addEventListener("click", () => openAllocationDialog(node.cidr));
     return button;
   }
@@ -369,12 +421,27 @@
       formatPercent(node.percent) + " occupé" +
       (aggregated ? " (" + groupSize + " sous-réseaux /" + prefix + ")" : "");
     main.setAttribute("aria-label", main.title + " : " +
-      (canManage ? "gérer la réservation" : "ouvrir la grille détaillée"));
+      (canManage
+        ? (node.status === "free" ? "réserver sans formulaire" : "voir les détails")
+        : "ouvrir la grille détaillée"));
     main.addEventListener("click", () => {
-      if (canManage) openAllocationDialog(node.cidr);
+      if (canManage && node.status === "free") quickReserve(node.cidr);
+      else if (canManage) openAllocationDialog(node.cidr);
       else navigateTo(core.cidrFromStart(bucket.start, prefix).cidr);
     });
 
+    const footer = document.createElement("div");
+    footer.className = "overview-card-footer";
+    if (canManage) {
+      const details = document.createElement("button");
+      details.type = "button";
+      details.className = "overview-card-edit";
+      details.textContent = node.status === "reserved" ? "Détails" : "Avec détails";
+      details.setAttribute("aria-label", (node.status === "reserved"
+        ? "Modifier les détails de " : "Réserver avec détails ") + node.cidr);
+      details.addEventListener("click", () => openAllocationDialog(node.cidr));
+      footer.append(details);
+    }
     const hide = document.createElement("button");
     hide.type = "button";
     hide.className = "overview-card-hide";
@@ -391,7 +458,8 @@
       renderMaskFilters();
       renderOverview();
     });
-    card.append(main, hide);
+    footer.append(hide);
+    card.append(main, footer);
     return card;
   }
 
@@ -494,8 +562,12 @@
     const description = document.createElement("span");
     description.textContent = node.direct?.name || formatPercent(node.percent) + " occupé";
     const action = nodeAction(node);
-    bottom.append(description);
-    if (action) bottom.append(action);
+    const secondaryAction = detailsAction(node);
+    const controls = document.createElement("div");
+    controls.className = "grid-actions";
+    if (action) controls.append(action);
+    if (secondaryAction) controls.append(secondaryAction);
+    bottom.append(description, controls);
     card.append(top, cidr, bottom);
     return card;
   }
@@ -618,7 +690,7 @@
     const existing = node.direct;
     $("allocationName").value = existing?.name || "";
     $("allocationDescription").value = existing?.description || "";
-    $("dialogTitle").textContent = existing ? "Modifier la réservation" : "Réserver un sous-réseau";
+    $("dialogTitle").textContent = existing ? "Informations de réservation" : "Réserver avec détails";
     $("saveAllocation").textContent = existing ? "Enregistrer" : "Réserver";
     $("releaseButton").hidden = !existing;
     $("allocationDialog").showModal();
