@@ -14,7 +14,7 @@
   <script src="./subnets-ui.js" defer></script>
 </head>
 <body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <svg width="0" height="0" class="sprite-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
     <symbol id="i-network" viewBox="0 0 24 24">
       <rect x="9" y="2" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
       <rect x="2" y="16" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -174,7 +174,7 @@
             <input type="file" id="importFile" accept=".json,application/json" hidden>
           </div>
           <div class="allocations" id="allocationsList"></div>
-          <div class="actions" style="margin-top:16px">
+          <div class="actions inventory-clear-actions">
             <button type="button" class="btn small danger" id="clearInventory">Effacer les réservations</button>
           </div>
         </section>
