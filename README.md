@@ -99,30 +99,22 @@ Pour exécuter les tests automatisés (sans dépendances tierces) :
 node --test tests/jwt-analyzer.test.cjs
 ```
 
-## 🌐 Calculateur IPv4 : inventaire hiérarchique V2
+## 🌐 Calculateur IPv4 : vue historique et moteur fiabilisé
 
-Le calculateur conserve **deux représentations complémentaires**, sans arborescence à déplier ni microcases illisibles :
+La présentation **par masque de l'outil d'origine** reste la vue principale : un bloc `Masque /n`, suivi d'une **grille de CIDR complets avec cases à cocher**, sans arborescence à ouvrir, sans cartes géantes et sans microcases anonymes. L'espace de visualisation occupe toute la largeur de la page.
 
-- **Vue d'ensemble par masques** (affichage initial) : chaque préfixe sélectionné dispose de ses **cartes lisibles**, avec CIDR complet, statut et jauge d'occupation. Les six premiers niveaux sont activés par défaut (par exemple `/19` à `/24` pour un parent `/19`, où **les 32 `/24` sont tous lisibles et cliquables**). Les masques sont sélectionnables individuellement via « Choisir les masques », avec « Tout afficher », « Vue recommandée » et « Tout masquer ».
-- **Grille détaillée par masque** : sélection de `/0` à `/32` selon le réseau parent, affichage de 64 sous-réseaux par page, navigation et recherche directe par IP, CIDR ou description de réservation. Cliquer une carte regroupée ouvre la grille au masque et à la page correspondants.
+- **Filtrage direct des masques** : une ligne de cases à cocher visible au-dessus des sections permet de montrer ou cacher chaque niveau. Par défaut, tous les masques enfants utilisables jusqu'à `/30` sont affichés, tant que le niveau contient au plus 1 024 CIDR (comme dans l'ancien outil). Les masques `/31` et `/32` restent accessibles.
+- **Masquage visuel ponctuel** : le bouton `×` masque un CIDR dans un niveau donné ; « Réafficher les sous-réseaux masqués » le restaure. Masquer ne libère jamais une réservation. Les filtres sont mémorisés **par réseau parent**, indépendamment de l'inventaire. Les préférences de l'ancienne V2 compacte ne forcent pas un nouveau mode d'affichage.
+- **Réservation rapide** : une coche réserve immédiatement le sous-réseau, sans formulaire, nom ni description. Décocher libère la réservation (confirmation seulement si des annotations vont être supprimées). Le bouton `⋯` sert à ajouter ou modifier des détails facultatifs.
+- **États de couverture** : réservation directe avec bordure marquée et teinte propre au CIDR ; descendant hérité en pointillés de la même teinte ; parent partiel en orange ; parent entièrement couvert en gris. Le calcul de l'occupation est effectué par **union des plages IPv4** sans double comptage.
+- **Grands réseaux** : si un masque comporte plus de **1 024** sous-réseaux, la section l'indique explicitement et propose la grille paginée (64 par page) pour une consultation exhaustive, sans geler le navigateur. Aucune sous-partie n'est remplacée par un bloc sans CIDR.
+- **IPv4 fiables** : validation stricte des adresses et des CIDR `/0` à `/32`, normalisation du réseau parent et prise en charge des masques `/31` et `/32` via le moteur et la grille détaillée.
+- **Persistance** : les anciens `snet_calc_inventory_*` sont copiés vers le format V2 sans suppression des clés originales. Les réservations historiques imbriquées restent présentes, tandis que les nouvelles réservations chevauchantes sont refusées.
+- **Sauvegarde** : export JSON de tous les inventaires (import par fusion) et CSV compatible Excel du réseau actif.
 
-**Réservation rapide :** cliquer sur une carte CIDR libre réserve immédiatement ce sous-réseau, **sans formulaire** et sans nom ni description. Les cases de la grille détaillée permettent aussi de réserver/libérer en un clic. Le bouton « Avec détails » est disponible seulement si vous souhaitez renseigner un nom et/ou une description ; les mêmes champs restent modifiables plus tard depuis une réservation. La libération d'un réseau annoté demande confirmation avant de supprimer ses informations. Les contraintes de chevauchement et la couverture parent/enfant restent inchangées.
+Aucun framework ni service réseau n'est requis. Les calculs s'appliquent aux **adresses IPv4 totales**, pas uniquement aux adresses d'hôtes utilisables.
 
-La cartographie conserve la hiérarchie parent/enfant avec cinq états : **Libre**, **Réservé** (sélection directe), **Hérité** (réservation d'un ancêtre), **Partiel** (couverture incomplète par les descendants) et **Complet** (100 % couvert par les descendants). Le nombre d'adresses occupées est calculé par **union des intervalles**, sans double comptage : `/26 + /25` imbriqués ne sont pas additionnés deux fois.
-
-Pour les masques présentant **jusqu'à 128 sous-réseaux**, toutes les cartes sont affichées avec leur CIDR. Au-delà, 64 **cartes de regroupement lisibles** résument des plages contiguës, indiquent le nombre de sous-réseaux représentés et donnent accès au détail. Un bouton « Masquer » sur chaque carte retire uniquement cette carte de la vue, **sans supprimer ni libérer le réseau réservé** ; « Réafficher les sous-réseaux masqués » annule ce filtre. Les préférences de visibilité sont mémorisées localement **par réseau parent**, séparément de l'inventaire.
-
-**Contraintes et stockage :**
-
-- Les nouvelles réservations ne peuvent pas chevaucher une réservation existante. Pour réserver un parent déjà partiellement couvert, il faut d'abord modifier/libérer les réservations enfants.
-- Les chevauchements déjà présents dans des données historiques sont préservés et signalés, sans fausser les pourcentages.
-- Les anciens inventaires `snet_calc_inventory_*` et le dernier réseau actif sont **copiés une seule fois** dans la structure versionnée `toolbox-subnets-v2`, avec normalisation des CIDR ; les anciennes clés restent intactes pour récupération.
-- Le réseau actif est distinct du texte en cours de saisie : une modification du champ ne redirige jamais une réservation vers un autre inventaire.
-- Export **JSON** de tous les réseaux (réimportable avec fusion sans écrasement des entrées existantes) et export **CSV** de l'inventaire actif (séparateur `;`, compatible Excel).
-- Pas de synchronisation serveur. Le stockage local reste propre au navigateur et au domaine GitHub Pages : pensez à exporter une sauvegarde.
-- L'inventaire s'applique aux **adresses IPv4 totales** (y compris adresses réseau/diffusion selon le préfixe), pas à un calcul cloud de ressources IP utilisables.
-
-Les fichiers `tools/subnets-core.js`, `tools/subnets-storage.js`, `tools/subnets-ui.js` et `tools/subnets-calculator.css` sont natifs, sans dépendance. Tests :
+Tests :
 
 ```bash
 node --test tests/subnets-core.test.cjs tests/subnets-ui.test.cjs
