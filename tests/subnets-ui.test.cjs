@@ -337,6 +337,22 @@ test("Migration ancienne : l'occupation partielle est conservée", () => {
   assert.equal(page.store.getItem("snet_calc_inventory_10.0.0.0/24"), old["snet_calc_inventory_10.0.0.0/24"]);
 });
 
+test("Préférences de l'ancienne V2 compacte : retour à l'affichage historique par défaut", () => {
+  const old = {
+    "snet_calc_last_active_network": "10.105.64.0/19",
+    "toolbox-subnets-view-10.105.64.0/19": JSON.stringify({
+      masks: [19, 20, 21, 22, 23, 24],
+      hidden: []
+    })
+  };
+  const page = createPage(old);
+  const bands = page.elements.maskOverview.children;
+  assert.equal(bands.length, 10);
+  assert.deepEqual(bands.map(b => b.dataset.prefix),
+    ["20","21","22","23","24","25","26","27","28","29"]);
+  assert.equal(page.elements.visibleMaskCount.textContent, "10 / 13 niveaux");
+});
+
 test("Rechargement : préférences d'affichage séparées de l'inventaire", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.0.0.0/24";
