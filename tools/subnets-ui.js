@@ -189,9 +189,12 @@
     try {
       const saved = JSON.parse(localStorage.getItem(viewPreferenceKey()) || "null");
       if (!saved || typeof saved !== "object") return;
-      if (Array.isArray(saved.masks)) {
+      // Les filtres créés par l'ancienne V2 appartenaient à une autre
+      // représentation. Ne pas imposer ces réglages à la vue classique.
+      if (saved.layout === "classic" && Array.isArray(saved.masks)) {
+        const first = firstMask(state.active);
         state.visibleMasks = new Set(saved.masks.filter(prefix =>
-          Number.isInteger(prefix) && prefix >= state.active.prefix && prefix <= 32));
+          Number.isInteger(prefix) && prefix >= first && prefix <= 32));
       }
       if (Array.isArray(saved.hidden)) {
         state.hiddenCards = new Set(saved.hidden
@@ -206,6 +209,7 @@
   function saveViewPreferences() {
     try {
       localStorage.setItem(viewPreferenceKey(), JSON.stringify({
+        layout: "classic",
         masks: [...state.visibleMasks].sort((a, b) => a - b),
         hidden: [...state.hiddenCards]
       }));
