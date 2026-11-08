@@ -6,8 +6,7 @@
   const core = window.SubnetsCore;
   const storage = window.SubnetsStorage;
   const PAGE_SIZE = 64;
-  const MAX_PREVIEW_SUBNETS = 128;
-  const MAX_GROUPED_CARDS = 64;
+  const MAX_SUBNETS_PER_MASK = 1024;
   const MAX_HIDDEN_CARDS = 200;
   const VIEW_PREF_KEY = "toolbox-subnets-view-";
   const STATUS = Object.freeze({
@@ -163,11 +162,21 @@
 
   // Préférences purement visuelles, indépendantes des réservations réseau.
   function defaultVisibleMasks(parent) {
+    // Comportement historique : tous les sous-réseaux affichables,
+    // du premier masque enfant à /30 ; /31 et /32 restent facultatifs.
     const masks = new Set();
-    for (let prefix = parent.prefix; prefix <= Math.min(32, parent.prefix + 5); prefix++) {
-      masks.add(prefix);
+    const start = parent.prefix < 32 ? parent.prefix + 1 : 32;
+    const end = parent.prefix >= 30 ? 32 : 30;
+    for (let prefix = start; prefix <= end; prefix++) {
+      if (2 ** (prefix - parent.prefix) <= MAX_SUBNETS_PER_MASK) {
+        masks.add(prefix);
+      }
     }
     return masks;
+  }
+
+  function firstMask(parent) {
+    return parent.prefix === 32 ? 32 : parent.prefix + 1;
   }
 
   function viewPreferenceKey() {
@@ -218,8 +227,9 @@
     const list = $("maskFilterList");
     list.replaceChildren();
     if (!state.active) return;
-    const total = 33 - state.active.prefix;
-    for (let prefix = state.active.prefix; prefix <= 32; prefix++) {
+    const start = firstMask(state.active);
+    const total = 33 - start;
+    for (let prefix = start; prefix <= 32; prefix++) {
       const label = document.createElement("label");
       label.className = "mask-filter-item";
       const checkbox = document.createElement("input");
@@ -387,83 +397,78 @@
     return button;
   }
 
-  // Les CIDR sont lisibles dans des cartes, sans réduire les textes en microcases.
-  // Les niveaux > 128 sous-réseaux deviennent des cartes de plages agrégées.
-  // Masquer un bloc n'affecte jamais son état de réservation.
-  function createOverviewCard(bucket, prefix, aggregated, groupSize) {
-    const node = core.describeNode(bucket, state.coverage);
+  function reservationHue(cidr) {
+    let hash = 0;
+    for (let i = 0; i < cidr.length; i++) {
+      hash = ((hash << 5) - hash + cidr.charCodeAt(i)) | 0;
+    }
+    return (Math.abs(hash) * 137.5) % 360;
+  }
+
+  // Même présentation que l'outil original : une grille de CIDR avec
+  // cases à cocher et occupation parent/enfant, sans dépliage ni microcases.
+  function createOverviewCard(net, prefix) {
+    const node = core.describeNode(net, state.coverage);
     const card = document.createElement("div");
-    card.className = "overview-card";
+    card.className = "network-item";
     card.dataset.status = node.status;
-    const main = document.createElement("button");
-    main.type = "button";
-    main.className = "overview-card-main";
-    bindHighlight(main, node.cidr);
+    bindHighlight(card, node.cidr);
+    card.title = node.cidr + " · " + STATUS[node.status] +
+      " · " + formatPercent(node.percent) + " occupé";
+    const reference = node.status === "inherited" ? node.inheritedFrom : node.cidr;
+    if (node.status === "reserved" || node.status === "inherited") {
+      card.style.setProperty("--reservation-hue", String(reservationHue(reference || node.cidr)));
+    }
 
-    const cidr = document.createElement("strong");
-    cidr.className = "overview-card-cidr";
-    cidr.textContent = node.cidr;
-    const detail = document.createElement("span");
-    detail.className = "overview-card-detail";
-    detail.textContent = aggregated
-      ? formatNumber(groupSize) + " sous-réseaux /" + prefix + " · " + formatPercent(node.percent)
-      : STATUS[node.status] + " · " + formatPercent(node.percent);
+    const contents = document.createElement("label");
+    contents.className = "network-item-content";
+    const checkbox = checkboxFor(node);
+    const address = document.createElement("span");
+    address.className = "network-item-cidr";
+    address.textContent = node.cidr;
+    contents.append(checkbox, address);
+    card.append(contents);
 
-    const meter = document.createElement("span");
-    meter.className = "overview-card-meter";
-    const fill = document.createElement("span");
-    fill.style.width = node.percent.toFixed(4) + "%";
-    meter.append(fill);
-    main.append(cidr, detail, meter);
+    if (node.status !== "free") {
+      const status = document.createElement("span");
+      status.className = "network-item-status";
+      status.textContent = STATUS[node.status];
+      status.dataset.status = node.status;
+      card.append(status);
+    }
 
-    const canManage = !aggregated && (node.status === "free" || node.status === "reserved");
-    main.title = node.cidr + " — " + STATUS[node.status] + " — " +
-      formatPercent(node.percent) + " occupé" +
-      (aggregated ? " (" + groupSize + " sous-réseaux /" + prefix + ")" : "");
-    main.setAttribute("aria-label", main.title + " : " +
-      (canManage
-        ? (node.status === "free" ? "réserver sans formulaire" : "voir les détails")
-        : "ouvrir la grille détaillée"));
-    main.addEventListener("click", () => {
-      if (canManage && node.status === "free") quickReserve(node.cidr);
-      else if (canManage) openAllocationDialog(node.cidr);
-      else navigateTo(core.cidrFromStart(bucket.start, prefix).cidr);
-    });
-
-    const footer = document.createElement("div");
-    footer.className = "overview-card-footer";
-    if (canManage) {
-      const secondary = document.createElement("button");
-      secondary.type = "button";
-      secondary.className = node.status === "reserved"
-        ? "overview-card-release" : "overview-card-edit";
-      secondary.textContent = node.status === "reserved" ? "Libérer" : "Avec détails";
-      secondary.setAttribute("aria-label", (node.status === "reserved"
-        ? "Libérer le réseau " : "Réserver avec détails ") + node.cidr);
-      secondary.addEventListener("click", () => {
-        if (node.status === "reserved") quickRelease(node.cidr);
-        else openAllocationDialog(node.cidr);
-      });
-      footer.append(secondary);
+    const actions = document.createElement("div");
+    actions.className = "network-item-actions";
+    if (node.status === "free" || node.status === "reserved") {
+      const details = document.createElement("button");
+      details.className = "network-item-details";
+      details.type = "button";
+      details.textContent = "⋯";
+      details.title = node.status === "free"
+        ? "Réserver avec un nom ou une description"
+        : "Ajouter ou modifier les détails";
+      details.setAttribute("aria-label", details.title + " : " + node.cidr);
+      details.addEventListener("click", () => openAllocationDialog(node.cidr));
+      actions.append(details);
     }
     const hide = document.createElement("button");
+    hide.className = "network-item-hide";
     hide.type = "button";
-    hide.className = "overview-card-hide";
-    hide.textContent = "Masquer";
-    hide.title = "Masquer uniquement la carte " + node.cidr + " de la vue";
+    hide.textContent = "×";
+    hide.title = "Masquer " + node.cidr + " (réservation conservée)";
     hide.setAttribute("aria-label", hide.title);
     hide.addEventListener("click", () => {
       if (state.hiddenCards.size >= MAX_HIDDEN_CARDS) {
-        say("Limite de blocs masqués atteinte : réaffichez-en certains.", "warning");
+        say("Limite de sous-réseaux masqués atteinte. Réaffichez-en certains.", "warning");
         return;
       }
-      state.hiddenCards.add(hiddenCardKey(prefix, bucket.cidr));
+      state.hiddenCards.add(hiddenCardKey(prefix, node.cidr));
       saveViewPreferences();
       renderMaskFilters();
       renderOverview();
     });
-    footer.append(hide);
-    card.append(main, footer);
+    actions.append(hide);
+    card.append(actions);
     return card;
   }
 
@@ -476,74 +481,88 @@
     const fragment = document.createDocumentFragment();
     let visibleBands = 0;
 
-    for (let prefix = parent.prefix; prefix <= 32; prefix++) {
+    for (let prefix = firstMask(parent); prefix <= 32; prefix++) {
       if (!state.visibleMasks.has(prefix)) continue;
       visibleBands++;
-      const total = 2 ** (prefix - parent.prefix);
-      const aggregated = total > MAX_PREVIEW_SUBNETS;
-      // Comme tous les CIDR sont des blocs explicites tant que total <= 128,
-      // un /19 → /24 présente réellement ses 32 sous-réseaux nommés.
-      const bucketCount = aggregated ? MAX_GROUPED_CARDS : total;
-      const groupingPrefix = aggregated ? parent.prefix + 6 : prefix;
-      const grouped = aggregated ? 2 ** (prefix - groupingPrefix) : 1;
-      const subnetSize = 2 ** (32 - groupingPrefix);
+      const count = 2 ** (prefix - parent.prefix);
+      const size = 2 ** (32 - prefix);
 
-      const band = document.createElement("section");
-      band.className = "overview-band";
-      band.dataset.prefix = String(prefix);
-      band.setAttribute("aria-label", "Sous-réseaux /" + prefix);
+      const block = document.createElement("section");
+      block.className = "mask-block";
+      block.dataset.prefix = String(prefix);
+      block.setAttribute("aria-label", "Sous-réseaux /" + prefix);
 
       const heading = document.createElement("div");
-      heading.className = "overview-band-heading";
+      heading.className = "mask-header";
       const title = document.createElement("strong");
-      title.className = "overview-band-name";
-      title.textContent = "/" + prefix;
-      const meta = document.createElement("span");
-      meta.className = "overview-band-meta";
-      meta.textContent = formatNumber(total) + " sous-réseau" + (total > 1 ? "x" : "") +
-        " · " + formatNumber(2 ** (32 - prefix)) + " IP / sous-réseau";
-      const counter = document.createElement("span");
-      counter.className = "overview-band-stat";
-      counter.textContent = aggregated
-        ? "Regroupés par " + formatNumber(grouped) + " (ouvrir pour le détail)"
-        : formatNumber(total) + " CIDR lisibles";
+      title.className = "mask-title";
+      title.textContent = "Masque /" + prefix;
+      const info = document.createElement("span");
+      info.className = "mask-info";
+      info.textContent = formatNumber(count) +
+        " sous-réseau" + (count > 1 ? "x" : "") +
+        " · " + formatNumber(size) + " IP / sous-réseau";
+      heading.append(title, info);
+      block.append(heading);
 
-      heading.append(title, meta, counter);
-      const track = document.createElement("div");
-      track.className = "overview-track";
-      track.setAttribute("role", "group");
-      track.setAttribute("aria-label", "Cartes /" + prefix);
+      if (count > MAX_SUBNETS_PER_MASK) {
+        const limit = document.createElement("div");
+        limit.className = "mask-limit";
+        const note = document.createElement("p");
+        note.textContent = formatNumber(count) + " sous-réseaux /" + prefix +
+          " : trop nombreux pour être affichés ensemble. La grille paginée permet de tous les consulter.";
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn small";
+        button.textContent = "Voir les /" + prefix + " dans la grille";
+        button.addEventListener("click", () => {
+          state.gridPrefix = prefix;
+          state.gridPage = 0;
+          state.gridFilter = "all";
+          $("statusFilter").value = "all";
+          render();
+          showMode("grid");
+        });
+        limit.append(note, button);
+        block.append(limit);
+        fragment.append(block);
+        continue;
+      }
 
+      const grid = document.createElement("div");
+      grid.className = "network-grid";
+      grid.setAttribute("role", "group");
+      grid.setAttribute("aria-label", "Réseaux /" + prefix);
       let hidden = 0;
-      for (let i = 0; i < bucketCount; i++) {
-        const bucket = core.cidrFromStart(parent.start + i * subnetSize, groupingPrefix);
-        if (state.hiddenCards.has(hiddenCardKey(prefix, bucket.cidr))) {
+      for (let i = 0; i < count; i++) {
+        const net = core.cidrFromStart(parent.start + i * size, prefix);
+        if (state.hiddenCards.has(hiddenCardKey(prefix, net.cidr))) {
           hidden++;
           continue;
         }
-        track.append(createOverviewCard(bucket, prefix, aggregated, grouped));
+        grid.append(createOverviewCard(net, prefix));
       }
       if (hidden) {
-        const hiddenCounter = document.createElement("span");
-        hiddenCounter.className = "overview-band-hidden";
-        hiddenCounter.textContent = hidden + " bloc(s) masqué(s) dans ce niveau (réaffichage en haut)";
-        heading.append(hiddenCounter);
+        const hiddenText = document.createElement("p");
+        hiddenText.className = "mask-hidden-count";
+        hiddenText.textContent = hidden + " sous-réseau(x) masqué(s) à ce masque.";
+        block.append(hiddenText);
       }
-      if (!track.children.length) {
+      if (!grid.children.length) {
         const empty = document.createElement("p");
-        empty.className = "overview-empty";
-        empty.textContent = "Tous les blocs de ce niveau sont masqués.";
-        track.append(empty);
+        empty.className = "mask-empty";
+        empty.textContent = "Tous les sous-réseaux de ce masque sont masqués.";
+        grid.append(empty);
       }
-      band.append(heading, track);
-      fragment.append(band);
+      block.append(grid);
+      fragment.append(block);
     }
 
     if (!visibleBands) {
-      const empty = document.createElement("p");
-      empty.className = "overview-empty";
-      empty.textContent = "Aucun masque affiché. Utilisez « Choisir les masques » pour en réactiver.";
-      fragment.append(empty);
+      const note = document.createElement("p");
+      note.className = "mask-empty";
+      note.textContent = "Aucun masque affiché. Cochez les masques souhaités ci-dessus.";
+      fragment.append(note);
     }
     container.append(fragment);
   }
@@ -851,7 +870,8 @@
     });
     $("overviewMode").addEventListener("click", () => showMode("overview"));
     $("showAllMasks").addEventListener("click", () => {
-      setVisibleMasks(Array.from({ length: 33 - state.active.prefix }, (_, i) => state.active.prefix + i));
+      const start = firstMask(state.active);
+      setVisibleMasks(Array.from({ length: 33 - start }, (_, i) => start + i));
     });
     $("showDefaultMasks").addEventListener("click", () => {
       setVisibleMasks(defaultVisibleMasks(state.active));
