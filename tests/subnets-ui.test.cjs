@@ -21,7 +21,7 @@ class Element {
     this.events = new Map();
     this.dataset = {};
     this.attrs = {};
-    this.style = {};
+    this.style = { setProperty(name, value) { this[name] = value; } };
     this.hidden = false;
     this.disabled = false;
     this.checked = false;
@@ -148,253 +148,203 @@ function flatten(root) {
   return [root, ...root.children.flatMap(flatten)];
 }
 
-test("Chargement : CIDR canonique et six niveaux lisibles par défaut", () => {
+test("Présentation d'origine : sections par masque et cartes CIDR lisibles", () => {
   const page = createPage();
-  page.elements.networkInput.value = "10.0.0.13/24";
+  page.elements.networkInput.value = "10.105.64.12/19";
   submit(page.elements.networkForm);
-  assert.equal(page.elements.activeNetwork.textContent, "10.0.0.0/24");
-  assert.equal(page.elements.metricTotal.textContent, "256");
-  assert.equal(page.elements.metricFree.textContent, "256");
-  assert.equal(page.elements.workspace.hidden, false);
-  assert.ok(findNode(page, "10.0.0.0/24"));
-  assert.ok(findNode(page, "10.0.0.0/25"));
-  assert.equal(page.elements.maskOverview.children.length, 6); // /24 à /29
+  assert.equal(page.elements.activeNetwork.textContent, "10.105.64.0/19");
+  assert.equal(page.elements.metricTotal.textContent, "8 192".replace(/\u202f/g, " ")); // Locale FR
   assert.equal(page.elements.overviewView.hidden, false);
-  assert.equal(page.elements.visibleMaskCount.textContent, "6 / 9 niveaux");
-  assert.ok(page.store.getItem("toolbox-subnets-v2"));
+  const bands = page.elements.maskOverview.children;
+  assert.equal(bands.length, 10); // /20 → /29 : comportement d'origine
+  assert.deepEqual(bands.map(band => band.dataset.prefix),
+    ["20","21","22","23","24","25","26","27","28","29"]);
+  assert.deepEqual(bands.map(band => band.children[1].children.length),
+    [2,4,8,16,32,64,128,256,512,1024]);
+  const mask24 = bands[4];
+  assert.equal(mask24.children[0].children[0].textContent, "Masque /24");
+  const first = mask24.children[1].children[0];
+  const last = mask24.children[1].children.at(-1);
+  assert.equal(first.children[0].children[1].textContent, "10.105.64.0/24");
+  assert.equal(last.children[0].children[1].textContent, "10.105.95.0/24");
+  assert.equal(first.children[0].children[0].type, "checkbox");
+  assert.equal(first.className, "network-item");
+  assert.equal(page.elements.visibleMaskCount.textContent, "10 / 13 niveaux");
+  assert.equal(page.store.getItem("toolbox-subnets-v2") !== null, true);
 });
 
-test("Réservation immédiate sans dialogue ni métadonnées, même si la saisie change", () => {
+test("Réservation rapide : coche, pas de dialogue, héritage et inventaire correct", () => {
   const page = createPage();
-  page.elements.networkInput.value = "10.0.0.0/24";
+  page.elements.networkInput.value = "10.0.0.12/24";
   submit(page.elements.networkForm);
   page.elements.networkInput.value = "192.0.2.0/24";
   page.elements.networkInput.dispatch("input");
-  click(findNode(page, "10.0.0.0/24"));
-  assert.equal(page.elements.allocationDialog.open, false);
-  assert.equal(page.elements.metricOccupied.textContent, "256");
-  const saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
-  assert.equal(saved.active, "10.0.0.0/24");
-  assert.equal(saved.networks["192.0.2.0/24"], undefined);
-  const allocation = saved.networks["10.0.0.0/24"].allocations[0];
-  assert.equal(allocation.cidr, "10.0.0.0/24");
-  assert.equal(allocation.name, "");
-  assert.equal(allocation.description, "");
-  assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "reserved");
-  assert.equal(findNode(page, "10.0.0.0/25").parent.dataset.status, "inherited");
-});
-
-test("Libération sans formulaire : occupation recalculée et inventaire vidé", () => {
-  const page = createPage();
-  page.elements.networkInput.value = "10.0.0.0/24";
-  submit(page.elements.networkForm);
-  click(findNode(page, "10.0.0.0/24"));
-  assert.equal(page.elements.metricOccupied.textContent, "256");
-  const reserved = findNode(page, "10.0.0.0/24").parent;
-  const release = reserved.children[1].children[0];
-  assert.equal(release.textContent, "Libérer");
-  click(release);
-  assert.equal(page.elements.allocationDialog.open, false);
-  assert.equal(page.elements.metricOccupied.textContent, "0");
-  assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "free");
-  const stored = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
-  assert.equal(stored.networks["10.0.0.0/24"].allocations.length, 0);
-});
-
-test("Détails optionnels : réserver avec description, puis modifier une réservation directe", () => {
-  const page = createPage();
-  page.elements.networkInput.value = "10.0.0.0/24";
-  submit(page.elements.networkForm);
-  const emptyCard = findNode(page, "10.0.0.0/24").parent;
-  const withDetails = emptyCard.children[1].children[0];
-  assert.equal(withDetails.textContent, "Avec détails");
-  click(withDetails);
-  assert.equal(page.elements.allocationDialog.open, true);
-  page.elements.allocationName.value = "Service API";
-  page.elements.allocationDescription.value = "Plage réservée au service";
-  submit(page.elements.allocationForm);
-  let saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
-  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "Service API");
-  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].description, "Plage réservée au service");
-
-  click(findNode(page, "10.0.0.0/24")); // CIDR réservé : éditer les détails.
-  assert.equal(page.elements.allocationDialog.open, true);
-  assert.equal(page.elements.allocationName.value, "Service API");
-  page.elements.allocationName.value = "Service API v2";
-  submit(page.elements.allocationForm);
-  saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
-  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "Service API v2");
-});
-
-test("Libérer une réservation annotée demande confirmation, annuler conserve les données", () => {
-  const page = createPage();
-  page.elements.networkInput.value = "10.0.0.0/24";
-  submit(page.elements.networkForm);
-  click(findNode(page, "10.0.0.0/24").parent.children[1].children[0]); // Avec détails
-  page.elements.allocationName.value = "Production";
-  submit(page.elements.allocationForm);
-  page.window.confirm = () => false;
-  click(findNode(page, "10.0.0.0/24").parent.children[1].children[0]); // Libérer
-  assert.equal(page.elements.metricOccupied.textContent, "256");
-  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["10.0.0.0/24"].allocations[0].name, "Production");
-  page.window.confirm = () => true;
-  click(findNode(page, "10.0.0.0/24").parent.children[1].children[0]);
-  assert.equal(page.elements.metricOccupied.textContent, "0");
-});
-
-test("Grille : la case réserve et libère sans ouvrir de dialogue, les détails restent accessibles", () => {
-  const page = createPage();
-  page.elements.networkInput.value = "192.0.2.0/24";
-  submit(page.elements.networkForm);
-  click(page.elements.gridMode);
-  const firstCard = findNode(page, "192.0.2.0/26");
-  assert.ok(firstCard); // La grille démarre au masque /26.
-  const checkbox = firstCard.children[0].children[0];
-  assert.equal(checkbox.checked, false);
+  const card = findNode(page, "10.0.0.0/25");
+  assert.ok(card);
+  const checkbox = card.children[0].children[0];
   checkbox.checked = true;
   checkbox.dispatch("change");
   assert.equal(page.elements.allocationDialog.open, false);
-  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["192.0.2.0/24"].allocations.length, 1);
+  assert.equal(page.elements.metricOccupied.textContent, "128");
+  const saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
+  assert.equal(saved.active, "10.0.0.0/24");
+  assert.equal(saved.networks["192.0.2.0/24"], undefined);
+  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "");
+  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].description, "");
+  assert.equal(findNode(page, "10.0.0.0/25").dataset.status, "reserved");
+  assert.equal(findNode(page, "10.0.0.0/26").dataset.status, "inherited");
+  assert.equal(findNode(page, "10.0.0.0/26").children[0].children[0].disabled, true);
+});
 
-  const reserved = findNode(page, "192.0.2.0/26");
-  const checkAgain = reserved.children[0].children[0];
-  assert.equal(checkAgain.checked, true);
-  checkAgain.checked = false;
-  checkAgain.dispatch("change");
-  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["192.0.2.0/24"].allocations.length, 0);
+test("Libérer par la case : recalcul du réseau et conservation de la présentation", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.0.0.0/24";
+  submit(page.elements.networkForm);
+  let checkbox = findNode(page, "10.0.0.0/25").children[0].children[0];
+  checkbox.checked = true;
+  checkbox.dispatch("change");
+  assert.equal(page.elements.metricOccupied.textContent, "128");
+  checkbox = findNode(page, "10.0.0.0/25").children[0].children[0];
+  assert.equal(checkbox.checked, true);
+  checkbox.checked = false;
+  checkbox.dispatch("change");
+  assert.equal(page.elements.metricOccupied.textContent, "0");
+  assert.equal(findNode(page, "10.0.0.0/25").dataset.status, "free");
+});
 
-  const free = findNode(page, "192.0.2.0/26");
-  const buttons = free.children[2].children[1];
-  assert.equal(buttons.children[0].textContent, "Réserver");
-  assert.equal(buttons.children[1].textContent, "Avec détails");
-  click(buttons.children[1]);
+test("Détails facultatifs : la case ne les exige pas, le menu les propose", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.0.0.0/24";
+  submit(page.elements.networkForm);
+  const free = findNode(page, "10.0.0.0/25");
+  const details = free.children.at(-1).children[0];
+  assert.equal(details.textContent, "⋯");
+  click(details);
   assert.equal(page.elements.allocationDialog.open, true);
+  page.elements.allocationName.value = "Production";
+  page.elements.allocationDescription.value = "Cluster applicatif";
+  submit(page.elements.allocationForm);
+  const saved = JSON.parse(page.store.getItem("toolbox-subnets-v2"));
+  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].name, "Production");
+  assert.equal(saved.networks["10.0.0.0/24"].allocations[0].description, "Cluster applicatif");
+  assert.equal(findNode(page, "10.0.0.0/25").dataset.status, "reserved");
+  click(findNode(page, "10.0.0.0/25").children.at(-1).children[0]);
+  assert.equal(page.elements.allocationDialog.open, true);
+  assert.equal(page.elements.allocationName.value, "Production");
 });
 
-test("Régression capture : /19 affiche les 32 CIDR /24 entièrement lisibles", () => {
+test("Réservation annotée : annuler la libération préserve les détails", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.0.0.0/24";
+  submit(page.elements.networkForm);
+  click(findNode(page, "10.0.0.0/25").children.at(-1).children[0]);
+  page.elements.allocationName.value = "Projet";
+  submit(page.elements.allocationForm);
+  page.window.confirm = () => false;
+  const checkbox = findNode(page, "10.0.0.0/25").children[0].children[0];
+  checkbox.checked = false;
+  checkbox.dispatch("change");
+  assert.equal(page.elements.metricOccupied.textContent, "128");
+  assert.equal(checkbox.checked, true);
+});
+
+test("Filtres d'origine : masquer un masque entier, puis réafficher", () => {
   const page = createPage();
   page.elements.networkInput.value = "10.105.64.0/19";
   submit(page.elements.networkForm);
-  const bands = page.elements.maskOverview.children;
-  assert.equal(bands.length, 6); // /19 à /24 affichés immédiatement
-  const counts = bands.map(b => b.children[1].children.length);
-  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32]);
-  const cards = bands[5].children[1].children;
-  assert.equal(cards[0].children[0].children[0].textContent, "10.105.64.0/24");
-  assert.equal(cards[31].children[0].children[0].textContent, "10.105.95.0/24");
-  assert.ok(cards.every(card => card.children[0].children[0].className === "overview-card-cidr"));
-  assert.ok(cards.every(card => card.children[0].children[0].textContent.includes("/24")));
-  assert.doesNotMatch(html, /id="treeView"|id="hierarchyTree"/);
-  assert.doesNotMatch(uiSource, /state\.expanded|renderTree|createTreeRow/);
-});
-
-test("Masquer un niveau et un CIDR, puis restaurer sans effacer la réservation", () => {
-  const page = createPage();
-  page.elements.networkInput.value = "10.105.64.0/19";
-  submit(page.elements.networkForm);
-
-  // Les filtres de niveaux s'appliquent indépendamment des réservations.
-  const mask23 = page.elements.maskFilterList.children[4].children[0];
-  assert.equal(mask23.checked, true);
-  mask23.checked = false;
-  mask23.dispatch("change");
-  assert.equal(page.elements.maskOverview.children.length, 5);
-  assert.ok(page.elements.maskOverview.children.every(band => band.dataset.prefix !== "23"));
-
-  const band24 = page.elements.maskOverview.children.at(-1);
-  const firstCard = band24.children[1].children[0];
-  const hide = firstCard.children[1].children.at(-1);
-  assert.equal(hide.textContent, "Masquer");
-  click(hide);
-  assert.equal(band24.children[1].children.length, 32); // Ancien DOM hors vue
-  const current24 = page.elements.maskOverview.children.at(-1);
-  assert.equal(current24.children[1].children.length, 31);
-  assert.equal(findNode(page, "10.105.64.0/24"), undefined);
-  assert.equal(page.elements.restoreHidden.hidden, false);
-  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["10.105.64.0/19"].allocations.length, 0);
-  click(page.elements.restoreHidden);
-  assert.equal(page.elements.maskOverview.children.at(-1).children[1].children.length, 32);
-  assert.ok(findNode(page, "10.105.64.0/24"));
-});
-
-test("Les préférences de visibilité sont conservées par réseau, hors inventaire", () => {
-  const page = createPage();
-  page.elements.networkInput.value = "10.105.64.0/19";
-  submit(page.elements.networkForm);
-  click(page.elements.hideAllMasks);
-  assert.equal(page.elements.maskOverview.children.length, 1); // Message aucun masque
-  assert.equal(page.elements.visibleMaskCount.textContent, "0 / 14 niveaux");
+  assert.equal(page.elements.maskFilterList.children.length, 13);
+  const mask24 = page.elements.maskFilterList.children[4].children[0];
+  assert.equal(mask24.checked, true);
+  mask24.checked = false;
+  mask24.dispatch("change");
+  assert.equal(page.elements.maskOverview.children.length, 9);
+  assert.ok(page.elements.maskOverview.children.every(block => block.dataset.prefix !== "24"));
   click(page.elements.showDefaultMasks);
-  assert.equal(page.elements.maskOverview.children.length, 6);
-  const preference = page.store.getItem("toolbox-subnets-view-10.105.64.0/19");
-  assert.equal(JSON.parse(preference).masks.length, 6);
-  const reloaded = createPage(Object.fromEntries(page.store.values.entries()));
-  assert.equal(reloaded.elements.maskOverview.children.length, 6);
-  assert.equal(reloaded.elements.visibleMaskCount.textContent, "6 / 14 niveaux");
+  assert.equal(page.elements.maskOverview.children.length, 10);
+  click(page.elements.hideAllMasks);
+  assert.equal(page.elements.maskOverview.children.length, 1);
+  click(page.elements.showDefaultMasks);
+  assert.equal(page.elements.maskOverview.children.length, 10);
 });
 
-test("Au-delà de 128 CIDR : regroupements nommés avec accès au détail", () => {
+test("Masquage individuel : ne libère pas le CIDR et reste réversible", () => {
   const page = createPage();
-  page.elements.networkInput.value = "10.105.196.0/22";
+  page.elements.networkInput.value = "10.0.0.0/24";
+  submit(page.elements.networkForm);
+  let card = findNode(page, "10.0.0.0/25");
+  const checkbox = card.children[0].children[0];
+  checkbox.checked = true;
+  checkbox.dispatch("change");
+  card = findNode(page, "10.0.0.0/25");
+  const hide = card.children.at(-1).children.at(-1);
+  assert.equal(hide.textContent, "×");
+  click(hide);
+  assert.equal(findNode(page, "10.0.0.0/25"), undefined);
+  assert.equal(page.elements.restoreHidden.hidden, false);
+  assert.equal(page.elements.metricOccupied.textContent, "128");
+  assert.equal(JSON.parse(page.store.getItem("toolbox-subnets-v2")).networks["10.0.0.0/24"].allocations.length, 1);
+  click(page.elements.restoreHidden);
+  assert.equal(findNode(page, "10.0.0.0/25").dataset.status, "reserved");
+});
+
+test("Grands réseaux : pas de blocs anonymes ; notice explicite au-delà de 1024", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.105.64.0/19";
   submit(page.elements.networkForm);
   click(page.elements.showAllMasks);
-  const bands = page.elements.maskOverview.children;
-  assert.equal(bands.length, 11); // /22 à /32
-  const counts = bands.map(band => band.children[1].children.length);
-  assert.deepEqual(counts, [1, 2, 4, 8, 16, 32, 64, 128, 64, 64, 64]);
-  const dense = bands.at(-1);
-  const first = dense.children[1].children[0].children[0]; // Bouton principal
-  assert.equal(first.children[0].className, "overview-card-cidr");
-  assert.match(first.children[1].textContent, /sous-réseaux \/32/);
-  click(first);
-  assert.equal(page.elements.overviewView.hidden, true);
+  assert.equal(page.elements.maskOverview.children.length, 13);
+  const mask29 = page.elements.maskOverview.children.find(b => b.dataset.prefix === "29");
+  assert.equal(mask29.children[1].children.length, 1024);
+  const mask30 = page.elements.maskOverview.children.find(b => b.dataset.prefix === "30");
+  assert.match(mask30.children[1].children[0].textContent, /trop nombreux/);
+  const jump = mask30.children[1].children[1];
+  assert.match(jump.textContent, /Voir les \/30/);
+  click(jump);
   assert.equal(page.elements.gridView.hidden, false);
-  assert.equal(page.elements.maskSelect.value, "32");
-  assert.equal(page.elements.pageInfo.textContent.includes("Page 1"), true);
-  assert.ok(findNode(page, "10.105.196.0/32"));
+  assert.equal(page.elements.maskSelect.value, "30");
+  assert.ok(findNode(page, "10.105.64.0/30"));
 });
 
-test("Réseau /0 : les 33 niveaux restent disponibles avec un plafond de 128 cartes", () => {
-  const page = createPage();
-  page.elements.networkInput.value = "10.105.196.0/0";
-  submit(page.elements.networkForm);
-  assert.equal(page.elements.maskOverview.children.length, 6);
-  click(page.elements.showAllMasks);
-  const bands = page.elements.maskOverview.children;
-  assert.equal(bands.length, 33);
-  assert.ok(bands.every(band => band.children[1].children.length <= 128));
-  assert.equal(page.elements.activeNetwork.textContent, "0.0.0.0/0");
-});
-
-test("Grille : préfixes /31 /32 et recherche IP vers la bonne page", () => {
+test("Grille détaillée : sélection /31 et recherche d'une IP /32", () => {
   const page = createPage();
   page.elements.networkInput.value = "192.0.2.0/24";
   submit(page.elements.networkForm);
   click(page.elements.gridMode);
   page.elements.maskSelect.value = "31";
   page.elements.maskSelect.dispatch("change");
-  assert.equal(page.elements.pageInfo.textContent.includes("128 sous-réseaux"), true);
-  assert.equal(page.elements.nextPage.disabled, false);
+  assert.match(page.elements.pageInfo.textContent, /128 sous-réseaux/);
   click(page.elements.nextPage);
-  assert.equal(page.elements.pageInfo.textContent.includes("Page 2"), true);
+  assert.match(page.elements.pageInfo.textContent, /Page 2/);
   page.elements.searchInput.value = "192.0.2.255";
   submit(page.elements.searchForm);
   assert.equal(page.elements.maskSelect.value, "32");
   assert.ok(findNode(page, "192.0.2.255/32"));
 });
 
-test("Migration ancienne : l'occupation hiérarchique reste exacte", () => {
-  const initial = {
+test("Migration ancienne : l'occupation partielle est conservée", () => {
+  const old = {
     "snet_calc_inventory_10.0.0.0/24": JSON.stringify({
       "10.0.0.0/26": "taken", "10.0.0.0/25": "taken",
       "10.0.0.128/26": "taken"
     }),
     "snet_calc_last_active_network": "10.0.0.0/24"
   };
-  const page = createPage(initial);
+  const page = createPage(old);
   assert.equal(page.elements.metricOccupied.textContent, "192");
   assert.equal(page.elements.overlapNotice.hidden, false);
-  assert.equal(findNode(page, "10.0.0.0/24").parent.dataset.status, "partial");
-  assert.equal(page.store.getItem("snet_calc_inventory_10.0.0.0/24"),
-    initial["snet_calc_inventory_10.0.0.0/24"]);
+  assert.equal(findNode(page, "10.0.0.0/25").dataset.status, "reserved");
+  assert.equal(findNode(page, "10.0.0.128/25").dataset.status, "partial");
+  assert.equal(page.store.getItem("snet_calc_inventory_10.0.0.0/24"), old["snet_calc_inventory_10.0.0.0/24"]);
+});
+
+test("Rechargement : préférences d'affichage séparées de l'inventaire", () => {
+  const page = createPage();
+  page.elements.networkInput.value = "10.0.0.0/24";
+  submit(page.elements.networkForm);
+  const mask27 = page.elements.maskFilterList.children[2].children[0];
+  mask27.checked = false;
+  mask27.dispatch("change");
+  const reloaded = createPage(Object.fromEntries(page.store.values.entries()));
+  assert.equal(reloaded.elements.maskOverview.children.length, 5);
+  assert.equal(reloaded.elements.visibleMaskCount.textContent, "5 / 8 niveaux");
 });
