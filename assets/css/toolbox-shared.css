@@ -1,0 +1,18 @@
+/* Toolbox Minimal Premium shared primitives. Loaded before tool-specific styles. */
+:root{color-scheme:light;--bg:#f5f7fc;--surface:#fff;--soft:#f7f8fc;--text:#182139;--muted:#66728d;--border:#e3e8f2;--accent:#5253c9;--shadow:0 22px 70px rgba(37,49,89,.09)}
+html[data-theme=dark]{color-scheme:dark;--bg:#0b1120;--surface:#141f34;--soft:#1a2940;--text:#edf1fb;--muted:#a1afc9;--border:#2a3a56;--accent:#8988f5;--shadow:0 24px 70px rgba(0,0,0,.28)}
+*{box-sizing:border-box}
+.nav{max-width:1200px;margin:auto;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:var(--muted);text-decoration:none}
+.nav strong{display:flex;align-items:center;gap:9px}
+.mark{display:inline-grid;place-items:center;background:linear-gradient(145deg,#6265d8,#3936a8);color:#fff;border-radius:11px;width:36px;height:36px}
+.nav button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:11px;width:40px;height:40px}
+.shell{max-width:1160px;margin:auto;padding:16px 22px 70px}
+.hero{text-align:center;padding:26px 0 34px}
+.eyebrow{display:inline-block;border:1px solid var(--border);background:var(--surface);border-radius:40px;padding:5px 13px;font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.hero h1{font-size:clamp(28px,4vw,43px);line-height:1.18;letter-spacing:-.04em;margin:18px 0 10px}
+.hero p,.muted,.foot{color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;box-shadow:var(--shadow)}
+h2{font-size:18px;margin:0 0 3px;letter-spacing:-.02em}
+.muted{font-size:13px;margin:0 0 22px}
+.foot{text-align:center;font-size:12px;margin-top:26px}
