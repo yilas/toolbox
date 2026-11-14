@@ -41,7 +41,7 @@ La vérification est également lancée par GitHub Actions sur les pull requests
 | **Clean Text** | Nettoie et normalise du texte en préservant les zones Markdown sensibles. Propose conversion ASCII, simplification stylistique, linter de formulations répétitives, statistiques, chargement/téléchargement de fichiers et diff unifié façon Linux pour visualiser les lignes ajoutées ou supprimées. | [`clean-text`](tools/clean-text.html) |
 | **Décodeur & Analyseur JWT** | Décode les JWT compacts signés, distingue décodage et vérification, valide les claims temporels et règles (`iss`, `aud`, `azp`, algorithme), vérifie HS/RS/PS/ES avec Web Crypto (clé publique PEM ou JWK), propose une chronologie et un historique temporaire **sans stockage de JWT ni de secrets**. | [`decodeur-analyseur-jwt`](tools/decodeur_analyseur_jwt_standalone.html) |
 | **Générateur de mot de passe** | Génère localement des mots de passe et des phrases de passe (FR/EN) avec l’API Web Crypto, tirages uniformes, préréglages, contraintes de caractères, estimation d’entropie et génération multiple. | [`random-numbers-generator`](tools/random-numbers-generator.html) |
-| **Calculateur de sous-réseaux** | Décompose un réseau CIDR en sous-réseaux, affiche les bornes d'adresses et le nombre d'IP, filtre les tailles de masque et maintient un inventaire persistant des sous-réseaux utilisés par réseau parent. | [`subnets-calculator`](tools/subnets_calculator.html) |
+| **Calculateur de sous-réseaux** | Vérifie et normalise les CIDR IPv4 de `/0` à `/32`, visualise l'occupation dans des cartes CIDR lisibles par masque, avec filtres d'affichage et une grille détaillée paginée, gère les réservations annotées, calcule l'union exacte des plages et exporte les inventaires JSON/CSV. | [`subnets-calculator`](tools/subnets_calculator.html) |
 | **Scratchpad** | Notes persistantes par défaut (IndexedDB), blocs compacts/standards/larges, catégories visuelles personnalisables, tags, réorganisation, corbeille restaurable, raccourcis, mode jour/nuit, import/export JSON. | [`scratchpad`](tools/scratchpad.html) |
 | **Calculateur de temps de travail** | Permet de saisir plusieurs plages entrée/sortie, de les réordonner par glisser-déposer, de calculer automatiquement le temps total travaillé et de conserver les plages localement. | [`worktime-calculator`](tools/worktime-calculator.html) |
 
@@ -97,6 +97,27 @@ Pour exécuter les tests automatisés (sans dépendances tierces) :
 
 ```bash
 node --test tests/jwt-analyzer.test.cjs
+```
+
+## 🌐 Calculateur IPv4 : vue historique et moteur fiabilisé
+
+La présentation **par masque de l'outil d'origine** reste la vue principale : un bloc `Masque /n`, suivi d'une **grille de CIDR complets avec cases à cocher**, sans arborescence à ouvrir, sans cartes géantes et sans microcases anonymes. L'espace de visualisation occupe toute la largeur de la page.
+
+- **Filtrage direct des masques** : une ligne de cases à cocher visible au-dessus des sections permet de montrer ou cacher chaque niveau. Par défaut, tous les masques enfants utilisables jusqu'à `/30` sont affichés, tant que le niveau contient au plus 1 024 CIDR (comme dans l'ancien outil). Les masques `/31` et `/32` restent accessibles.
+- **Masquage visuel ponctuel** : le bouton `×` masque un CIDR dans un niveau donné ; « Réafficher les sous-réseaux masqués » le restaure. Masquer ne libère jamais une réservation. Les filtres sont mémorisés **par réseau parent**, indépendamment de l'inventaire. Les préférences de l'ancienne V2 compacte ne forcent pas un nouveau mode d'affichage.
+- **Réservation rapide** : une coche réserve immédiatement le sous-réseau, sans formulaire, nom ni description. Décocher libère la réservation (confirmation seulement si des annotations vont être supprimées). Le bouton `⋯` sert à ajouter ou modifier des détails facultatifs.
+- **États de couverture** : réservation directe avec bordure marquée et teinte propre au CIDR ; descendant hérité en pointillés de la même teinte ; parent partiel en orange ; parent entièrement couvert en gris. Le calcul de l'occupation est effectué par **union des plages IPv4** sans double comptage.
+- **Grands réseaux** : si un masque comporte plus de **1 024** sous-réseaux, la section l'indique explicitement et propose la grille paginée (64 par page) pour une consultation exhaustive, sans geler le navigateur. Aucune sous-partie n'est remplacée par un bloc sans CIDR.
+- **IPv4 fiables** : validation stricte des adresses et des CIDR `/0` à `/32`, normalisation du réseau parent et prise en charge des masques `/31` et `/32` via le moteur et la grille détaillée.
+- **Persistance** : les anciens `snet_calc_inventory_*` sont copiés vers le format V2 sans suppression des clés originales. Les réservations historiques imbriquées restent présentes, tandis que les nouvelles réservations chevauchantes sont refusées.
+- **Sauvegarde** : export JSON de tous les inventaires (import par fusion) et CSV compatible Excel du réseau actif.
+
+Aucun framework ni service réseau n'est requis. Les calculs s'appliquent aux **adresses IPv4 totales**, pas uniquement aux adresses d'hôtes utilisables.
+
+Tests :
+
+```bash
+node --test tests/subnets-core.test.cjs tests/subnets-ui.test.cjs
 ```
 
 ## 🏗️ Structure

@@ -1,622 +1,244 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-      <link rel="icon" href="../favicon.ico" type="image/x-icon" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Subnets calculator</title>
-    <style>
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-          Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-        background-color: #f4f7f9;
-        display: flex;
-        justify-content: center;
-      }
-      .container {
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        width: 95%;
-        max-width: 1800px;
-      }
-      .toolbar {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #eee;
-      }
-      .input-group {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-      input[type="text"],
-      select {
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-        font-family: monospace;
-      }
-      input[type="text"] {
-        flex: 2;
-      }
-      select {
-        flex: 1;
-        background-color: #fff;
-        cursor: pointer;
-      }
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fc">
+  <meta name="description" content="Calculateur et inventaire IPv4 avec occupation hiérarchique, grille CIDR et export.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="./subnets-calculator.css">
+  <title>Calculateur de sous-réseaux IPv4 — Toolbox</title>
+  <script src="./subnets-core.js" defer></script>
+  <script src="./subnets-storage.js" defer></script>
+  <script src="./subnets-ui.js" defer></script>
+</head>
+<body>
+  <svg width="0" height="0" class="sprite-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-network" viewBox="0 0 24 24">
+      <rect x="9" y="2" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="2" y="16" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="16" y="16" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M12 8v4M5 16v-4h14v4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+      <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.5 1.5m11.2 11.2 1.5 1.5M19.1 4.9l-1.5 1.5M6.4 17.6l-1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
 
-      button {
-        padding: 10px 25px;
-        background-color: #3498db;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        white-space: nowrap;
-      }
-      button:hover {
-        background-color: #2980b9;
-      }
-      button.btn-reset {
-        background-color: #e74c3c;
-      }
-
-      /* Filtres de masques */
-      .filter-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        font-size: 0.9em;
-        background: #fff;
-        padding: 10px;
-        border-radius: 4px;
-        border: 1px solid #eee;
-      }
-      .filter-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        background: #ececec;
-        padding: 4px 8px;
-        border-radius: 3px;
-        cursor: pointer;
-      }
-
-      .mask-block {
-        margin-bottom: 25px;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
-        overflow: hidden;
-      }
-      .mask-block.hidden {
-        display: none;
-      }
-
-      .mask-header {
-        background: #f8f9fa;
-        padding: 10px 20px;
-        font-weight: bold;
-        border-bottom: 1px solid #e0e0e0;
-        display: flex;
-        justify-content: space-between;
-      }
-      .mask-info {
-        font-weight: normal;
-        font-size: 0.85em;
-        color: #666;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 8px;
-        padding: 20px;
-      }
-      .network-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        font-family: monospace;
-        font-size: 0.9em;
-        padding: 8px;
-        background: #ffffff;
-        border-radius: 4px;
-        border: 1px solid #dee2e6;
-        color: #212529;
-        position: relative;
-        transition: all 0.15s ease-in-out;
-      }
-      .network-item-content {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      /* 1. MASTER : Réseau directement coché */
-      .network-item.master-checked {
-        border: 2px solid #111 !important;
-        font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-      }
-
-      /* 2. ENFANT (Hérité) : Inclus dans un Master coché */
-      .network-item.inherited {
-        border: 1px dashed #555 !important;
-        opacity: 0.65;
-      }
-
-      /* 3. PARENT PARTIEL : Contient au moins un enfant coché (< 100%) */
-      .network-item.partially-occupied {
-        border: 1px dashed #e67e22 !important;
-        background-color: #fef5e7 !important;
-      }
-
-      /* 4. PARENT COMPLET : 100% de ses sous-réseaux sont occupés */
-      .network-item.fully-occupied {
-        border: 1px solid #7f8c8d !important;
-        background-color: #eaeded !important;
-        opacity: 0.85;
-      }
-
-      .partial-badge {
-        font-size: 0.7em;
-        background: #e67e22;
-        color: #fff;
-        padding: 1px 6px;
-        border-radius: 3px;
-        font-weight: bold;
-        white-space: nowrap;
-      }
-
-      .full-badge {
-        font-size: 0.7em;
-        background: #7f8c8d;
-        color: #fff;
-        padding: 1px 6px;
-        border-radius: 3px;
-        font-weight: bold;
-        white-space: nowrap;
-      }
-
-      /* EFFETS DE SURVOL ET HIGHLIGHT */
-      .network-item.highlight-target {
-        outline: 3px solid #2980b9 !important;
-        transform: scale(1.02);
-        z-index: 10;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      }
-
-      .network-item.highlight-related {
-        outline: 3px dashed #e74c3c !important;
-        transform: scale(1.02);
-        z-index: 9;
-        box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
-      }
-
-      .error {
-        color: #e74c3c;
-        margin-bottom: 15px;
-        font-weight: bold;
-      }
-      .network-summary {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        padding: 12px 16px;
-        background: #eaf4fb;
-        border: 1px solid #aed6f1;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        font-family: monospace;
-      }
-      .summary-item {
-        font-size: 0.95em;
-        color: #1a5276;
-      }
-      .summary-item strong {
-        color: #333;
-      }
-      /* Lien de retour dans le conteneur pour préserver le layout flex du body */
-      .toolbox-return-nav { margin: 0 0 20px; }
-      .toolbox-return-nav a { display: inline-block; color: #475569; font-size: 14px; font-weight: 650; text-decoration: none; }
-      .toolbox-return-nav a:hover { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; }
-      .toolbox-return-nav a:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; border-radius: 3px; }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <nav class="toolbox-return-nav" aria-label="Navigation">
-        <a href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a>
-      </nav>
-      <div class="toolbar">
-        <div class="input-group">
-          <select id="savedNetworks" onchange="loadFromHistory(this.value)">
-            <option value="">-- Réseaux mémorisés --</option>
-          </select>
-          <input
-            type="text"
-            id="networkInput"
-            placeholder="Ex: 10.105.196.0/22"
-          />
-          <button onclick="decompose()">Décomposer</button>
-          <button onclick="clearCurrentInventory()" class="btn-reset">
-            Reset ce réseau
-          </button>
-        </div>
-
-        <div id="filterContainer" class="filter-group">
-          <strong>Afficher les masques :</strong>
-        </div>
+  <nav class="site-nav" aria-label="Navigation principale">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <a class="return-link" href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a>
+        <span class="separator" aria-hidden="true"></span>
+        <span class="brand">
+          <span class="brand-icon" aria-hidden="true"><svg width="22" height="22"><use href="#i-network"></use></svg></span>
+          Calculateur IPv4
+        </span>
       </div>
+      <button type="button" class="icon-button" id="themeToggle" aria-label="Changer le thème" title="Changer le thème">
+        <svg id="themeMoon" width="19" height="19" aria-hidden="true"><use href="#i-moon"></use></svg>
+        <svg id="themeSun" width="19" height="19" aria-hidden="true" hidden><use href="#i-sun"></use></svg>
+      </button>
+    </div>
+  </nav>
 
-      <div id="errorLog" class="error"></div>
-      <div id="networkInfo"></div>
-      <div id="results"></div>
+  <main class="page">
+    <div class="hero">
+      <h1>Calculateur de sous-réseaux</h1>
+      <p>Découpage IPv4, inventaire et visualisation hiérarchique de l'occupation.</p>
     </div>
 
-    <script>
-      // Helpers IP
-      function ipToInt(ip) {
-        return (
-          ip
-            .split(".")
-            .reduce((res, octet) => (res << 8) + parseInt(octet, 10), 0) >>> 0
-        );
-      }
-      function intToIp(int) {
-        return [
-          (int >>> 24) & 0xff,
-          (int >>> 16) & 0xff,
-          (int >>> 8) & 0xff,
-          int & 0xff,
-        ].join(".");
-      }
-      function getDistinctColor(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++)
-          hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash * 137.5) % 360}, 85%, 85%)`;
-      }
+    <section class="card card-pad" aria-labelledby="networkTitle">
+      <h2 id="networkTitle">Réseau parent</h2>
+      <form id="networkForm" class="control-grid" novalidate>
+        <div class="field">
+          <label class="field-label" for="networkInput">Adresse IPv4 / préfixe CIDR</label>
+          <input class="input mono" id="networkInput" name="network" type="text"
+            placeholder="10.105.196.0/22" spellcheck="false" autocomplete="off" required>
+        </div>
+        <div class="field">
+          <label class="field-label" for="savedNetworks">Réseaux enregistrés</label>
+          <select class="select" id="savedNetworks">
+            <option value="">Sélectionner un réseau</option>
+          </select>
+        </div>
+        <div class="field load-field">
+          <button class="btn primary" type="submit">
+            <svg aria-hidden="true" width="17" height="17"><use href="#i-arrow"></use></svg> Analyser
+          </button>
+        </div>
+      </form>
+      <p class="message" id="message" role="status" aria-live="polite"></p>
+      <div class="notice" id="storageNotice" hidden></div>
+    </section>
 
-      function getParentCIDRs(ipInt, currentMask, baseMask) {
-        const parents = [];
-        for (let m = currentMask - 1; m >= baseMask; m--) {
-          const parentNet = (ipInt & (0xffffffff << (32 - m))) >>> 0;
-          parents.push(`${intToIp(parentNet)}/${m}`);
-        }
-        return parents;
-      }
+    <section class="card card-pad summary" id="summarySection" hidden aria-labelledby="summaryTitle">
+      <div class="summary-head">
+        <div>
+          <h2 id="summaryTitle">Occupation du réseau</h2>
+          <p>Inventaire actif : <strong id="activeNetwork" class="mono"></strong></p>
+        </div>
+        <span class="badge" id="rootStatus">—</span>
+      </div>
+      <div class="summary-grid">
+        <div class="metric"><span>Adresses IPv4</span><strong class="mono" id="metricTotal">—</strong></div>
+        <div class="metric"><span>Occupées (union)</span><strong class="mono" id="metricOccupied">—</strong></div>
+        <div class="metric"><span>Disponibles</span><strong class="mono" id="metricFree">—</strong></div>
+        <div class="metric"><span>Réservations</span><strong class="mono" id="metricReservations">—</strong></div>
+      </div>
+      <div class="progress" role="img" id="occupationMeter" aria-label="Occupation du réseau">
+        <div id="occupationBar"></div>
+      </div>
+      <div class="summary-footer">
+        <span id="occupationLabel">0 % occupé</span>
+        <span class="mono" id="networkRange">—</span>
+      </div>
+      <div class="notice" id="overlapNotice" data-kind="warning" hidden>
+        Certaines réservations importées se chevauchent. Elles sont conservées, mais leur occupation est calculée sans double comptage. Les nouvelles réservations ne peuvent pas chevaucher les anciennes.
+      </div>
+    </section>
 
-      // --- Gestion de l'historique ---
-      function refreshHistoryDropdown() {
-        const select = document.getElementById("savedNetworks");
-        select.innerHTML = '<option value="">-- Réseaux mémorisés --</option>';
-        Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith("snet_calc_inventory_")) {
-            const net = key.replace("snet_calc_inventory_", "");
-            const opt = document.createElement("option");
-            opt.value = net;
-            opt.textContent = net;
-            select.appendChild(opt);
-          }
-        });
-      }
-
-      function loadFromHistory(val) {
-        if (!val) return;
-        document.getElementById("networkInput").value = val;
-        decompose();
-      }
-
-      // --- Logique de stockage ---
-      function getStorageKey() {
-        const input = document.getElementById("networkInput").value.trim();
-        return input ? `snet_calc_inventory_${input}` : null;
-      }
-
-      function getSavedData() {
-        const key = getStorageKey();
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : {};
-      }
-
-      function saveData(data) {
-        const key = getStorageKey();
-        if (key) {
-          localStorage.setItem(key, JSON.stringify(data));
-          refreshHistoryDropdown();
-        }
-      }
-
-      function toggleInventory(checkbox) {
-        const netId = checkbox.dataset.id;
-        let data = getSavedData();
-        if (checkbox.checked) {
-          data[netId] = "taken";
-        } else {
-          delete data[netId];
-        }
-        saveData(data);
-        updateUI();
-      }
-
-      function clearCurrentInventory() {
-        const key = getStorageKey();
-        if (key && confirm(`Effacer l'inventaire pour ${key} ?`)) {
-          localStorage.removeItem(key);
-          refreshHistoryDropdown();
-          decompose();
-        }
-      }
-
-      // --- Gestion des Survols ---
-      function handleMouseEnter(el) {
-        el.classList.add("highlight-target");
-        const ownId = el.getAttribute("data-own-id");
-
-        if (
-          el.classList.contains("partially-occupied") ||
-          el.classList.contains("fully-occupied")
-        ) {
-          const children = document.querySelectorAll(
-            `.network-item.master-checked[data-parents*="|${ownId}|"]`,
-          );
-          children.forEach((child) => child.classList.add("highlight-related"));
-        }
-
-        if (
-          el.classList.contains("master-checked") ||
-          el.classList.contains("inherited")
-        ) {
-          const rawParents = el.getAttribute("data-parents") || "";
-          const parentList = rawParents.split("|").filter((p) => p.length > 0);
-          parentList.forEach((parentNet) => {
-            const parentEl = document.querySelector(
-              `[data-own-id="${parentNet}"]`,
-            );
-            if (parentEl) parentEl.classList.add("highlight-related");
-          });
-        }
-      }
-
-      function handleMouseLeave() {
-        document.querySelectorAll(".network-item").forEach((el) => {
-          el.classList.remove("highlight-target", "highlight-related");
-        });
-      }
-
-      function updateUI() {
-        // 1. Réinitialiser tout l'état DOM
-        document.querySelectorAll(".network-item").forEach((el) => {
-          el.style.backgroundColor = "";
-          el.classList.remove(
-            "inherited",
-            "master-checked",
-            "partially-occupied",
-            "fully-occupied",
-          );
-
-          const cb = el.querySelector("input");
-          if (cb) {
-            cb.checked = false;
-            cb.disabled = false;
-          }
-
-          const badge = el.querySelector(".partial-badge, .full-badge");
-          if (badge) badge.remove();
-        });
-
-        const data = getSavedData();
-        const sortedKeys = Object.keys(data).sort(
-          (a, b) => parseInt(a.split("/")[1]) - parseInt(b.split("/")[1]),
-        );
-
-        // Map pour calculer le nombre d'IPs occupées dans chaque parent
-        const parentOccupiedIPs = {};
-
-        sortedKeys.forEach((netKey) => {
-          if (data[netKey] === "taken") {
-            const color = getDistinctColor(netKey);
-            const master = document.querySelector(`[data-own-id="${netKey}"]`);
-
-            const childMask = parseInt(netKey.split("/")[1]);
-            const childIPCount = Math.pow(2, 32 - childMask);
-
-            if (master) {
-              master.classList.add("master-checked");
-              master.style.backgroundColor = color;
-              const masterCb = master.querySelector("input");
-              if (masterCb) masterCb.checked = true;
-
-              // Compter les IPs occupées pour la remontée vers les parents
-              const rawParents = master.getAttribute("data-parents") || "";
-              const parentList = rawParents
-                .split("|")
-                .filter((p) => p.length > 0);
-
-              parentList.forEach((parentNet) => {
-                parentOccupiedIPs[parentNet] =
-                  (parentOccupiedIPs[parentNet] || 0) + childIPCount;
-              });
-            }
-
-            // Déclinaison vers les enfants
-            const children = document.querySelectorAll(
-              `[data-parents*="|${netKey}|"]`,
-            );
-            children.forEach((child) => {
-              child.classList.remove("partially-occupied", "fully-occupied");
-              const badge = child.querySelector(".partial-badge, .full-badge");
-              if (badge) badge.remove();
-
-              child.classList.add("inherited");
-              child.style.backgroundColor = color;
-
-              const childCb = child.querySelector("input");
-              if (childCb) childCb.disabled = true;
-            });
-          }
-        });
-
-        // 2. Traitement dynamique de la couverture des parents (Partiel vs Complet)
-        Object.keys(parentOccupiedIPs).forEach((parentNet) => {
-          const parentEl = document.querySelector(
-            `[data-own-id="${parentNet}"]`,
-          );
-          if (
-            parentEl &&
-            !parentEl.classList.contains("master-checked") &&
-            !parentEl.classList.contains("inherited")
-          ) {
-            const parentMask = parseInt(parentNet.split("/")[1]);
-            const totalParentIPs = Math.pow(2, 32 - parentMask);
-            const occupied = parentOccupiedIPs[parentNet];
-
-            const cb = parentEl.querySelector("input");
-
-            if (occupied >= totalParentIPs) {
-              // 100% couvert -> Statut COMPLET (Retrait du statut Partiel)
-              parentEl.classList.add("fully-occupied");
-              if (cb) cb.disabled = true;
-
-              if (!parentEl.querySelector(".full-badge")) {
-                const badge = document.createElement("span");
-                badge.className = "full-badge";
-                badge.textContent = "Complet";
-                parentEl.appendChild(badge);
-              }
-            } else {
-              // < 100% couvert -> Statut PARTIEL
-              parentEl.classList.add("partially-occupied");
-              if (!parentEl.querySelector(".partial-badge")) {
-                const badge = document.createElement("span");
-                badge.className = "partial-badge";
-                badge.textContent = "Partiel";
-                parentEl.appendChild(badge);
-              }
-            }
-          }
-        });
-      }
-
-      // --- Filtres de visibilité ---
-      function toggleMaskVisibility(mask, isVisible) {
-        const block = document.getElementById(`block-mask-${mask}`);
-        if (block) {
-          if (isVisible) block.classList.remove("hidden");
-          else block.classList.add("hidden");
-        }
-      }
-
-      function generateFilterCheckboxes(start, end) {
-        const container = document.getElementById("filterContainer");
-        container.innerHTML = "<strong>Afficher les masques :</strong>";
-
-        for (let m = start; m <= end; m++) {
-          const label = document.createElement("label");
-          label.className = "filter-item";
-          label.innerHTML = `<input type="checkbox" checked onchange="toggleMaskVisibility(${m}, this.checked)"> /${m}`;
-          container.appendChild(label);
-        }
-      }
-
-      function decompose() {
-        const input = document.getElementById("networkInput").value.trim();
-        const resultsDiv = document.getElementById("results");
-        const errorDiv = document.getElementById("errorLog");
-
-        if (!input) return;
-        localStorage.setItem("snet_calc_last_active_network", input);
-
-        const parts = input.split("/");
-        if (parts.length !== 2) {
-          errorDiv.textContent = "Format invalide.";
-          document.getElementById("networkInfo").innerHTML = "";
-          return;
-        }
-
-        resultsDiv.innerHTML = "";
-        errorDiv.textContent = "";
-
-        const baseMask = parseInt(parts[1]);
-        const baseInt = ipToInt(parts[0]);
-        const networkStart = (baseInt & (0xffffffff << (32 - baseMask))) >>> 0;
-        const totalIPs = Math.pow(2, 32 - baseMask);
-        const networkEnd = networkStart + totalIPs - 1;
-
-        const fmt = (n) => n.toLocaleString("fr-FR");
-        document.getElementById("networkInfo").innerHTML = `
-          <div class="network-summary">
-            <span class="summary-item"><strong>Réseau :</strong> ${intToIp(networkStart)}/${baseMask}</span>
-            <span class="summary-item"><strong>Première adresse :</strong> ${intToIp(networkStart)}</span>
-            <span class="summary-item"><strong>Dernière adresse :</strong> ${intToIp(networkEnd)}</span>
-            <span class="summary-item"><strong>Total IPs :</strong> ${fmt(totalIPs)}</span>
+    <div class="layout" id="workspace" hidden>
+      <section class="card visual-section" aria-labelledby="visualTitle">
+        <div class="visual-header">
+          <h2 id="visualTitle">Sous-réseaux IPv4</h2>
+          <p>Vue par masque, avec les sous-réseaux et leur occupation visibles directement.</p>
+          <div class="view-selector" role="group" aria-label="Mode d'affichage">
+            <button class="view-button" id="overviewMode" type="button" aria-pressed="true">Vue par masque</button>
+            <button class="view-button" id="gridMode" type="button" aria-pressed="false">Grille paginée</button>
           </div>
-        `;
+        </div>
 
-        generateFilterCheckboxes(baseMask + 1, 30);
+        <div class="visual-body" id="overviewView">
+          <section class="mask-filter-bar" aria-label="Filtres des masques">
+            <div class="mask-filter-bar-heading">
+              <strong>Afficher les masques :</strong>
+              <span class="overview-filter-summary" id="visibleMaskCount"></span>
+            </div>
+            <div class="mask-filter-grid" id="maskFilterList" role="group" aria-label="Visibilité des niveaux CIDR"></div>
+            <div class="mask-filter-actions">
+              <button type="button" class="btn small" id="showAllMasks">Tout afficher</button>
+              <button type="button" class="btn small" id="showDefaultMasks">Par défaut</button>
+              <button type="button" class="btn small" id="hideAllMasks">Tout masquer</button>
+              <button type="button" class="btn small" id="restoreHidden" hidden>Réafficher les sous-réseaux masqués</button>
+            </div>
+          </section>
+          <div class="overview-stack" id="maskOverview" aria-label="Sous-réseaux IPv4 classés par masque"></div>
+        </div>
 
-        for (let targetMask = baseMask + 1; targetMask <= 30; targetMask++) {
-          const subnetSize = Math.pow(2, 32 - targetMask);
-          const count = totalIPs / subnetSize;
-          if (count > 1024) continue;
+        <div class="visual-body" id="gridView" hidden>
+          <div class="grid-controls">
+            <div class="field">
+              <label class="field-label" for="maskSelect">Préfixe affiché</label>
+              <select class="select" id="maskSelect"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="statusFilter">Afficher sur cette page</label>
+              <select class="select" id="statusFilter">
+                <option value="all">Tous les états</option>
+                <option value="free">Libres</option>
+                <option value="reserved">Réservés</option>
+                <option value="inherited">Hérités</option>
+                <option value="partial">Partiels</option>
+                <option value="full">Complets</option>
+              </select>
+            </div>
+          </div>
+          <p class="hint" id="gridDescription">Cochez une case pour réserver immédiatement ou décochez-la pour libérer le CIDR. Les détails sont facultatifs. La recherche permet d'atteindre directement un réseau.</p>
+          <div class="grid-list" id="subnetGrid"></div>
+          <div class="pager">
+            <div class="pager-info" id="pageInfo"></div>
+            <div class="actions">
+              <button type="button" class="btn small" id="prevPage">Précédent</button>
+              <button type="button" class="btn small" id="nextPage">Suivant</button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          const block = document.createElement("div");
-          block.className = "mask-block";
-          block.id = `block-mask-${targetMask}`;
-          block.innerHTML = `<div class="mask-header">Masque /${targetMask} <span class="mask-info">${count} sous-réseau${count > 1 ? "x" : ""} &nbsp;·&nbsp; ${fmt(subnetSize)} IPs/sous-réseau</span></div>`;
+      <aside class="side">
+        <section class="card card-pad" aria-labelledby="inventoryTitle">
+          <div class="side-head">
+            <div>
+              <h2 id="inventoryTitle">Inventaire</h2>
+              <p>Réservations directes du réseau actif</p>
+            </div>
+          </div>
+          <div class="side-actions">
+            <button type="button" class="btn small" id="exportJson">
+              <svg aria-hidden="true" width="16" height="16"><use href="#i-download"></use></svg> JSON
+            </button>
+            <button type="button" class="btn small" id="exportCsv">
+              <svg aria-hidden="true" width="16" height="16"><use href="#i-download"></use></svg> CSV
+            </button>
+            <button type="button" class="btn small" id="importButton">Importer</button>
+            <input type="file" id="importFile" accept=".json,application/json" hidden>
+          </div>
+          <div class="allocations" id="allocationsList"></div>
+          <div class="actions inventory-clear-actions">
+            <button type="button" class="btn small danger" id="clearInventory">Effacer les réservations</button>
+          </div>
+        </section>
 
-          const grid = document.createElement("div");
-          grid.className = "grid";
+        <section class="card card-pad" aria-labelledby="searchTitle">
+          <h2 id="searchTitle">Rechercher dans le réseau</h2>
+          <p class="hint">Adresse IPv4, CIDR ou nom de réservation. La recherche ouvre la grille au bon masque et à la bonne page.</p>
+          <form class="search-row" id="searchForm" novalidate>
+            <div class="field">
+              <label for="searchInput" class="field-label">IP, CIDR ou nom</label>
+              <input class="input mono" id="searchInput" type="text" placeholder="10.105.197.0/24" spellcheck="false">
+            </div>
+            <button class="btn" type="submit">Trouver</button>
+          </form>
+          <div class="legend-list" aria-label="Légende des états">
+            <div class="legend-line"><span class="legend-dot reserved"></span> Réservé</div>
+            <div class="legend-line"><span class="legend-dot inherited"></span> Hérité</div>
+            <div class="legend-line"><span class="legend-dot partial"></span> Partiel</div>
+            <div class="legend-line"><span class="legend-dot full"></span> Complet</div>
+            <div class="legend-line"><span class="legend-dot free"></span> Libre</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
 
-          for (let i = 0; i < count; i++) {
-            const currentNetInt = networkStart + i * subnetSize;
-            const netStr = `${intToIp(currentNetInt)}/${targetMask}`;
-            const parents = getParentCIDRs(currentNetInt, targetMask, baseMask);
+  <dialog class="dialog" id="allocationDialog" aria-labelledby="dialogTitle">
+    <form id="allocationForm" novalidate>
+      <h2 id="dialogTitle">Réservation IPv4</h2>
+      <p>Réseau : <strong class="mono" id="dialogCidr"></strong></p>
+      <p class="dialog-hint">Nom et description sont entièrement facultatifs. Vous pouvez réserver un CIDR sans ouvrir cette fenêtre.</p>
+      <div class="field">
+        <label class="field-label" for="allocationName">Nom (facultatif)</label>
+        <input class="input" id="allocationName" type="text" maxlength="100" placeholder="Application / environnement" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="field-label" for="allocationDescription">Description (facultative)</label>
+        <textarea class="textarea" id="allocationDescription" maxlength="500" rows="3" placeholder="Usage, équipe, référence…"></textarea>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn danger" id="releaseButton" type="button" hidden>Libérer le réseau</button>
+        <div class="dialog-actions-right">
+          <button class="btn" id="cancelDialog" type="button">Annuler</button>
+          <button class="btn primary" type="submit" id="saveAllocation">Réserver</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
 
-            const label = document.createElement("label");
-            label.className = "network-item";
-            label.setAttribute("data-own-id", netStr);
-            label.setAttribute("data-parents", `|${parents.join("|")}|`);
-            label.onmouseenter = () => handleMouseEnter(label);
-            label.onmouseleave = handleMouseLeave;
-
-            label.innerHTML = `
-              <div class="network-item-content">
-                <input type="checkbox" data-id="${netStr}" onchange="toggleInventory(this)">
-                <span>${netStr}</span>
-              </div>
-            `;
-            grid.appendChild(label);
-          }
-          block.appendChild(grid);
-          resultsDiv.appendChild(block);
-        }
-        updateUI();
-      }
-
-      window.onload = () => {
-        refreshHistoryDropdown();
-        const last = localStorage.getItem("snet_calc_last_active_network");
-        if (last) {
-          document.getElementById("networkInput").value = last;
-          document.getElementById("savedNetworks").value = last;
-          decompose();
-        }
-      };
-    </script>
-  </body>
+  <footer class="footer">
+    Toolbox · Calcul IPv4 local · Les inventaires sont conservés dans votre navigateur, sans synchronisation.
+  </footer>
+  <noscript><p>JavaScript est nécessaire pour consulter et modifier les inventaires IPv4.</p></noscript>
+</body>
 </html>
