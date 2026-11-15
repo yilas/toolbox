@@ -9,7 +9,7 @@ Ce projet regroupe plusieurs micro-outils autonomes pour l'automatisation, la g�
 
 ## 🧭 Accueil du portail
 
-La page `index.html` présente les neuf outils disponibles dans une grille responsive, avec une recherche locale insensible aux accents et un raccourci `/` pour ouvrir la recherche. La préférence de thème clair/sombre est partagée avec le générateur de mots de passe (stockée sous la clé `password-studio-theme`). Les outils en préparation sont affichés sans lien fictif.
+La page `index.html` présente les onze outils disponibles dans une grille responsive, avec une recherche locale insensible aux accents et un raccourci `/` pour ouvrir la recherche. La préférence de thème clair/sombre est partagée avec le générateur de mots de passe (stockée sous la clé `password-studio-theme`). Les outils en préparation sont affichés sans lien fictif.
 
 L'accueil utilise uniquement `index.html`, `portal.css` et `portal.js`, sans bibliothèque ni appel réseau. Les cartes restent consultables même si JavaScript est désactivé.
 
@@ -35,6 +35,7 @@ La vérification est également lancée par GitHub Actions sur les pull requests
 
 | Outil | Fonctionnalités principales | Lien |
 | --- | --- | --- |
+| **Compresser un PDF** | Optimisation légère ou pages en images, profils JPEG, résolution, niveaux de gris, aperçu par page et comparaison des tailles. Traitement local. | [`pdf-compressor`](tools/pdf-compressor.html) |
 | **Générateur de message d'absence** | Génère une réponse automatique multilingue (FR, LU, EN, DE) avec date et moment du retour, raccourcis de dates, contact d'urgence optionnel, copie rapide et mémorisation locale des réglages. | [`auto-reply-generator`](tools/auto-reply-generator.html) |
 | **Encodeur / Décodeur Base64** | Encode et décode du texte UTF-8 en Base64, avec validation, copie du résultat, historique des opérations, consultation détaillée d'une entrée et affichage de l'état interne de l'outil. | [`base64-encoder-decoder`](tools/base64-encoder-decoder.html) |
 | **Break Reminder** | Minuteur de rappel de pause active avec intervalle configurable, mode Hardcore bloquant l'écran, notifications, signal sonore, clignotement de l'onglet, suivi des pauses validées et streak. | [`break-reminder`](tools/break-reminder.html) |
@@ -120,3 +121,46 @@ Voir le fichier [`LICENSE`](LICENSE) pour plus de détails.
 
 Ce projet est maintenu par moi-même.  
 Il est utilisé pour centraliser des outils pratiques de manière simple, ergonomique et portable.
+
+## PDF Studio : compression locale
+
+Page : `tools/pdf-compressor.html`. Un seul document à la fois ; aucun téléversement,
+CDN tiers ou stockage des PDF. PDF.js et pdf-lib sont embarqués avec leurs licences
+et versions dans [`assets/vendor/README.md`](assets/vendor/README.md).
+
+- **Optimisation légère** : réécriture avec object streams, sans recompression des images,
+  sans aplatissement des formulaires ni mise à jour automatique des métadonnées.
+  Ce n’est pas une optimisation approfondie des images ou des polices ; le gain peut être nul.
+- **Scans** : rasterisation page par page en JPEG, profils 72/120/180 ppp,
+  personnalisation 72–200 ppp et qualité 30–95 %, niveaux de gris facultatifs.
+  Les dimensions visibles et la rotation sont intégrées au résultat.
+  Le texte/OCR, les champs, les liens et l’accessibilité sont perdus : consentement explicite requis.
+- **Aperçu** original et JPEG de la page choisie ; la prévisualisation JPEG utilise exactement
+  les réglages d’encodage du résultat. La taille souhaitée sert uniquement de repère.
+- **Résultat** : taille avant/après, pourcentage et volume économisés, téléchargement explicite.
+  Si la copie ne réduit pas la taille, le lien télécharge l’original octet pour octet.
+- **Protection de l’original** : signatures détectées, XFA et PDF chiffrés refusés ;
+  erreurs lisibles, annulation, révocation des URL Blob lors du retrait/remplacement.
+  Ce n’est ni un validateur de signatures, ni un antivirus, ni un anonymiseur.
+- **Limites** : 50 Mio, 200 pages, 12 MP/page, 300 MP/traitement raster et 100 Mio
+  de données JPEG/résultat. Le navigateur peut épuiser sa mémoire avant ces plafonds,
+  notamment sur mobile. Le traitement reste séquentiel ; parsing/optimisation dans un worker.
+
+Servir le dépôt en HTTP local ou HTTPS (les modules et workers ne fonctionnent pas en `file://`).
+La CSP autorise seulement les ressources du même site, les images/polices Blob et le décodage
+WebAssembly ; les scripts embarqués dans les PDF ne sont pas exécutés par l’outil.
+L’optimisation légère n’élimine pas ces scripts du fichier de sortie.
+
+### Validation
+
+```sh
+node --test tests/*.test.cjs
+npm install --prefix /tmp/pdf-tests --ignore-scripts playwright@1.65.1
+/tmp/pdf-tests/node_modules/.bin/playwright install chromium
+NODE_PATH=/tmp/pdf-tests/node_modules node --test tests/browser/pdf-compressor.test.cjs
+```
+
+Le test navigateur démarre son propre serveur local, génère les PDF de test en mémoire et
+vérifie les sorties réelles, les erreurs, le consentement, l’annulation et les largeurs mobiles.
+Les captures clair/sombre/mobile sont enregistrées dans `/tmp/pdf-compressor-screenshots`
+(ou `PDF_SCREENSHOTS`) et conservées comme artefact de la CI.

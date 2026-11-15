@@ -1,0 +1,37 @@
+name: PDF compressor tests
+on:
+  pull_request:
+    paths: ['tools/pdf-compressor*', 'assets/vendor/**', 'assets/css/toolbox-shared.css', 'tests/pdf-compressor*', 'tests/browser/pdf-compressor*', '.github/workflows/pdf-compressor.yml']
+  push:
+    branches: [main]
+    paths: ['tools/pdf-compressor*', 'assets/vendor/**', 'assets/css/toolbox-shared.css', 'tests/pdf-compressor*', 'tests/browser/pdf-compressor*', '.github/workflows/pdf-compressor.yml']
+permissions:
+  contents: read
+jobs:
+  pdf-compressor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit and repository tests
+        run: |
+          node --check tools/pdf-compressor.mjs
+          node --check tools/pdf-compressor-core.mjs
+          node --test tests/*.test.cjs
+      - name: Install browser test runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pdf-browser" --ignore-scripts --no-audit --no-fund playwright@1.65.1
+          "$RUNNER_TEMP/pdf-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Real PDF browser tests
+        env:
+          PDF_SCREENSHOTS: screenshots
+        run: NODE_PATH="$RUNNER_TEMP/pdf-browser/node_modules" node --test tests/browser/pdf-compressor.test.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pdf-compressor-screenshots
+          path: screenshots
+          if-no-files-found: ignore
