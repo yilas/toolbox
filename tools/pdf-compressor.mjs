@@ -26,7 +26,7 @@ function controls() {
   $('settings').setAttribute('aria-busy', String(busy));
 }
 function start(text) { busy = true; cancelled = false; clearError(); message(text); $('progress').value = 0; controls(); }
-function finish() { busy = false; controls(); }
+function finish() { busy = false; cancelled = false; controls(); }
 function clearPreview() {
   if (previewUrl) URL.revokeObjectURL(previewUrl);
   previewUrl = null; $('afterImage').removeAttribute('src'); $('afterFigure').hidden = true;
@@ -72,12 +72,16 @@ async function render(page, canvas, scale) {
 }
 async function originalPreview() {
   const page = await pdf.getPage(pageNumber); checkpoint();
+  const scratch = document.createElement('canvas');
   try {
     const base = page.getViewport({ scale: 1 });
-    await render(page, $('originalCanvas'), Math.min(1.5, 900 / Math.max(base.width, base.height)));
+    await render(page, scratch, Math.min(1.5, 900 / Math.max(base.width, base.height)));
+    // Publish only a completed render, so cancellation never leaves a partial preview.
+    $('originalCanvas').width = scratch.width; $('originalCanvas').height = scratch.height;
+    $('originalCanvas').getContext('2d').drawImage(scratch, 0, 0);
     $('originalCanvas').hidden = false; $('previewPlaceholder').hidden = true;
     $('pageLabel').textContent = `Page ${pageNumber} / ${pdf.numPages}`;
-  } finally { page.cleanup(); }
+  } finally { scratch.width = 0; scratch.height = 0; page.cleanup(); }
 }
 async function loadFile(file) {
   if (!file || busy || !ready) return;
@@ -131,8 +135,9 @@ $('grayscale').addEventListener('change', settingsChanged);
 $('target').addEventListener('input', () => { clearResult(); });
 $('acceptLoss').addEventListener('change', controls);
 for (const [id, delta] of [['prev', -1], ['next', 1]]) $(id).addEventListener('click', async () => {
+  const previousPage = pageNumber;
   start('Chargement de la page…'); clearPreview(); pageNumber += delta;
-  try { await originalPreview(); message('Aperçu original affiché.'); } catch (error) { fail(error); } finally { finish(); }
+  try { await originalPreview(); message('Aperçu original affiché.'); } catch (error) { pageNumber = previousPage; fail(error); } finally { finish(); }
 });
 async function jpegPage(page, opts) {
   const base = page.getViewport({ scale: 1 }); pixelSize(base.width, base.height, opts.dpi);
