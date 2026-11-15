@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f7fc">
+  <meta name="description" content="Réduisez la taille de vos PDF dans votre navigateur : optimisation légère, compression de scans, aperçu et comparaison des tailles. Aucun téléversement.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; font-src 'self' blob:; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/toolbox-shared.css">
+  <link rel="stylesheet" href="pdf-compressor.css">
+  <script type="module" src="pdf-compressor.mjs"></script>
+  <title>Compresser un PDF — Toolbox</title>
+</head>
+<body>
+<header class="nav"><a href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a><strong><span class="mark" aria-hidden="true">↓</span> PDF Studio</strong><button id="theme" type="button" aria-label="Changer le thème" title="Changer le thème">☾</button></header>
+<main class="shell">
+  <section class="hero" aria-labelledby="title"><span class="eyebrow">DOCUMENTS · COMPRESSION LOCALE</span><h1 id="title">Un PDF plus léger.</h1><p>Choisissez le bon équilibre entre taille et qualité.<br>Votre document reste sur votre appareil.</p><span class="privacy">Aucun envoi de fichier · Aucun compte</span></section>
+  <div class="layout">
+    <div class="workspace">
+      <section class="panel" aria-labelledby="importTitle">
+        <h2 id="importTitle"><span class="step">01</span> Votre document</h2>
+        <p class="muted">Un PDF à la fois, jusqu’à 50 Mio et 200 pages.</p>
+        <div class="dropzone" id="dropzone"><span class="upload-icon" aria-hidden="true">⇣</span><label for="file">Choisir un fichier PDF</label><input id="file" type="file" accept="application/pdf,.pdf" disabled><p>ou glissez-le ici</p></div>
+        <div id="fileInfo" hidden><p id="fileName" class="filename"></p><p id="fileMeta" class="muted"></p><button id="clear" type="button">Retirer le document</button></div>
+      </section>
+      <section class="panel" aria-labelledby="settingsTitle">
+        <h2 id="settingsTitle"><span class="step">02</span> Choisir la compression</h2>
+        <p class="muted">Commencez par l’optimisation légère pour un document contenant du texte.</p>
+        <fieldset id="settings" disabled><legend class="sr-only">Réglages de compression</legend>
+          <label for="mode">Méthode</label><select id="mode"><option value="optimize">Optimisation légère — conserver le texte</option><option value="raster">Compression des scans — pages en images</option></select>
+          <p id="modeHelp" class="hint">Réorganise le PDF sans réduire la qualité des images. Texte sélectionnable et éléments du document conservés ; gain parfois faible ou nul.</p>
+          <div id="rasterSettings" hidden>
+            <label for="preset">Profil</label><select id="preset"><option value="balanced">Équilibré — 120 ppp / qualité 75 %</option><option value="small">Taille minimale — 72 ppp / qualité 50 %</option><option value="quality">Qualité élevée — 180 ppp / qualité 88 %</option><option value="custom">Personnalisé</option></select>
+            <div class="sliders"><div><label for="dpi">Résolution <output id="dpiValue" for="dpi">120 ppp</output></label><input id="dpi" type="range" min="72" max="200" step="1" value="120"></div><div><label for="quality">Qualité JPEG <output id="qualityValue" for="quality">75 %</output></label><input id="quality" type="range" min="30" max="95" step="1" value="75"></div></div>
+            <label class="check"><input id="grayscale" type="checkbox"> Convertir en niveaux de gris</label>
+            <div class="warning"><strong>Les pages deviennent des images.</strong><p>Perte du texte sélectionnable, de la recherche, de l’OCR existant, des liens, des champs de formulaire, des signets et des balises d’accessibilité. Les annotations visibles sont aplaties. Aucun OCR n’est ajouté.</p><label class="check"><input id="acceptLoss" type="checkbox"> J’accepte ces pertes pour cette copie.</label></div>
+          </div>
+          <div class="target"><label for="target">Taille souhaitée en Mio <span class="optional">(facultatif)</span></label><input id="target" type="number" min="0.1" max="50" step="0.1" placeholder="Ex. : 2"><p class="hint">Repère pour comparer le résultat, sans ajustement automatique ni taille garantie.</p></div>
+          <p class="hint">Un PDF signé doit rester intact : les signatures détectées sont refusées. Conservez toujours l’original.</p>
+          <div class="actions"><button id="compress" class="primary" type="button" disabled>Compresser le PDF</button><button id="preview" type="button" disabled>Aperçu des réglages</button></div>
+        </fieldset>
+        <button id="cancel" type="button" hidden>Annuler le traitement</button>
+        <progress id="progress" max="100" value="0" aria-label="Progression du traitement" hidden></progress>
+        <p id="status" role="status" aria-live="polite">Chargement du moteur PDF…</p>
+        <p id="error" role="alert" hidden></p>
+      </section>
+      <section id="result" class="panel" aria-labelledby="resultTitle" hidden tabindex="-1">
+        <h2 id="resultTitle">Votre résultat</h2><p id="resultMode" class="muted"></p>
+        <div class="stats"><div><span>Original</span><strong id="beforeSize"></strong></div><div><span>Résultat</span><strong id="afterSize"></strong></div><div><span id="gainLabel">Réduction</span><strong id="gain"></strong></div></div>
+        <p id="resultNote"></p><p id="targetNote"></p><div class="actions"><a id="download" class="button primary">Télécharger le PDF</a></div><p class="hint">Vérifiez toutes les pages avant de partager la copie. Le fichier original n’est jamais modifié.</p>
+      </section>
+    </div>
+    <aside class="panel preview-panel" aria-labelledby="previewTitle">
+      <h2 id="previewTitle">Voir avant de télécharger</h2><p class="muted">Aperçu local de la page choisie.</p>
+      <div class="page-controls"><button id="prev" type="button" aria-label="Page précédente" disabled>←</button><span id="pageLabel">Aucun document</span><button id="next" type="button" aria-label="Page suivante" disabled>→</button></div>
+      <div class="preview-grid"><figure><figcaption>Original</figcaption><div class="paper"><canvas id="originalCanvas" aria-label="Aperçu de la page originale"></canvas><span id="previewPlaceholder">Votre page apparaîtra ici</span></div></figure><figure id="afterFigure" hidden><figcaption id="afterCaption">Avec les réglages choisis</figcaption><div class="paper"><img id="afterImage" alt="Aperçu de la page compressée"></div></figure></div>
+      <p class="hint" id="previewHint">Choisissez un PDF pour afficher son aperçu. La prévisualisation est une image, sans texte accessible.</p>
+    </aside>
+  </div>
+  <section class="panel guide" aria-labelledby="guideTitle"><h2 id="guideTitle">Bien choisir ses réglages</h2>
+    <div class="guide-grid"><div><h3>Texte et documents bureautiques</h3><p>Préférez l’optimisation légère : elle conserve la structure du document. Un PDF déjà optimisé peut ne pas devenir plus petit.</p></div><div><h3>Scans et photos</h3><p>Essayez le profil équilibré. Réduisez la résolution pour un envoi par e-mail, augmentez-la pour les petits caractères. Vérifiez la lisibilité à l’échelle réelle.</p></div><div><h3>Documents importants</h3><p>Gardez l’original des contrats, justificatifs et documents signés. La compression en images ne remplace ni un archivage conforme ni une vérification des signatures.</p></div></div>
+    <details><summary>Pourquoi mon PDF ne diminue-t-il pas ?</summary><p>Les images sont souvent déjà compressées. Réécrire un petit PDF ou convertir du texte vectoriel en images peut augmenter sa taille. Si le résultat n’est pas plus petit, l’outil propose l’original, sans prétendre l’avoir compressé. En mode scans, tentez une résolution ou une qualité inférieure.</p></details>
+    <details><summary>Qu’est-ce qui reste sur mon appareil ?</summary><p>Le PDF et ses aperçus sont traités en mémoire dans cet onglet. Aucun document n’est téléversé, enregistré dans l’historique ou stocké dans le navigateur. Seule la préférence de thème est mémorisée. Le site charge ses bibliothèques, polices et décodeurs depuis le même hébergement, sans CDN tiers. « Retirer le document » libère les références utilisées par l’outil ; le navigateur gère la libération effective de la mémoire.</p></details>
+    <details><summary>Quels PDF et navigateurs sont pris en charge ?</summary><p>Utilisez un navigateur récent avec JavaScript et Web Workers, via HTTPS ou localhost. Les PDF chiffrés (même sans mot de passe à l’ouverture), les formulaires XFA et les signatures numériques détectées sont refusés. Les documents malformés peuvent échouer. L’outil n’est ni un antivirus, ni un outil de suppression de données confidentielles.</p><p>Limites : 50 Mio, 200 pages, 12 millions de pixels par page et 300 millions de pixels par traitement en images. Une page trop grande est refusée plutôt que dégradée silencieusement. Sur mobile, utilisez de petits documents et une résolution modérée. L’annulation peut attendre la fin d’une étape en cours.</p></details>
+    <details><summary>Les métadonnées sont-elles conservées ?</summary><p>L’optimisation légère conserve les informations du document et ses ressources, y compris d’éventuelles pièces jointes et actions. Le mode scans crée un nouveau PDF à partir de l’apparence des pages et ne recopie pas les métadonnées d’origine. Il ne garantit pas l’anonymisation du contenu visible.</p></details>
+  </section>
+  <p class="foot">PDF Studio · Traitement local · Aucun gain de compression garanti</p>
+</main><noscript><p class="panel">JavaScript est nécessaire pour compresser un PDF. Votre fichier ne sera pas envoyé à un serveur.</p></noscript>
+</body></html>
