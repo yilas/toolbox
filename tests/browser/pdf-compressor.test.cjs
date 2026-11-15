@@ -29,7 +29,15 @@ async function open(viewport = { width: 1440, height: 1000 }) {
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
   page.on('request', req => requests.push({ url: req.url(), method: req.method() }));
-  await page.goto(url + '/tools/pdf-compressor.html'); await page.waitForFunction(() => !document.getElementById('file').disabled);
+  await page.goto(url + '/tools/pdf-compressor.html');
+  try {
+    await page.waitForFunction(() => !document.getElementById('file').disabled || !document.getElementById('error').hidden, null, { timeout: 15000 });
+    assert.equal(await page.locator('#error').isVisible(), false, await page.locator('#error').textContent());
+  } catch (error) {
+    await page.screenshot({ path: path.join(output, 'startup-failure.png'), fullPage: true });
+    const status = await page.locator('#status').textContent(); await page.close();
+    throw Error(`${error.message} | ${status} | ${errors.join('; ')}`);
+  }
   return { page, errors, requests };
 }
 async function fixture(page, kind = 'text') {
@@ -118,7 +126,7 @@ test('Annulation puis retrait et nouveau traitement', async () => {
     await page.locator('#compress').click(); await page.locator('#cancel').click(); await page.waitForFunction(() => !document.getElementById('file').disabled);
     assert.equal(await page.locator('#result').isVisible(), false); assert.match(await page.locator('#status').textContent(), /annulé/i);
     await page.locator('#clear').click(); await page.waitForFunction(() => !document.getElementById('file').disabled); assert.equal(await page.locator('#fileInfo').isVisible(), false);
-    await load(page, await fixture(page)); await compress(page);
+    await load(page, await fixture(page)); await page.locator('#mode').selectOption('optimize'); await compress(page);
   } finally { await page.close(); }
 });
 test('Mobile 390 et 320 px : pas de débordement, thème, aperçu et téléchargement', async () => {
