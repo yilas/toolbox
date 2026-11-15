@@ -70,10 +70,13 @@ async function load(page, bytes, name = 'document.pdf') {
 }
 async function compress(page) {
   await page.locator('#compress').click();
-  await page.waitForFunction(() => !document.getElementById('result').hidden || !document.getElementById('error').hidden, { timeout: 60000 });
+  await page.waitForFunction(() => !document.getElementById('result').hidden || !document.getElementById('error').hidden, null, { timeout: 60000 });
   assert.equal(await page.locator('#error').isVisible(), false, await page.locator('#error').textContent());
 }
-async function resultBytes(page) { return Buffer.from(await page.evaluate(async () => Array.from(new Uint8Array(await (await fetch(document.getElementById('download').href)).arrayBuffer())))); }
+async function resultBytes(page) {
+  const pending = page.waitForEvent('download'); await page.locator('#download').click();
+  return fs.readFileSync(await (await pending).path());
+}
 test('Optimisation réelle et structure du document ; pas de requête externe', async () => {
   const { page, errors, requests } = await open();
   try {
@@ -133,7 +136,7 @@ test('Mobile 390 et 320 px : pas de débordement, thème, aperçu et télécharg
   const { page, errors } = await open({ width: 390, height: 844 });
   try {
     await load(page, await fixture(page, 'scan')); await page.locator('#mode').selectOption('raster'); await page.locator('#acceptLoss').check(); await compress(page);
-    for (const width of [390, 320]) { await page.setViewportSize({ width, height: 844 }); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)); await page.screenshot({ path: path.join(output, `mobile-${width}.png`), fullPage: true }); }
+    for (const width of [390, 320]) { await page.setViewportSize({ width, height: 844 }); await page.screenshot({ path: path.join(output, `mobile-${width}.png`), fullPage: true }); const overflow = await page.evaluate(() => [...document.querySelectorAll('body *')].filter(el => el.getBoundingClientRect().right > innerWidth + 1).map(el => `${el.tagName}#${el.id}.${el.className}:${el.getBoundingClientRect().right}`).slice(0, 20)); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), JSON.stringify(overflow)); }
     const download = page.waitForEvent('download'); await page.locator('#download').click(); assert.match((await download).suggestedFilename(), /compresse.pdf$/); assert.deepEqual(errors, []);
   } finally { await page.close(); }
 });
