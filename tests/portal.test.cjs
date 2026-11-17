@@ -138,7 +138,7 @@ test("Recherche : accents, casse, plusieurs termes et aucun résultat", () => {
   page.elements.clearSearch.dispatch("click");
   assert.equal(page.elements.toolSearch.value, "");
   assert.equal(page.elements.emptyState.hidden, true);
-  assert.equal(page.cardEls.filter(card => !card.hidden).length, 11);
+  assert.equal(page.cardEls.filter(card => !card.hidden).length, 12);
 });
 
 test("Clavier : slash focalise la recherche, Escape la réinitialise", () => {
