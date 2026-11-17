@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="fr" class="no-js">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f7fc">
+<meta name="description" content="Annuaire de bulletins de sécurité officiels par produit : AKS, Cilium, Argo CD, Kyverno, Harbor, Docker, Terraform et plus.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../portal.css"><link rel="stylesheet" href="service-status.css">
+<script src="service-status.js" defer></script>
+<title>Security Advisories — Toolbox</title>
+</head>
+<body>
+<header class="site-header"><div class="nav-inner"><a class="brand" href="../index.html" aria-label="Retour à Toolbox"><span class="brand-mark" aria-hidden="true">◈</span><span>← Retour à Toolbox</span></a><nav class="nav-actions" aria-label="Actions"><button type="button" class="icon-button" id="themeToggle" title="Changer le thème" aria-label="Changer le thème"><span id="themeIcon" aria-hidden="true">☾</span></button></nav></div></header>
+<main class="page">
+<section class="intro" aria-labelledby="pageTitle"><p class="eyebrow">RÉFÉRENCE · CYBERSÉCURITÉ</p><h1 id="pageTitle">Security Advisories</h1><p>Bulletins de sécurité, avis de vulnérabilité et notes de correction pour les produits de ta stack DevOps et d'autres technologies utiles.</p><p class="related-page"><a href="service-status.html">Voir aussi : état des services et incidents ↗</a></p></section>
+<div class="status-notice" role="note"><strong>Annuaire de sources officielles, pas de veille en temps réel.</strong> Les liens ouvrent les pages des éditeurs ; aucune CVE ni version affectée n'est récupérée automatiquement. Pour chaque alerte, vérifie la version installée, les composants concernés, les mesures d'atténuation et la disponibilité des correctifs. Les offres Enterprise peuvent publier des avis distincts sur leur portail de support.</div>
+<div class="catalogue-toolbar"><label class="search-field" for="statusSearch"><span class="sr-only">Rechercher un produit ou une vulnérabilité</span><span aria-hidden="true">⌕</span><input type="search" id="statusSearch" placeholder="Produit, éditeur, catégorie…" autocomplete="off" spellcheck="false"><kbd class="shortcut" aria-hidden="true">/</kbd></label><p class="count" id="resultCount" data-singular="produit" data-plural="produits" role="status" aria-live="polite">35 produits</p></div>
+<nav class="category-nav" aria-label="Filtrer les produits"><button class="category-button active" type="button" data-category="all" aria-pressed="true">Tous</button>
+<button class="category-button" type="button" data-category="priority" aria-pressed="false">Stack prioritaire</button>
+<button class="category-button" type="button" data-category="Kubernetes &amp; GitOps" aria-pressed="false">Kubernetes &amp; GitOps</button>
+<button class="category-button" type="button" data-category="Conteneurs &amp; CI/CD" aria-pressed="false">Conteneurs &amp; CI/CD</button>
+<button class="category-button" type="button" data-category="Observabilité &amp; données" aria-pressed="false">Observabilité &amp; données</button>
+<button class="category-button" type="button" data-category="Systèmes &amp; plateformes" aria-pressed="false">Systèmes &amp; plateformes</button></nav>
+<div id="statusSections">
+<section class="status-section" data-group="Kubernetes &amp; GitOps" aria-labelledby="security-group-0">
+  <h2 id="security-group-0">Kubernetes &amp; GitOps <span class="group-count">12</span></h2>
+  <div class="status-grid">
+    <article class="status-link security-card" data-focus="yes" data-search="Azure Kubernetes Service (AKS) Bulletins AKS, images de nœuds, add-ons et mesures d’atténuation. Kubernetes &amp; GitOps AKS Azure VHD node images Microsoft">
+      <div class="security-card-top"><h3 class="status-name">Azure Kubernetes Service (AKS)</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Bulletins AKS, images de nœuds, add-ons et mesures d’atténuation.</p>
+      <div class="security-links"><a href="https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview" target="_blank" rel="noopener noreferrer">Bulletins AKS <span aria-hidden="true">↗</span></a><a href="https://learn.microsoft.com/en-us/azure/aks/release-notes" target="_blank" rel="noopener noreferrer">Notes de version <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Kubernetes Avis de sécurité du projet Kubernetes et versions corrigées. Kubernetes &amp; GitOps k8s kubelet control plane">
+      <div class="security-card-top"><h3 class="status-name">Kubernetes</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis de sécurité du projet Kubernetes et versions corrigées.</p>
+      <div class="security-links"><a href="https://github.com/kubernetes/kubernetes/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://kubernetes.io/releases/" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Cilium Vulnérabilités Cilium OSS, politiques réseau, eBPF et Hubble. Pour Enterprise, consulter aussi le support éditeur. Kubernetes &amp; GitOps Cilium Enterprise Isovalent eBPF Hubble">
+      <div class="security-card-top"><h3 class="status-name">Cilium</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Vulnérabilités Cilium OSS, politiques réseau, eBPF et Hubble. Pour Enterprise, consulter aussi le support éditeur.</p>
+      <div class="security-links"><a href="https://github.com/cilium/cilium/security/advisories" target="_blank" rel="noopener noreferrer">Advisories OSS <span aria-hidden="true">↗</span></a><a href="https://github.com/cilium/cilium/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Argo CD Avis de sécurité GitOps, API, repo-server et contrôleurs. Kubernetes &amp; GitOps ArgoCD GitOps">
+      <div class="security-card-top"><h3 class="status-name">Argo CD</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis de sécurité GitOps, API, repo-server et contrôleurs.</p>
+      <div class="security-links"><a href="https://github.com/argoproj/argo-cd/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/argoproj/argo-cd/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Kyverno Avis concernant les politiques d’admission, la validation et les contrôleurs. Kubernetes &amp; GitOps Kyverno admission policy">
+      <div class="security-card-top"><h3 class="status-name">Kyverno</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis concernant les politiques d’admission, la validation et les contrôleurs.</p>
+      <div class="security-links"><a href="https://github.com/kyverno/kyverno/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/kyverno/kyverno/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Harbor Avis du registre OCI : API, authentification, robots, artefacts et scanners. Kubernetes &amp; GitOps Harbor registry OCI">
+      <div class="security-card-top"><h3 class="status-name">Harbor</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis du registre OCI : API, authentification, robots, artefacts et scanners.</p>
+      <div class="security-links"><a href="https://github.com/goharbor/harbor/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/goharbor/harbor/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Helm Avis concernant le client Helm et ses dépendances. Kubernetes &amp; GitOps Helm charts">
+      <div class="security-card-top"><h3 class="status-name">Helm</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis concernant le client Helm et ses dépendances.</p>
+      <div class="security-links"><a href="https://github.com/helm/helm/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/helm/helm/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="ExternalDNS Avis de sécurité du contrôleur DNS Kubernetes et notes de version. Kubernetes &amp; GitOps external-dns DNS">
+      <div class="security-card-top"><h3 class="status-name">ExternalDNS</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis de sécurité du contrôleur DNS Kubernetes et notes de version.</p>
+      <div class="security-links"><a href="https://github.com/kubernetes-sigs/external-dns/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/kubernetes-sigs/external-dns/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Coder Avis de sécurité des workspaces, de l’authentification et de la plateforme. Kubernetes &amp; GitOps Coder workspaces">
+      <div class="security-card-top"><h3 class="status-name">Coder</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis de sécurité des workspaces, de l’authentification et de la plateforme.</p>
+      <div class="security-links"><a href="https://github.com/coder/coder/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/coder/coder/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Kargo Suivi des avis et des versions de l’outil de promotion GitOps. Kubernetes &amp; GitOps Kargo Akuity promotion">
+      <div class="security-card-top"><h3 class="status-name">Kargo</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Suivi des avis et des versions de l’outil de promotion GitOps.</p>
+      <div class="security-links"><a href="https://github.com/akuity/kargo/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/akuity/kargo/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="no" data-search="cert-manager Avis de sécurité du gestionnaire de certificats Kubernetes. Kubernetes &amp; GitOps cert-manager TLS PKI">
+      <div class="security-card-top"><h3 class="status-name">cert-manager</h3></div>
+      <p class="status-description">Avis de sécurité du gestionnaire de certificats Kubernetes.</p>
+      <div class="security-links"><a href="https://github.com/cert-manager/cert-manager/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/cert-manager/cert-manager/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="no" data-search="ingress-nginx Avis du contrôleur Ingress NGINX communautaire, distinct des autres distributions. Kubernetes &amp; GitOps ingress nginx kubernetes">
+      <div class="security-card-top"><h3 class="status-name">ingress-nginx</h3></div>
+      <p class="status-description">Avis du contrôleur Ingress NGINX communautaire, distinct des autres distributions.</p>
+      <div class="security-links"><a href="https://github.com/kubernetes/ingress-nginx/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/kubernetes/ingress-nginx/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+  </div>
+</section>
+<section class="status-section" data-group="Conteneurs &amp; CI/CD" aria-labelledby="security-group-1">
+  <h2 id="security-group-1">Conteneurs &amp; CI/CD <span class="group-count">9</span></h2>
+  <div class="status-grid">
+    <article class="status-link security-card" data-focus="yes" data-search="Docker Engine (Moby) Vulnérabilités du moteur Docker et des composants Moby. Conteneurs &amp; CI/CD docker engine daemon">
+      <div class="security-card-top"><h3 class="status-name">Docker Engine (Moby)</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Vulnérabilités du moteur Docker et des composants Moby.</p>
+      <div class="security-links"><a href="https://github.com/moby/moby/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/moby/moby/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Docker BuildKit Avis relatifs aux builds d’images, au cache et à l’exécution des étapes. Conteneurs &amp; CI/CD docker buildx buildkit cache">
+      <div class="security-card-top"><h3 class="status-name">Docker BuildKit</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis relatifs aux builds d’images, au cache et à l’exécution des étapes.</p>
+      <div class="security-links"><a href="https://github.com/moby/buildkit/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/moby/buildkit/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="containerd Avis du runtime de conteneurs utilisé par Kubernetes et Docker. Conteneurs &amp; CI/CD containerd runtime">
+      <div class="security-card-top"><h3 class="status-name">containerd</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis du runtime de conteneurs utilisé par Kubernetes et Docker.</p>
+      <div class="security-links"><a href="https://github.com/containerd/containerd/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/containerd/containerd/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="runc Avis sur l’isolation des conteneurs et les failles d’évasion. Conteneurs &amp; CI/CD runc OCI runtime">
+      <div class="security-card-top"><h3 class="status-name">runc</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis sur l’isolation des conteneurs et les failles d’évasion.</p>
+      <div class="security-links"><a href="https://github.com/opencontainers/runc/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/opencontainers/runc/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Terraform Avis sur Terraform CLI, l’état et les backends ; vérifier aussi les providers utilisés. Conteneurs &amp; CI/CD hashicorp terraform IaC">
+      <div class="security-card-top"><h3 class="status-name">Terraform</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis sur Terraform CLI, l’état et les backends ; vérifier aussi les providers utilisés.</p>
+      <div class="security-links"><a href="https://github.com/hashicorp/terraform/security/advisories" target="_blank" rel="noopener noreferrer">Advisories CLI <span aria-hidden="true">↗</span></a><a href="https://github.com/hashicorp/terraform/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="no" data-search="GitHub Actions Runner Avis sur le runner self-hosted GitHub Actions ; distinct des incidents du service GitHub. Conteneurs &amp; CI/CD github actions runner CI">
+      <div class="security-card-top"><h3 class="status-name">GitHub Actions Runner</h3></div>
+      <p class="status-description">Avis sur le runner self-hosted GitHub Actions ; distinct des incidents du service GitHub.</p>
+      <div class="security-links"><a href="https://github.com/actions/runner/security/advisories" target="_blank" rel="noopener noreferrer">Advisories runner <span aria-hidden="true">↗</span></a><a href="https://github.com/actions/runner/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Azure DevOps Documentation de sécurité Azure DevOps ; pour les CVE Microsoft, consulter aussi MSRC. Conteneurs &amp; CI/CD azure devops pipelines agents">
+      <div class="security-card-top"><h3 class="status-name">Azure DevOps</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Documentation de sécurité Azure DevOps ; pour les CVE Microsoft, consulter aussi MSRC.</p>
+      <div class="security-links"><a href="https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-overview?view=azure-devops" target="_blank" rel="noopener noreferrer">Guide sécurité <span aria-hidden="true">↗</span></a><a href="https://msrc.microsoft.com/update-guide" target="_blank" rel="noopener noreferrer">MSRC <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Podman Avis sur le moteur de conteneurs Podman et ses versions. Conteneurs &amp; CI/CD podman rootless">
+      <div class="security-card-top"><h3 class="status-name">Podman</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis sur le moteur de conteneurs Podman et ses versions.</p>
+      <div class="security-links"><a href="https://github.com/containers/podman/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/containers/podman/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="no" data-search="HashiCorp Vault Avis de sécurité des secrets, tokens et mécanismes d’authentification Vault. Conteneurs &amp; CI/CD vault secrets">
+      <div class="security-card-top"><h3 class="status-name">HashiCorp Vault</h3></div>
+      <p class="status-description">Avis de sécurité des secrets, tokens et mécanismes d’authentification Vault.</p>
+      <div class="security-links"><a href="https://github.com/hashicorp/vault/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/hashicorp/vault/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+  </div>
+</section>
+<section class="status-section" data-group="Observabilité &amp; données" aria-labelledby="security-group-2">
+  <h2 id="security-group-2">Observabilité &amp; données <span class="group-count">8</span></h2>
+  <div class="status-grid">
+    <article class="status-link security-card" data-focus="yes" data-search="Elastic Stack Avis de sécurité Elastic, Elasticsearch, Kibana et composants associés. Observabilité &amp; données elastic elasticsearch kibana logs">
+      <div class="security-card-top"><h3 class="status-name">Elastic Stack</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis de sécurité Elastic, Elasticsearch, Kibana et composants associés.</p>
+      <div class="security-links"><a href="https://www.elastic.co/community/security" target="_blank" rel="noopener noreferrer">Bulletins Elastic <span aria-hidden="true">↗</span></a><a href="https://www.elastic.co/guide/en/elastic-stack/current/release-notes.html" target="_blank" rel="noopener noreferrer">Notes de version <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="no" data-search="Grafana Bulletins officiels de Grafana Labs avec CVE et recommandations. Observabilité &amp; données grafana dashboard">
+      <div class="security-card-top"><h3 class="status-name">Grafana</h3></div>
+      <p class="status-description">Bulletins officiels de Grafana Labs avec CVE et recommandations.</p>
+      <div class="security-links"><a href="https://grafana.com/security/security-advisories/" target="_blank" rel="noopener noreferrer">Bulletins <span aria-hidden="true">↗</span></a><a href="https://grafana.com/docs/grafana/latest/whatsnew/" target="_blank" rel="noopener noreferrer">Versions <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Prometheus Avis sur Prometheus Server et les composants du projet. Observabilité &amp; données prometheus metrics">
+      <div class="security-card-top"><h3 class="status-name">Prometheus</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis sur Prometheus Server et les composants du projet.</p>
+      <div class="security-links"><a href="https://github.com/prometheus/prometheus/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/prometheus/prometheus/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Thanos Avis de sécurité et mises à jour du stockage de métriques Thanos. Observabilité &amp; données thanos observability metrics">
+      <div class="security-card-top"><h3 class="status-name">Thanos</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis de sécurité et mises à jour du stockage de métriques Thanos.</p>
+      <div class="security-links"><a href="https://github.com/thanos-io/thanos/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/thanos-io/thanos/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="VictoriaMetrics Avis et versions de VictoriaMetrics pour le stockage de métriques. Observabilité &amp; données victoriametrics vmagent metrics">
+      <div class="security-card-top"><h3 class="status-name">VictoriaMetrics</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis et versions de VictoriaMetrics pour le stockage de métriques.</p>
+      <div class="security-links"><a href="https://github.com/VictoriaMetrics/VictoriaMetrics/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/VictoriaMetrics/VictoriaMetrics/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="OpenTelemetry Collector Avis du Collector et de ses composants ; vérifier aussi les distributions tierces. Observabilité &amp; données otel opentelemetry collector telemetry">
+      <div class="security-card-top"><h3 class="status-name">OpenTelemetry Collector</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis du Collector et de ses composants ; vérifier aussi les distributions tierces.</p>
+      <div class="security-links"><a href="https://github.com/open-telemetry/opentelemetry-collector/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://github.com/open-telemetry/opentelemetry-collector/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="PostgreSQL Page officielle listant les correctifs de sécurité et versions PostgreSQL affectées. Observabilité &amp; données postgres database">
+      <div class="security-card-top"><h3 class="status-name">PostgreSQL</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Page officielle listant les correctifs de sécurité et versions PostgreSQL affectées.</p>
+      <div class="security-links"><a href="https://www.postgresql.org/support/security/" target="_blank" rel="noopener noreferrer">Bulletins PostgreSQL <span aria-hidden="true">↗</span></a><a href="https://www.postgresql.org/docs/release/" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Trino Avis et mises à jour du moteur de requêtes distribuées Trino. Observabilité &amp; données trino sql data">
+      <div class="security-card-top"><h3 class="status-name">Trino</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis et mises à jour du moteur de requêtes distribuées Trino.</p>
+      <div class="security-links"><a href="https://github.com/trinodb/trino/security/advisories" target="_blank" rel="noopener noreferrer">Advisories <span aria-hidden="true">↗</span></a><a href="https://trino.io/docs/current/release.html" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a></div>
+    </article>
+  </div>
+</section>
+<section class="status-section" data-group="Systèmes &amp; plateformes" aria-labelledby="security-group-3">
+  <h2 id="security-group-3">Systèmes &amp; plateformes <span class="group-count">6</span></h2>
+  <div class="status-grid">
+    <article class="status-link security-card" data-focus="yes" data-search="Red Hat Enterprise Linux Avis RHSA, correctifs RPM et errata pour RHEL. Systèmes &amp; plateformes rhel redhat linux">
+      <div class="security-card-top"><h3 class="status-name">Red Hat Enterprise Linux</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis RHSA, correctifs RPM et errata pour RHEL.</p>
+      <div class="security-links"><a href="https://access.redhat.com/security/security-updates/" target="_blank" rel="noopener noreferrer">Avis Red Hat <span aria-hidden="true">↗</span></a><a href="https://access.redhat.com/security/cve/" target="_blank" rel="noopener noreferrer">Base CVE <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Ubuntu / Canonical Ubuntu Security Notices et suivi des CVE pour les noyaux et paquets. Systèmes &amp; plateformes ubuntu linux kernel">
+      <div class="security-card-top"><h3 class="status-name">Ubuntu / Canonical</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Ubuntu Security Notices et suivi des CVE pour les noyaux et paquets.</p>
+      <div class="security-links"><a href="https://ubuntu.com/security/notices" target="_blank" rel="noopener noreferrer">USN <span aria-hidden="true">↗</span></a><a href="https://ubuntu.com/security/cves" target="_blank" rel="noopener noreferrer">CVE Tracker <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="VMware vSphere Avis de sécurité de l’écosystème VMware et correctifs de virtualisation. Systèmes &amp; plateformes vmware vsphere esxi vcenter">
+      <div class="security-card-top"><h3 class="status-name">VMware vSphere</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis de sécurité de l’écosystème VMware et correctifs de virtualisation.</p>
+      <div class="security-links"><a href="https://www.vmware.com/security/advisories.html" target="_blank" rel="noopener noreferrer">Avis VMware <span aria-hidden="true">↗</span></a><a href="https://support.broadcom.com/" target="_blank" rel="noopener noreferrer">Support Broadcom <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Synology DSM Avis officiels sur DSM, NAS et applications Synology. Systèmes &amp; plateformes synology nas dsm">
+      <div class="security-card-top"><h3 class="status-name">Synology DSM</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis officiels sur DSM, NAS et applications Synology.</p>
+      <div class="security-links"><a href="https://www.synology.com/en-global/security/advisory" target="_blank" rel="noopener noreferrer">Bulletins Synology <span aria-hidden="true">↗</span></a><a href="https://www.synology.com/en-global/releaseNote/DSM" target="_blank" rel="noopener noreferrer">Notes DSM <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Microsoft MSRC Guide Microsoft Security Update : CVE et produits Microsoft, dont Windows et Azure. Systèmes &amp; plateformes msrc windows microsoft azure">
+      <div class="security-card-top"><h3 class="status-name">Microsoft MSRC</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Guide Microsoft Security Update : CVE et produits Microsoft, dont Windows et Azure.</p>
+      <div class="security-links"><a href="https://msrc.microsoft.com/update-guide" target="_blank" rel="noopener noreferrer">Security Update Guide <span aria-hidden="true">↗</span></a><a href="https://www.microsoft.com/en-us/msrc" target="_blank" rel="noopener noreferrer">MSRC <span aria-hidden="true">↗</span></a></div>
+    </article>
+    <article class="status-link security-card" data-focus="yes" data-search="Debian Avis Debian Security Advisories et mises à jour de paquets. Systèmes &amp; plateformes debian dsa linux">
+      <div class="security-card-top"><h3 class="status-name">Debian</h3><span class="security-tag">Prioritaire</span></div>
+      <p class="status-description">Avis Debian Security Advisories et mises à jour de paquets.</p>
+      <div class="security-links"><a href="https://www.debian.org/security/" target="_blank" rel="noopener noreferrer">Bulletins Debian <span aria-hidden="true">↗</span></a><a href="https://security-tracker.debian.org/tracker/" target="_blank" rel="noopener noreferrer">Security Tracker <span aria-hidden="true">↗</span></a></div>
+    </article>
+  </div>
+</section>
+</div>
+<div class="empty-state" id="emptyState" hidden><h2>Aucun produit trouvé</h2><p>Essaie une autre recherche ou change de catégorie.</p><button class="reset-button" id="clearSearch" type="button">Réinitialiser</button></div>
+<section class="extra-links" aria-labelledby="securityResourcesTitle"><h2 id="securityResourcesTitle">Autres ressources utiles</h2><p>Pour les dépendances transitives et les produits absents de l'annuaire :</p><div class="feed-links"><a href="https://github.com/advisories" target="_blank" rel="noopener noreferrer">GitHub Advisory Database ↗</a><a href="https://nvd.nist.gov/" target="_blank" rel="noopener noreferrer">NIST NVD ↗</a><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener noreferrer">CISA KEV ↗</a><a href="https://www.cve.org/" target="_blank" rel="noopener noreferrer">CVE Program ↗</a></div></section>
+</main><footer class="site-footer"><div class="footer-inner"><span>© 2026 Toolbox</span></div></footer>
+<noscript><p class="noscript-hint">Les liens restent accessibles sans JavaScript ; recherche et filtres nécessitent JavaScript.</p></noscript>
+</body></html>
