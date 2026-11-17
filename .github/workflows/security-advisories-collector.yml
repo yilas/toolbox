@@ -1,0 +1,56 @@
+name: Security advisory collector tests
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/collect_security_advisories.py'
+      - 'tests/test_security_collector.py'
+      - 'tests/security-advisories-feed.test.cjs'
+      - 'tools/data/security-advisories.json'
+      - 'tools/security-advisories.html'
+      - 'tools/security-advisories-feed.js'
+      - 'tools/security-advisories-feed.css'
+      - '.github/workflows/security-advisories-collector.yml'
+      - '.github/workflows/security-advisories-refresh.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/collect_security_advisories.py'
+      - 'tests/test_security_collector.py'
+      - 'tests/security-advisories-feed.test.cjs'
+      - 'tools/data/security-advisories.json'
+      - 'tools/security-advisories.html'
+      - 'tools/security-advisories-feed.js'
+      - 'tools/security-advisories-feed.css'
+
+permissions:
+  contents: read
+
+jobs:
+  collector-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline collector unit tests
+        run: python -m unittest discover -s tests -p 'test_security_collector.py'
+      - name: Validate frontend JavaScript syntax
+        run: node --check tools/security-advisories-feed.js
+      - name: Frontend and directory regression tests
+        run: node --test tests/security-advisories-feed.test.cjs tests/security-advisories.test.cjs
+      - name: Validate snapshot JSON structure
+        run: |
+          python - <<'PY'
+          import json
+          with open('tools/data/security-advisories.json', encoding='utf-8') as f:
+              data = json.load(f)
+          assert data['schema_version'] == 1
+          assert isinstance(data['alerts'], list)
+          assert isinstance(data['sources'], dict)
+          PY

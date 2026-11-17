@@ -4,10 +4,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f7fc">
 <meta name="description" content="Annuaire de bulletins de sécurité officiels par produit : AKS, Cilium, Argo CD, Kyverno, Harbor, Docker, Terraform et plus.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <link rel="icon" href="../favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="../portal.css"><link rel="stylesheet" href="service-status.css">
-<script src="service-status.js" defer></script>
+<link rel="stylesheet" href="../portal.css"><link rel="stylesheet" href="service-status.css"><link rel="stylesheet" href="security-advisories-feed.css">
+<script src="service-status.js" defer></script><script src="security-advisories-feed.js" defer></script>
 <title>Security Advisories — Toolbox</title>
 </head>
 <body>
@@ -15,6 +15,17 @@
 <main class="page">
 <section class="intro" aria-labelledby="pageTitle"><p class="eyebrow">RÉFÉRENCE · CYBERSÉCURITÉ</p><h1 id="pageTitle">Security Advisories</h1><p>Bulletins de sécurité, avis de vulnérabilité et notes de correction pour les produits de ta stack DevOps et d'autres technologies utiles.</p><p class="related-page"><a href="service-status.html">Voir aussi : état des services et incidents ↗</a></p></section>
 <div class="status-notice" role="note"><strong>Annuaire de sources officielles, pas de veille en temps réel.</strong> Les liens ouvrent les pages des éditeurs ; aucune CVE ni version affectée n'est récupérée automatiquement. Pour chaque alerte, vérifie la version installée, les composants concernés, les mesures d'atténuation et la disponibilité des correctifs. Les offres Enterprise peuvent publier des avis distincts sur leur portail de support.</div>
+<section class="advisory-feed" id="advisoryFeed" aria-labelledby="feedTitle">
+  <div class="feed-heading"><div><p class="eyebrow">COLLECTE PÉRIODIQUE</p><h2 id="feedTitle">Derniers avis publiés</h2></div><span class="feed-source-note">GitHub Advisories · Microsoft AKS</span></div>
+  <p class="feed-state" id="feedState" role="status" aria-live="polite">Chargement du dernier instantané publié…</p>
+  <div class="feed-filters" id="feedFilters" hidden>
+    <label for="feedSeverity">Criticité <select id="feedSeverity"><option value="all">Toutes</option><option value="critical">Critique</option><option value="high">Élevée</option><option value="moderate">Modérée</option><option value="low">Faible</option><option value="unknown">Non précisée</option></select></label>
+    <label for="feedProduct">Produit <select id="feedProduct"><option value="all">Tous</option></select></label>
+    <span id="feedCount" class="feed-count" role="status">0 avis affiché</span>
+  </div>
+  <div id="feedList" class="feed-list"></div>
+  <p class="feed-disclaimer">La présence d'un avis ne prouve pas que ta version est affectée. Vérifie toujours les conditions et les correctifs dans la source officielle.</p>
+</section>
 <div class="catalogue-toolbar"><label class="search-field" for="statusSearch"><span class="sr-only">Rechercher un produit ou une vulnérabilité</span><span aria-hidden="true">⌕</span><input type="search" id="statusSearch" placeholder="Produit, éditeur, catégorie…" autocomplete="off" spellcheck="false"><kbd class="shortcut" aria-hidden="true">/</kbd></label><p class="count" id="resultCount" data-singular="produit" data-plural="produits" role="status" aria-live="polite">35 produits</p></div>
 <nav class="category-nav" aria-label="Filtrer les produits"><button class="category-button active" type="button" data-category="all" aria-pressed="true">Tous</button>
 <button class="category-button" type="button" data-category="priority" aria-pressed="false">Stack prioritaire</button>
