@@ -38,7 +38,7 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(items[0]["cves"], ["CVE-2026-12345"])
         self.assertEqual(items[0]["affected_versions"], ["example: < 2.1.0"])
         self.assertEqual(items[0]["patched_versions"], ["example: 2.1.0"])
-        self.assertEqual(items[0]["url"], "https://github.com/argoproj/argo-cd/security/advisories/GHSA-AAAA-BBBB-CCCC")
+        self.assertEqual(items[0]["url"], "https://github.com/argoproj/argo-cd/security/advisories/GHSA-aaaa-bbbb-cccc")
 
     def test_aks_bulletins_keep_unknown_severity_and_do_not_infer_versions(self):
         html = """
