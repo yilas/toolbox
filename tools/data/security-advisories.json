@@ -1,55 +1,54 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-17T17:15:54Z",
+  "generated_at": "2026-11-17T17:28:04Z",
   "sources": {
     "aks": {
       "product": "AKS",
-      "status": "error",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": null,
-      "error": "ValueError"
+      "status": "ok",
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     },
     "github:argoproj/argo-cd": {
       "product": "Argo CD",
       "status": "ok",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": "2026-11-17T17:15:54Z"
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     },
     "github:cilium/cilium": {
       "product": "Cilium (OSS)",
       "status": "ok",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": "2026-11-17T17:15:54Z"
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     },
     "github:kyverno/kyverno": {
       "product": "Kyverno",
       "status": "ok",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": "2026-11-17T17:15:54Z"
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     },
     "github:goharbor/harbor": {
       "product": "Harbor",
       "status": "ok",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": "2026-11-17T17:15:54Z"
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     },
     "github:coder/coder": {
       "product": "Coder",
       "status": "ok",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": "2026-11-17T17:15:54Z"
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     },
     "github:akuity/kargo": {
       "product": "Kargo",
       "status": "ok",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": "2026-11-17T17:15:54Z"
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     },
     "github:kubernetes/kubernetes": {
       "product": "Kubernetes",
       "status": "ok",
-      "checked_at": "2026-11-17T17:15:54Z",
-      "last_success_at": "2026-11-17T17:15:54Z"
+      "checked_at": "2026-11-17T17:28:04Z",
+      "last_success_at": "2026-11-17T17:28:04Z"
     }
   },
   "alerts": [
@@ -204,6 +203,39 @@
         "Cilium: >= v1.20.0, < v1.20.2"
       ],
       "patched_versions": []
+    },
+    {
+      "id": "AKS-2026-0008",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0008 AKS advisory for CVE-2026-111497",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0008-aks-advisory-for-cve-2026-111497",
+      "published_at": "2026-11-03T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-111497"
+      ],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "CVE-2026-111497 affects the Brotli decoder. Applications that decompress malicious Brotli data can expose memory, crash, or allow remote code execution."
+    },
+    {
+      "id": "AKS-2026-0007",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0007 AKS advisory and mitigation guide for CVE-2026-99999 and CVE-2026-98432",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0007-aks-advisory-and-mitigation-guide-for-cve-2026-99999-and-cve-2026-98432",
+      "published_at": "2026-11-02T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-98432",
+        "CVE-2026-99999"
+      ],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "This security bulletin covers two vulnerabilities in the Linux kernel's IPv4 networking subsystem that affect AKS Linux nodes."
     },
     {
       "id": "GHSA-9FRJ-7F83-X984",
@@ -715,6 +747,20 @@
         "github.com/coder/coder/v2: >= 2.38.0, < 2.38.1"
       ],
       "patched_versions": []
+    },
+    {
+      "id": "AKS-2026-0006",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0006 OpenSSL end-of-life scanner findings in AKS-managed add-on images",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0006-openssl-end-of-life-scanner-findings-in-aks-managed-add-on-images",
+      "published_at": "2026-10-21T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "Some vulnerability scanners report OpenSSL 3.3 as end of life (EOL) in AKS-managed add-on container images. This article explains why an upstream EOL warning alone doesn't establish that the Azure Linux package lacks security maintenance."
     },
     {
       "id": "GHSA-24VH-Q7RG-243W",
@@ -1487,6 +1533,20 @@
       "patched_versions": []
     },
     {
+      "id": "AKS-2026-0005",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0005 Increased Ubuntu 22.04 Linux kernel CVE findings from Canonical reclassifications",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0005-increased-ubuntu-2204-linux-kernel-cve-findings-from-canonical-reclassifications",
+      "published_at": "2026-07-07T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "This bulletin primarily affects AKS node pools running Ubuntu 22.04."
+    },
+    {
       "id": "GHSA-W7C2-W76W-5HMJ",
       "source": "github:cilium/cilium",
       "product": "Cilium (OSS)",
@@ -1982,6 +2042,20 @@
       "patched_versions": []
     },
     {
+      "id": "AKS-2026-0004",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0004 Azure Monitor Container Insights add-on uses nodes/proxy permission in Kubernetes versions < 1.33",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0004-azure-monitor-container-insights-add-on-uses-nodesproxy-permission-in-kubernetes-versions-133",
+      "published_at": "2026-05-11T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "This bulletin provides an update regarding the Azure Monitor Container Insights add-on (ama-logs) and its use of the Kubernetes nodes/proxy permission."
+    },
+    {
       "id": "GHSA-3V3M-WC6V-X4X3",
       "source": "github:argoproj/argo-cd",
       "product": "Argo CD",
@@ -1997,6 +2071,22 @@
         "github.com/argoproj/argo-cd/v3: 3.2.0 - 3.3.8"
       ],
       "patched_versions": []
+    },
+    {
+      "id": "AKS-2026-0003",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0003 AKS Advisory & Mitigation Guide for CVE-2026-31431 (Copy Fail)",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0003-aks-advisory-mitigation-guide-for-cve-2026-31431-copy-fail",
+      "published_at": "2026-05-01T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-31431"
+      ],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "This bulletin provides an update on a local privilege escalation (LPE) vulnerability that was publicly disclosed on April 29, 2026 affecting the Linux kernel's algif_aead module. This vulnerability has been assigned CVE-2026-31431 and is referred to as \"Copy Fail\"."
     },
     {
       "id": "GHSA-Q98M-7W8C-W388",
@@ -2223,6 +2313,22 @@
       "patched_versions": []
     },
     {
+      "id": "AKS-2026-0002",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0002 gRPC-Go Authorization Bypass via Missing Leading Slash in :path",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0002-grpc-go-authorization-bypass-via-missing-leading-slash-in-path",
+      "published_at": "2026-03-20T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-33186"
+      ],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "This bulletin provides an update regarding a recently disclosed vulnerability (CVE-2026-33186) in gRPC-Go (google.golang.org/grpc). The gRPC-Go server accepted HTTP/2 requests where the :path pseudo-header omitted the mandatory leading slash (for example, Service/Method instead of /Service/Method). While the server rou"
+    },
+    {
       "id": "GHSA-J94X-8WCP-X7HM",
       "source": "github:akuity/kargo",
       "product": "Kargo",
@@ -2239,6 +2345,20 @@
         "ghcr.io/akuity/kargo: >= v1.1.0"
       ],
       "patched_versions": []
+    },
+    {
+      "id": "AKS-2026-0001",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2026-0001 TLS 1.2 Handshake Enforcement with Extended Master Secret (EMS) in AKS v1.34",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0001-tls-12-handshake-enforcement-with-extended-master-secret-ems-in-aks-v134",
+      "published_at": "2026-03-05T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "This bulletin provides an update regarding a change in Go 1.25 to reject TLS 1.2 handshake without extended master secret (EMS) when FIPS mode is enabled. Starting AKS v1.34, Kubernetes control plane components are built with Go 1.25 and FIPS‑validated cryptographic modules, which enforce EMS for TLS 1.2 connections on"
     },
     {
       "id": "GHSA-5R23-PRX4-MQG3",
@@ -2310,6 +2430,20 @@
         "ghcr.io/akuity/kargo: <= 1.8.6"
       ],
       "patched_versions": []
+    },
+    {
+      "id": "AKS-2025-0013",
+      "source": "aks",
+      "product": "AKS",
+      "title": "AKS-2025-0013 Portworx Half-Blind SSRF in kube-controller-manager",
+      "url": "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2025-0013-portworx-half-blind-ssrf-in-kube-controller-manager",
+      "published_at": "2025-12-01T00:00:00Z",
+      "updated_at": null,
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [],
+      "patched_versions": [],
+      "summary": "This bulletin provides an update regarding a recent vulnerability in the Kubernetes kube-controller-manager when using the in-tree Portworx StorageClass. This issue allows authorized users to leak arbitrary information from unprotected endpoints in the control plane’s host network (including link-local or loopback serv"
     },
     {
       "id": "GHSA-38PP-6GCP-RQVM",
