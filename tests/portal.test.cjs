@@ -92,8 +92,8 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
   };
 }
 
-test("Le catalogue présente les onze outils réellement présents, sans lien fictif", () => {
-  assert.equal(cards.length, 11);
+test("Le catalogue présente les douze outils réellement présents, sans lien fictif", () => {
+  assert.equal(cards.length, 12);
   assert.equal(new Set(cards.map(card => card.href)).size, cards.length);
   cards.forEach(card => {
     assert.match(card.href, /^tools\/[a-zA-Z0-9_.-]+\.html$/);
@@ -117,7 +117,7 @@ test("Le portail fonctionne sans JS et ne dépend pas de CDN", () => {
 
 test("Recherche : accents, casse, plusieurs termes et aucun résultat", () => {
   const page = createPage();
-  assert.equal(page.elements.resultCount.textContent, "11 outils");
+  assert.equal(page.elements.resultCount.textContent, "12 outils");
   assert.equal(page.bodyClass.has("no-js"), false);
 
   page.elements.toolSearch.value = "reseaux";
@@ -153,7 +153,7 @@ test("Clavier : slash focalise la recherche, Escape la réinitialise", () => {
   page.keydown({ key: "Escape", target: page.elements.toolSearch });
   assert.equal(page.elements.toolSearch.value, "");
   assert.equal(page.elements.toolSearch.blurred, true);
-  assert.equal(page.elements.resultCount.textContent, "11 outils");
+  assert.equal(page.elements.resultCount.textContent, "12 outils");
 });
 
 test("Thème : partage de la préférence avec le générateur de mots de passe", () => {
