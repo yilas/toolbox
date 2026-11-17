@@ -29,6 +29,7 @@ test("annuaire complet et navigation bidirectionnelle", () => {
   assert.match(status, /href="security-advisories\.html"/);
   assert.match(html, /href="service-status\.css"/);
   assert.match(html, /src="service-status\.js"/);
+  assert.match(html, /src="security-advisories-feed\.js"/);
 });
 
 test("liens officiels en HTTPS, pas de flux externe exécuté", () => {
@@ -46,7 +47,7 @@ test("liens officiels en HTTPS, pas de flux externe exécuté", () => {
       assert.ok(allowed.includes(url.hostname), url.hostname);
     }
   }
-  assert.match(html, /connect-src 'none'/);
+  assert.match(html, /connect-src 'self'/); // Only same-origin JSON snapshot is fetched.
   assert.match(html, /pas de veille en temps réel/i);
   assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/i);
   assert.match(css, /prefers-reduced-motion/);
