@@ -1,0 +1,44 @@
+name: Security Advisories directory
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tools/security-advisories.html'
+      - 'tools/service-status.html'
+      - 'tools/service-status.css'
+      - 'tools/service-status.js'
+      - 'tests/security-advisories.test.cjs'
+      - 'tests/service-status.test.cjs'
+      - 'tests/portal.test.cjs'
+      - 'tests/toolbox-return-navigation.test.cjs'
+      - '.github/workflows/security-advisories.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'tools/security-advisories.html'
+      - 'tools/service-status.html'
+      - 'tools/service-status.css'
+      - 'tools/service-status.js'
+      - 'tests/security-advisories.test.cjs'
+      - 'tests/service-status.test.cjs'
+      - 'tests/portal.test.cjs'
+      - 'tests/toolbox-return-navigation.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-directory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check shared JavaScript syntax
+        run: node --check tools/service-status.js
+      - name: Run directory, portal and navigation tests
+        run: node --test tests/security-advisories.test.cjs tests/service-status.test.cjs tests/portal.test.cjs tests/toolbox-return-navigation.test.cjs
