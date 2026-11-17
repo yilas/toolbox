@@ -1,0 +1,45 @@
+name: Refresh security advisory snapshot
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: security-advisory-sync
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify collector tests
+        run: python -m unittest discover -s tests -p 'test_security_collector.py'
+      - name: Collect official advisories
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/collect_security_advisories.py
+      - name: Propose updated JSON for review (never auto-merge)
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        with:
+          token: ${{ github.token }}
+          add-paths: tools/data/security-advisories.json
+          branch: automation/security-advisories-data
+          base: main
+          commit-message: 'data: refresh official security advisories snapshot'
+          title: 'data: refresh AKS and GitHub security advisories'
+          body: |
+            Mise à jour automatique des bulletins de sécurité publics (AKS et GitHub).
+            **Aucune fusion automatique.**
+            Vérifier les sources avec status=error dans le JSON : leurs données précédentes sont conservées.
+            Les dates de publication, versions et criticités proviennent des sources officielles ; aucune applicabilité n'est présumée.
+          delete-branch: true
