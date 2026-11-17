@@ -28,6 +28,7 @@ function fakePage(snapshot, { fail = false } = {}) {
     ["advisoryFeed", "feedState", "feedList", "feedFilters",
       "feedSeverity", "feedProduct", "feedCount"].map(id => [id, new Element()])
   );
+  elements.feedFilters.hidden = true; // Mirrors the hidden attribute in the HTML fixture.
   const doc = {
     getElementById(id) { return elements[id]; },
     createElement(tag) { return new Element(tag); },
