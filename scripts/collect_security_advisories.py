@@ -108,6 +108,9 @@ def github_advisories(repo: str, product: str, *, token: str, current: datetime)
         cves = sorted({v["value"].upper() for v in identifiers
                        if isinstance(v, dict) and v.get("type") == "CVE"
                        and isinstance(v.get("value"), str) and CVE_RE.fullmatch(v["value"])})
+        cve_id = entry.get("cve_id")
+        if isinstance(cve_id, str) and CVE_RE.fullmatch(cve_id):
+            cves = sorted(set(cves) | {cve_id.upper()})
         if not cves:
             cves = sorted(set(x.upper() for x in CVE_RE.findall(entry.get("summary") or "")))
         affected, patched = set(), set()
