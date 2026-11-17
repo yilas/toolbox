@@ -6,7 +6,7 @@ La page `tools/security-advisories.html` conserve son annuaire officiel et affic
 instantané JSON **publié après revue**, pas une supervision temps réel.
 
 Sources automatisées :
-- Microsoft Learn : bulletins AKS (`AKS-YYYY-NNNN`).
+- MicrosoftDocs : bulletins AKS (`AKS-YYYY-NNNN`), lus depuis le Markdown officiel du dépôt public `MicrosoftDocs/azure-aks-docs` et reliés à Microsoft Learn.
 - GitHub Security Advisories publics : `argoproj/argo-cd`, `cilium/cilium`,
   `kyverno/kyverno`, `goharbor/harbor`, `coder/coder`,
   `akuity/kargo` et `kubernetes/kubernetes`.
@@ -39,6 +39,7 @@ dans la configuration prévue.
 ## Validation et reprise sur erreur
 
 - Tests hors ligne : `python -m unittest discover -s tests -p 'test_security_collector.py'`
+- Test d'intégration CI : téléchargement du Markdown AKS actuel depuis `raw.githubusercontent.com/MicrosoftDocs/azure-aks-docs/main/articles/aks/security-bulletins/overview.md`, puis vérification de la présence d'avis récents. Une modification incompatible du document fait échouer la CI plutôt que de publier silencieusement une collecte vide.
 - Tests de l'interface : `node --test tests/security-advisories-feed.test.cjs`
 - Si une source échoue, son dernier jeu d'avis est conservé et son état passe
   à `error`. Le JSON indique `checked_at` et `last_success_at`.
@@ -52,7 +53,7 @@ dans la configuration prévue.
 
 - GitHub : sévérité, CVE et plages de versions provenant des champs structurés
   des avis publics. Les composants Enterprise peuvent avoir des avis séparés.
-- AKS : identifiant, titre, date, CVE et lien direct vers la section Microsoft Learn.
+- AKS : identifiant, titre, date, CVE cité dans le titre ou la première description, et lien vers la section Microsoft Learn. Les CVE mentionnées seulement comme exemples historiques ne sont pas associées automatiquement à l'avis.
   La sévérité reste `unknown` et les versions sont laissées vides tant qu'un
   extracteur structuré fiable n'existe pas. Ne pas inférer une version affectée
   depuis du texte libre ou un simple scanner CVE.

@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timedelta, timezone
-from html.parser import HTMLParser
 import json
 import os
 from pathlib import Path
@@ -19,6 +18,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 AKS_URL = "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview"
+AKS_MARKDOWN_URL = ("https://raw.githubusercontent.com/MicrosoftDocs/azure-aks-docs/"
+                    "main/articles/aks/security-bulletins/overview.md")
 REPOSITORIES = {
     "argoproj/argo-cd": "Argo CD",
     "cilium/cilium": "Cilium (OSS)",
@@ -31,7 +32,8 @@ REPOSITORIES = {
 OUTPUT = Path("tools/data/security-advisories.json")
 CVE_RE = re.compile(r"\bCVE-\d{4}-\d{4,}\b", re.IGNORECASE)
 AKS_RE = re.compile(r"\bAKS-\d{4}-\d{4}\b", re.IGNORECASE)
-DATE_RE = re.compile(r"Published date:\s*([A-Za-z]+ \d{1,2}, \d{4})", re.I)
+DATE_RE = re.compile(r"^\s*Published\s+date\s*:\s*([A-Za-z]+ \d{1,2}, \d{4})\s*$", re.I)
+AKS_HEADING_RE = re.compile(r"(?m)^##[ \t]+([^\r\n]+)$")
 MAX_BYTES = 5_000_000
 MAX_AGE_DAYS = 365
 MAX_PER_SOURCE = 40
@@ -146,102 +148,104 @@ def github_advisories(repo: str, product: str, *, token: str, current: datetime)
     return sorted(items, key=lambda item: (item["published_at"], item["id"]), reverse=True)[:MAX_PER_SOURCE]
 
 
-class AKSBulletinParser(HTMLParser):
-    """Extract individual AKS bulletins from the official overview, conservatively."""
+def _aks_plain_text(value: str) -> str:
+    """Remove only common Markdown formatting from a display excerpt."""
+    value = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", value)
+    value = value.replace(chr(96), "").replace("**", "").replace("__", "")
+    return " ".join(value.split())
 
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self.bulletins = []
-        self.current = None
-        self.heading = None
-        self.heading_id = ""
-        self.paragraph = None
 
-    def handle_starttag(self, tag, attrs):
-        if tag == "h2":
-            self._finish()
-            self.heading = []
-            self.heading_id = dict(attrs).get("id", "")
-        elif tag == "p" and self.current is not None:
-            self.paragraph = []
+def _aks_sections(markdown: str) -> list[tuple[str, str]]:
+    """Find level-2 AKS bulletins; never include text from the next section."""
+    headings = list(AKS_HEADING_RE.finditer(markdown))
+    sections = []
+    for index, heading in enumerate(headings):
+        title = heading.group(1).strip()
+        if not AKS_RE.match(title):
+            continue
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(markdown)
+        sections.append((title, markdown[heading.end():end]))
+    return sections
 
-    def handle_data(self, data):
-        if self.heading is not None:
-            self.heading.append(data)
-        elif self.paragraph is not None:
-            self.paragraph.append(data)
 
-    def handle_endtag(self, tag):
-        if tag == "h2" and self.heading is not None:
-            title = " ".join(" ".join(self.heading).split())
-            match = AKS_RE.search(title)
-            self.current = {
-                "id": match.group(0).upper(),
-                "title": title[:240],
-                "anchor": self.heading_id,
-                "paragraphs": [],
-            } if match else None
-            self.heading = None
-        elif tag == "p" and self.paragraph is not None:
-            text = " ".join(" ".join(self.paragraph).split())
-            if text and self.current is not None:
-                self.current["paragraphs"].append(text)
-            self.paragraph = None
+def _aks_date(body: str) -> datetime | None:
+    # MicrosoftDocs publishes **Published date**: and **Published Date**: variants.
+    # Check only the beginning of each bulletin, never a referenced article's date.
+    for line in body.splitlines()[:18]:
+        plain = line.strip().replace("**", "").replace("__", "")
+        match = DATE_RE.match(plain)
+        if not match:
+            continue
+        try:
+            return datetime.strptime(match.group(1), "%B %d, %Y").replace(tzinfo=timezone.utc)
+        except ValueError:
+            return None
+    return None
 
-    def _finish(self):
-        if self.current is not None:
-            self.bulletins.append(self.current)
-            self.current = None
 
-    def close(self):
-        super().close()
-        self._finish()
+def _aks_description(body: str) -> str:
+    # Extract the first prose paragraph in the Description section, not the
+    # References/Affected Versions/Resolutions sections (which may cite unrelated CVEs).
+    match = re.search(
+        r"(?ms)^###\s+Description\s*$\s*(.*?)(?=^###\s+|^##\s+|\Z)", body
+    )
+    if not match:
+        return ""
+    paragraphs = re.split(r"\n\s*\n", match.group(1).strip())
+    for paragraph in paragraphs:
+        if paragraph and not paragraph.lstrip().startswith(("-", "|", ">", "#")):
+            return _aks_plain_text(paragraph)
+    return ""
+
+
+def _aks_anchor(title: str) -> str:
+    # Microsoft Learn generates heading slugs. Unknown punctuation is stripped;
+    # a changed anchor still opens the authoritative overview page.
+    slug = re.sub(r"[^a-z0-9 -]", "", title.lower())
+    return re.sub(r"\s+", "-", slug.strip())[:180]
 
 
 def aks_advisories(*, current: datetime) -> list[dict]:
-    parser = AKSBulletinParser()
-    parser.feed(request_bytes(AKS_URL).decode("utf-8"))
-    parser.close()
-    if not parser.bulletins:
-        raise ValueError("No AKS bulletins detected; refusing to publish an empty feed")
+    """Parse MicrosoftDocs' public Markdown source, not rendered Learn HTML.
+
+    Do not infer severity or affected/fixed versions from free-form text.
+    """
+    markdown = request_bytes(AKS_MARKDOWN_URL).decode("utf-8-sig")
+    sections = _aks_sections(markdown)
+    if not sections:
+        raise ValueError("No AKS bulletin headings in the official Markdown source")
     items = []
-    for bulletin in parser.bulletins:
-        date = None
-        for paragraph in bulletin["paragraphs"][:5]:
-            match = DATE_RE.search(paragraph)
-            if match:
-                try:
-                    date = datetime.strptime(match.group(1), "%B %d, %Y").replace(tzinfo=timezone.utc)
-                except ValueError:
-                    pass
-                break
+    parsed_dates = 0
+    for title, body in sections:
+        date = _aks_date(body)
         if date is None:
             continue
+        parsed_dates += 1
         published = date.isoformat(timespec="seconds").replace("+00:00", "Z")
         if not recent(published, current=current):
             continue
-        text = " ".join(bulletin["paragraphs"][:8])
-        cves = sorted({cve.upper() for cve in CVE_RE.findall(bulletin["title"] + " " + text)})[:12]
-        summary = next((p for p in bulletin["paragraphs"] if not DATE_RE.search(p)), bulletin["title"])
-        anchor = bulletin["anchor"]
-        # Only use the anchor actually supplied by Microsoft Learn.
-        url = AKS_URL + ("#" + anchor if re.fullmatch(r"[a-z0-9_-]{1,150}", anchor) else "")
+        bulletin_id = AKS_RE.match(title).group(0).upper()
+        description = _aks_description(body)
+        # Only associate CVEs in the heading or opening description paragraph.
+        # Some AKS advisories mention unrelated CVEs as historical examples.
+        cves = sorted({cve.upper() for cve in CVE_RE.findall(title + " " + description)})[:12]
+        anchor = _aks_anchor(title)
         items.append({
-            "id": bulletin["id"],
+            "id": bulletin_id,
             "source": "aks",
             "product": "AKS",
-            "title": bulletin["title"],
-            "url": url,
+            "title": _aks_plain_text(title)[:240],
+            "url": AKS_URL + ("#" + anchor if anchor else ""),
             "published_at": published,
             "updated_at": None,
-            "severity": "unknown",  # Microsoft doesn't assign a uniform severity to bulletins.
+            "severity": "unknown",
             "cves": cves,
-            "affected_versions": [],  # Do not infer versions from unstructured prose.
+            "affected_versions": [],
             "patched_versions": [],
-            "summary": summary[:320],
+            "summary": description[:320],
         })
-    if not items:
-        raise ValueError("AKS bulletins found but no recent dated entries parsed")
+    if parsed_dates == 0:
+        raise ValueError("AKS headings found but no publication dates parsed")
     unique = {item["id"]: item for item in items}
     return sorted(unique.values(), key=lambda item: (item["published_at"], item["id"]), reverse=True)[:MAX_PER_SOURCE]
 
