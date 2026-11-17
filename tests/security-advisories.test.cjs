@@ -33,7 +33,7 @@ test("annuaire complet et navigation bidirectionnelle", () => {
 
 test("liens officiels en HTTPS, pas de flux externe exécuté", () => {
   const allowed = [
-    "github.com", "learn.microsoft.com", "msrc.microsoft.com", "www.microsoft.com", "www.elastic.co",
+    "github.com", "kubernetes.io", "learn.microsoft.com", "msrc.microsoft.com", "www.microsoft.com", "www.elastic.co",
     "grafana.com", "www.postgresql.org", "trino.io", "access.redhat.com",
     "ubuntu.com", "www.vmware.com", "support.broadcom.com",
     "www.synology.com", "www.debian.org", "security-tracker.debian.org"
