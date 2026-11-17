@@ -17,17 +17,18 @@ function filter(){
  const terms=normalize(search.value).split(/\s+/).filter(Boolean);
  let visible=0;
  for(const section of sections){
-  const inCategory=category==="all"||section.dataset.group===category;
+  const inCategory=category==="all"||category==="priority"||section.dataset.group===category;
   let groupVisible=0;
   for(const card of section.querySelectorAll(".status-link")){
    const value=normalize(card.dataset.search||card.textContent||"");
-   const show=inCategory&&terms.every(term=>value.includes(term));
+   const show=inCategory&&(category!=="priority"||card.dataset.focus==="yes")&&terms.every(term=>value.includes(term));
    card.hidden=!show;
    if(show){visible++;groupVisible++;}
   }
   section.hidden=groupVisible===0;
  }
- count.textContent=visible+(visible===1?" service":" services");
+ const singular=count.dataset.singular||"service",plural=count.dataset.plural||"services";
+ count.textContent=visible+" "+(visible===1?singular:plural);
  empty.hidden=visible!==0;
 }
 function selectCategory(value){
