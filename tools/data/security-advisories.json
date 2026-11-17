@@ -1,6 +1,2334 @@
 {
   "schema_version": 1,
-  "generated_at": null,
-  "sources": {},
-  "alerts": []
+  "generated_at": "2026-11-17T17:15:54Z",
+  "sources": {
+    "aks": {
+      "product": "AKS",
+      "status": "error",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": null,
+      "error": "ValueError"
+    },
+    "github:argoproj/argo-cd": {
+      "product": "Argo CD",
+      "status": "ok",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": "2026-11-17T17:15:54Z"
+    },
+    "github:cilium/cilium": {
+      "product": "Cilium (OSS)",
+      "status": "ok",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": "2026-11-17T17:15:54Z"
+    },
+    "github:kyverno/kyverno": {
+      "product": "Kyverno",
+      "status": "ok",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": "2026-11-17T17:15:54Z"
+    },
+    "github:goharbor/harbor": {
+      "product": "Harbor",
+      "status": "ok",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": "2026-11-17T17:15:54Z"
+    },
+    "github:coder/coder": {
+      "product": "Coder",
+      "status": "ok",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": "2026-11-17T17:15:54Z"
+    },
+    "github:akuity/kargo": {
+      "product": "Kargo",
+      "status": "ok",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": "2026-11-17T17:15:54Z"
+    },
+    "github:kubernetes/kubernetes": {
+      "product": "Kubernetes",
+      "status": "ok",
+      "checked_at": "2026-11-17T17:15:54Z",
+      "last_success_at": "2026-11-17T17:15:54Z"
+    }
+  },
+  "alerts": [
+    {
+      "id": "GHSA-7HF9-GP2X-PPFM",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Nil node in tailnet `UpdateSelf` coordinate request lets any authenticated user crash `coderd`",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-7hf9-gp2x-ppfm",
+      "published_at": "2026-11-12T10:06:34Z",
+      "updated_at": "2026-11-12T10:06:34Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.12",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.35.9",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.7",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.3",
+        "github.com/coder/coder/v2: >= 2.9.0, < 2.29.27"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5WCX-V9QJ-4GJ6",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Agent-supplied app status links can use unsafe URL schemes",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-5wcx-v9qj-4gj6",
+      "published_at": "2026-11-11T10:52:14Z",
+      "updated_at": "2026-11-11T10:52:15Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.27",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.19",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.37.0",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.11",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.7"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-6G9G-VMP7-R45P",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "coder open app sends the session token to untrusted template app URLs",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-6g9g-vmp7-r45p",
+      "published_at": "2026-11-11T10:37:39Z",
+      "updated_at": "2026-11-11T10:37:39Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.27",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.19",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.37.0",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.11",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.7",
+        "github.com/coder/coder/v2: >= 2.39.0, < 2.39.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-W4M3-QHX8-C649",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "AWS IAM database authentication can expose a temporary database password in API errors",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-w4m3-qhx8-c649",
+      "published_at": "2026-11-11T09:59:49Z",
+      "updated_at": "2026-11-11T09:59:49Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.27",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.19",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.37.0",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.11",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.7",
+        "github.com/coder/coder/v2: >= 2.39.0, < 2.39.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-9H3Q-H2RH-35GG",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Crafted workspace agent RPC calls could crash coderd",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-9h3q-h2rh-35gg",
+      "published_at": "2026-11-06T11:39:21Z",
+      "updated_at": "2026-11-06T11:39:21Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.21",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.10",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.35.8",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.5",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-JVGX-787P-CFMG",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "CSRF protection skipped for API paths matching unanchored exemption patterns",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-jvgx-787p-cfmg",
+      "published_at": "2026-11-04T14:02:08Z",
+      "updated_at": "2026-11-04T14:02:08Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.26",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.18",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.37.0",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.10",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.6"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-HM3R-4CG2-22XX",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Coder Agents read_skill_file could follow symlinks outside the skill directory",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-hm3r-4cg2-22xx",
+      "published_at": "2026-11-04T13:34:34Z",
+      "updated_at": "2026-11-04T13:34:34Z",
+      "severity": "low",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.32.0, < 2.34.17",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.36.0",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.12",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.9",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.5"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-P5Q6-G354-MXRG",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Path traversal in CiliumNetworkPolicy L7 secret references allows local file disclosure",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-p5q6-g354-mxrg",
+      "published_at": "2026-11-03T10:51:16Z",
+      "updated_at": "2026-11-03T10:51:38Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "Cilium: < v1.18.14",
+        "Cilium: >= v1.19.0, < v1.19.8",
+        "Cilium: >= v1.20.0, < v1.20.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-9FRJ-7F83-X984",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Users with only read access to a workspace could retrieve its external agent token",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-9frj-7f83-x984",
+      "published_at": "2026-10-29T13:27:36Z",
+      "updated_at": "2026-10-29T13:27:36Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.26.0, < 2.29.24",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.16",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.36.0",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.11",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.8",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-64XH-RGCX-GG65",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Unbounded response read in Web Push delivery allows any authenticated user to exhaust `coderd` memory",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-64xh-rgcx-gg65",
+      "published_at": "2026-10-29T12:03:14Z",
+      "updated_at": "2026-10-29T12:03:14Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.21.0, < 2.29.24",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.16",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.36.0",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.11",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.8",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-X3GF-XV6P-56HF",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Scoped API keys and OAuth tokens can create API keys broader than themselves",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-x3gf-xv6p-56hf",
+      "published_at": "2026-10-29T11:04:52Z",
+      "updated_at": "2026-10-29T11:04:52Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.28.0, < 2.29.24",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.16",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.36.0",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.11",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.8",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-X955-MXJX-G5CJ",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Unauthenticated PUT request to /api/v2.0/users crashes Harbor core",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-x955-mxjx-g5cj",
+      "published_at": "2026-10-28T09:55:39Z",
+      "updated_at": "2026-10-28T10:04:08Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: >= 2.13.0, <= 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, <= 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-2X8W-Q434-F76P",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Session token leaked to arbitrary hosts via web dashboard for sub-agent external apps",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-2x8w-q434-f76p",
+      "published_at": "2026-10-27T10:31:06Z",
+      "updated_at": "2026-10-27T10:31:06Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.24.0, < 2.29.23",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.14",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.36.0",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.9",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.6",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-VJFX-FP68-RH4V",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "A3: Generate authorization skipped entirely when target kind/namespace is a variable - Critical",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-vjfx-fp68-rh4v",
+      "published_at": "2026-10-23T07:38:48Z",
+      "updated_at": "2026-10-23T07:38:48Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "pkg/policy/generate/validate.go: 1.19.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-39W8-HV5G-F73W",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Cluster-admin escalation via a malformed percent-escape bypass of the v1.19.1 apiCall namespace clamp",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-39w8-hv5g-f73w",
+      "published_at": "2026-10-23T07:37:37Z",
+      "updated_at": "2026-10-23T07:37:37Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: >= 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-FR24-3HVF-393Q",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "unbounded decompression in notary signature fetch enables memory exhaustion",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-fr24-3hvf-393q",
+      "published_at": "2026-10-21T15:58:59Z",
+      "updated_at": "2026-10-21T15:58:59Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "kyverno: \\>= 1.11.0, \\<= 1.16.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-3F2C-HFJ8-542W",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "[HIGH] unbounded decompression in notary attestation statement extraction enables memory exhaustion",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-3f2c-hfj8-542w",
+      "published_at": "2026-10-21T15:58:43Z",
+      "updated_at": "2026-10-21T15:58:43Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        ": \\>= 1.11.0, \\<= 1.16.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-2R43-6962-XCW5",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "[CRITICAL 9.1] kyverno verifyimages caches prior verification results using a cache key that includes the image reference string (for example, a tag) but does not bind the cache",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-2r43-6962-xcw5",
+      "published_at": "2026-10-21T15:58:27Z",
+      "updated_at": "2026-10-21T15:58:27Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        ": >= 1.18.0 and <= 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-493Q-9XVG-9XF3",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "generate.clone/cloneList.namespace has no namespace restriction, allowing cross-tenant resource read (sibling of CVE-2026-22039/GHSA-cvq5)",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-493q-9xvg-9xf3",
+      "published_at": "2026-10-21T15:58:09Z",
+      "updated_at": "2026-10-23T04:31:24Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-22039"
+      ],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <= 1.18.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-R2P2-3892-5JJF",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Denial-of-Service (DoS) via Panic in In / NotIn Operator when Evaluating []interface{} Containing Non-String Values",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-r2p2-3892-5jjf",
+      "published_at": "2026-10-21T15:57:27Z",
+      "updated_at": "2026-10-21T15:57:27Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        ": 1.18.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-24CC-9745-HXFC",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Remote panic in image-attestation parsing leads to image-verification bypass and reports-controller crash-loop",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-24cc-9745-hxfc",
+      "published_at": "2026-10-21T15:56:43Z",
+      "updated_at": "2026-10-21T15:56:43Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: < 1.18.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-FCFR-FR8G-QJQV",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "cosign identity check (subject / subjectRegExp) is skipped when the signing cert has no SAN",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-fcfr-fr8g-qjqv",
+      "published_at": "2026-10-21T15:56:19Z",
+      "updated_at": "2026-10-21T15:56:19Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <= 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-RCXG-3F92-3MGR",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Improper scope enforcement in CleanupPolicy API calls enables privilege escalation",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-rcxg-3f92-3mgr",
+      "published_at": "2026-10-21T15:56:02Z",
+      "updated_at": "2026-10-21T15:56:02Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <=1.18.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-VM98-8C25-H274",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "NamespacedMutatingPolicy mutate-existing writes resources outside its namespace with the background-controller ServiceAccount",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-vm98-8c25-h274",
+      "published_at": "2026-10-21T15:55:06Z",
+      "updated_at": "2026-10-21T15:55:06Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: `<= v1.18.2`"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-X4XQ-P8G4-6FWG",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Remote panic in policy variable substitution",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-x4xq-p8g4-6fwg",
+      "published_at": "2026-10-21T15:52:55Z",
+      "updated_at": "2026-10-21T15:52:55Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: < 1.18.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-F96W-622V-RQPQ",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "NamespacedMutatingPolicy mutate-existing CEL target expression allows cross-namespace resource write and privilege escalation",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-f96w-622v-rqpq",
+      "published_at": "2026-10-21T15:48:06Z",
+      "updated_at": "2026-10-21T15:48:06Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <= 1.19.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-PCX2-XCQ4-65VF",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Server-Side Request Forgery (SSRF) and Improper Privilege Management in kyverno",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-pcx2-xcq4-65vf",
+      "published_at": "2026-10-21T15:47:40Z",
+      "updated_at": "2026-10-21T15:47:40Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "kyverno: all versions"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-4PQM-WQQ6-H9Q2",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Namespaced CEL policies escape their namespace via path traversal in the resource argument of resource.get() and resource.post(), leading to cluster takeover",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-4pqm-wqq6-h9q2",
+      "published_at": "2026-10-21T15:46:30Z",
+      "updated_at": "2026-10-21T15:46:30Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <= 1.19.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-3XFV-VQ8X-QHG4",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Privilege escalation to cluster admin via Policy apiCall urlPath (GHSA-5qq8-67g6-4h2w Incomplete Fix)",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-3xfv-vq8x-qhg4",
+      "published_at": "2026-10-21T15:46:02Z",
+      "updated_at": "2026-10-21T15:46:02Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <= v1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-M8P2-QQMX-J53X",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno CEL policy expressions are evaluated without any runtime cost limit, allowing namespace-tenant policy authors to exhaust CPU/memory of the shared admission webhook and background controllers (DoS)",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-m8p2-qqmx-j53x",
+      "published_at": "2026-10-21T15:44:17Z",
+      "updated_at": "2026-10-21T15:44:17Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <=1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-HG5V-HWM3-956R",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno Generation Handler Label Spoofing Leads to Unauthorized Resource Generation",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-hg5v-hwm3-956r",
+      "published_at": "2026-10-21T15:44:00Z",
+      "updated_at": "2026-10-21T15:44:00Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <=1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-QC9C-3FGF-CGQ8",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno admissionpolicygenerator ignores PolicyException gates (--enablePolicyException / --exceptionNamespace / policy kind) when folding exceptions into generated ValidatingAdmissionPolicies, allowing cluster-wide policy bypass",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-qc9c-3fgf-cgq8",
+      "published_at": "2026-10-21T15:43:08Z",
+      "updated_at": "2026-10-21T15:43:08Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <=1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-H3PM-Q9WW-F439",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno ClusterPolicy image verification bypass via forged annotation",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-h3pm-q9ww-f439",
+      "published_at": "2026-10-21T15:42:47Z",
+      "updated_at": "2026-10-21T15:42:47Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <=1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-8MRJ-27WR-599G",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Exponential-time wildcard matching in Kyverno (ext/wildcard / IGLOU-EU go-wildcard) enables admission denial of service by a namespaced policy author",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-8mrj-27wr-599g",
+      "published_at": "2026-10-21T15:42:32Z",
+      "updated_at": "2026-10-21T15:42:32Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <=1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-338X-HGRV-626H",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno Admission Webhook Denial of Service via Unbounded Nested Variable Substitution Loop (CVE-2025-47281 Patch Bypass)",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-338x-hgrv-626h",
+      "published_at": "2026-10-21T15:41:46Z",
+      "updated_at": "2026-10-21T15:41:46Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2025-47281"
+      ],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <=1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-P58H-R4J3-H5VX",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Cleanup controller builds its context loader with a nil policy, so namespaced CleanupPolicy context entries are unconfined",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-p58h-r4j3-h5vx",
+      "published_at": "2026-10-21T15:41:20Z",
+      "updated_at": "2026-10-21T15:41:20Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: >= 1.17.0, <= 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-JCW5-3WCG-FQX5",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "NamespacedMutatingPolicy mutate-existing enables cross-namespace resource overwrite via targetMatchConstraints.expression",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-jcw5-3wcg-fqx5",
+      "published_at": "2026-10-21T15:40:55Z",
+      "updated_at": "2026-10-21T15:40:55Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: >= 1.18.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-Q62C-R9V2-CF64",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "kyverno: generate-rule permission check asks about the controller, not the author; admin-aggregated",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-q62c-r9v2-cf64",
+      "published_at": "2026-10-21T15:40:27Z",
+      "updated_at": "2026-10-21T15:40:27Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: main @ 21168fdf"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5GQ8-3XXC-JM92",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Script Injection in Cherry-Pick Workflows Leading to Credential Exfiltration",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-5gq8-3xxc-jm92",
+      "published_at": "2026-10-21T15:36:37Z",
+      "updated_at": "2026-10-21T15:36:37Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "kyverno/kyverno, kyverno/policies, kyverno/website: All"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-373R-678H-HJC6",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Encoded path traversal in AI Gateway passthrough lets users reach unintended upstream provider endpoints",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-373r-678h-hjc6",
+      "published_at": "2026-10-21T09:57:51Z",
+      "updated_at": "2026-10-21T09:57:51Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.28.0, < 2.29.22",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.13",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.35.10",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.8",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.5",
+        "github.com/coder/coder/v2: >= 2.38.0, < 2.38.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-24VH-Q7RG-243W",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Missing audience validation on GCP instance-identity endpoint ",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-24vh-q7rg-243w",
+      "published_at": "2026-10-13T09:57:07Z",
+      "updated_at": "2026-10-13T09:57:07Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.21",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.12",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.35.9",
+        "github.com/coder/coder/v2: >= 2.36.0, < 2.36.7",
+        "github.com/coder/coder/v2: >= 2.37.0, < 2.37.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-927C-FM24-CQ67",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Argument Injection Vulnerability in Promotion `kustomize-build` Step",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-927c-fm24-cq67",
+      "published_at": "2026-10-09T15:28:33Z",
+      "updated_at": "2026-10-09T15:28:33Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v0.9.0",
+        "ghcr.io/akuity/kargo: >= v0.9.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-W996-F2WQ-X9C6",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "An oversized OCI manifest can exhaust repo-server memory",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-w996-f2wq-x9c6",
+      "published_at": "2026-10-07T15:58:49Z",
+      "updated_at": "2026-10-07T15:58:49Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v3: >= 3.1.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-J6CW-G6P4-7HCH",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Command injection via a repository proxy URL on SSH Git repositories",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-j6cw-g6p4-7hch",
+      "published_at": "2026-10-07T15:58:47Z",
+      "updated_at": "2026-10-07T15:58:47Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-55797"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.11.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-G3FF-Q88G-CHRJ",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Extension proxy RBAC ignores application namespace when applications-in-any-namespace is enabled",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-g3ff-q88g-chrj",
+      "published_at": "2026-10-07T15:58:46Z",
+      "updated_at": "2026-10-07T15:58:46Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.7.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-4439-H7JW-5CJJ",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Login failure rate limit can be bypassed via concurrent requests",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-4439-h7jw-5cjj",
+      "published_at": "2026-10-07T15:58:44Z",
+      "updated_at": "2026-10-07T15:58:45Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2025-61560"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.0.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1",
+        "github.com/argoproj/argo-cd: >= 1.5.3, < 2.0.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-FMXQ-CGP8-87WP",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "AppProject restrictions bypassed by PreDelete/PostDelete resource hooks",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-fmxq-cgp8-87wp",
+      "published_at": "2026-10-07T15:58:43Z",
+      "updated_at": "2026-10-07T15:58:43Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-77459"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.10.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-M3VR-7329-44WW",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "A Jsonnet import can read files from the repo-server",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-m3vr-7329-44ww",
+      "published_at": "2026-10-07T15:58:41Z",
+      "updated_at": "2026-10-20T17:39:41Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-113672"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.0.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1",
+        "github.com/argoproj/argo-cd: >= 0.9.0, < 2.0.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-FW5C-W8RC-J7FX",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "A Kustomize Helm config home can run commands in the repo-server",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-fw5c-w8rc-j7fx",
+      "published_at": "2026-10-07T15:58:40Z",
+      "updated_at": "2026-10-20T17:40:47Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-113709"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.1.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-9V9P-X54C-58GC",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "A Kustomize remote ref can run commands in the repo-server",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-9v9p-x54c-58gc",
+      "published_at": "2026-10-07T15:58:38Z",
+      "updated_at": "2026-10-20T17:40:21Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-113708"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.7.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.15 || >= 3.4.0, < 3.4.10 || >= 3.5.0, < 3.5.4 || = 3.6.0-rc1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-JW3V-7JVC-PFMX",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Webhook error responses can cause unbounded decompression in Jobservice",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-jw3v-7jvc-pfmx",
+      "published_at": "2026-10-06T13:42:45Z",
+      "updated_at": "2026-10-06T13:42:45Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-QJ39-PJF2-WMRC",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Path traversal vulnerability in distribution endpoints",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-qj39-pjf2-wmrc",
+      "published_at": "2026-10-06T13:42:41Z",
+      "updated_at": "2026-10-06T13:42:41Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-W5FQ-XRHJ-J7G2",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "A system robot with user:update makes itself a system administrator",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-w5fq-xrhj-j7g2",
+      "published_at": "2026-10-06T13:42:36Z",
+      "updated_at": "2026-10-06T22:15:28Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-XQ2M-CJ8W-56V5",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Robot \"cover all projects\" scope collapses into a global wildcard, conferring the deliberately-ungrantable robot:update — enabling cross-project robot takeover with owner lockout",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-xq2m-cj8w-56v5",
+      "published_at": "2026-10-06T13:42:32Z",
+      "updated_at": "2026-10-06T13:42:33Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-VWVV-675V-P6RR",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "scanner_registration.access_cred is missing filter:\"false\", giving a project admin a blind oracle over the scanner credential",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-vwvv-675v-p6rr",
+      "published_at": "2026-10-06T13:42:28Z",
+      "updated_at": "2026-10-06T13:42:28Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-884Q-MJCG-86X4",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Scanner bearer authorization request disables TLS verification and reads the full response body",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-884q-mjcg-86x4",
+      "published_at": "2026-10-06T13:42:24Z",
+      "updated_at": "2026-10-06T13:42:24Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-27F2-QG57-2GWG",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Immutable tag rule matcher only evaluates first repository/tag selector, allowing multi-selector rules to be bypassed",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-27f2-qg57-2gwg",
+      "published_at": "2026-10-06T13:42:20Z",
+      "updated_at": "2026-10-06T13:42:20Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-XVH7-74G6-29XW",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "External auth-proxy identity named admin inherits Registry system-administrator authorization",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-xvh7-74g6-29xw",
+      "published_at": "2026-10-06T13:42:16Z",
+      "updated_at": "2026-10-06T13:42:16Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-3X7C-WF86-MJX6",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Security middleware continues after AuthMode lookup failure",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-3x7c-wf86-mjx6",
+      "published_at": "2026-10-06T13:42:11Z",
+      "updated_at": "2026-10-06T13:42:12Z",
+      "severity": "low",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-XGP2-5VXG-RGH2",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "SSRF and credential disclosure via attacker-controlled pagination Link header in the registry replication client",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-xgp2-5vxg-rgh2",
+      "published_at": "2026-10-06T13:42:07Z",
+      "updated_at": "2026-10-06T13:42:07Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: >= 2.0.0, < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-WJPM-HV5W-GXR6",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Registry chunk upload reuses unvalidated Location headers",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-wjpm-hv5w-gxr6",
+      "published_at": "2026-10-06T13:42:02Z",
+      "updated_at": "2026-10-06T13:42:03Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-WRW5-GMVJ-GF23",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "Vulnerability & Content-Trust pull policies bypassable via attacker-controlled `User-Agent` header",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-wrw5-gmvj-gf23",
+      "published_at": "2026-10-06T13:41:58Z",
+      "updated_at": "2026-10-06T13:41:59Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-2PHJ-CP9F-QQ6W",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "SSRF in webhook delivery allows ProjectAdmin to reach internal services and cloud metadata endpoints",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-2phj-cp9f-qq6w",
+      "published_at": "2026-10-06T12:21:19Z",
+      "updated_at": "2026-10-26T14:58:10Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/goharbor/harbor: >= 1.7.0, < 2.13.6",
+        "github.com/goharbor/harbor: >= 2.14.0, < 2.14.5",
+        "github.com/goharbor/harbor: >= 2.15.0, < 2.15.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-RX5G-3338-F2MF",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Missing Authorization Vulnerability in Freight Approval Through the Kubernetes API",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-rx5g-3338-f2mf",
+      "published_at": "2026-10-02T13:03:27Z",
+      "updated_at": "2026-10-15T16:33:37Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v0.5.0",
+        "ghcr.io/akuity/kargo: >= v0.5.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-8P8C-CFJ9-VC94",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "SSRF in Promotion http/http-download Steps Enables Access to the IPv6 Cloud Instance Metadata Endpoint",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-8p8c-cfj9-vc94",
+      "published_at": "2026-09-30T04:26:28Z",
+      "updated_at": "2026-09-30T04:26:28Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v1.1.0",
+        "ghcr.io/akuity/kargo: >= v1.1.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-C5QQ-7G2Q-CPQP",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Namespace isolation bypass in namespaced Policy `apiCall` via percent-encoded path segments",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-c5qq-7g2q-cpqp",
+      "published_at": "2026-09-10T07:40:46Z",
+      "updated_at": "2026-09-10T07:40:46Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: < 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5QQ8-67G6-4H2W",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Privilege escalation to cluster admin via Policy apiCall urlPath",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-5qq8-67g6-4h2w",
+      "published_at": "2026-09-10T07:40:25Z",
+      "updated_at": "2026-09-10T07:40:26Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: < 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-Q825-P383-R9V5",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Legacy `apiCall` service executor and GlobalContextEntry bypass the SSRF blocklist / SA-token egress controls that were applied only to the CEL http path",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-q825-p383-r9v5",
+      "published_at": "2026-09-10T07:39:46Z",
+      "updated_at": "2026-09-10T07:39:46Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: < 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5CJF-WWFG-PJ4C",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "ImageValidatingPolicy exceptions ignore PolicyException.spec.images/allowedValues, fully bypassing image signature verification instead of partially exempting",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-5cjf-wwfg-pj4c",
+      "published_at": "2026-09-10T07:39:13Z",
+      "updated_at": "2026-09-10T07:39:14Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: >= 1.14.0, < 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-59V6-2X73-WFG4",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "globalcontext.Lib is the one CEL library not namespace-confined, letting a tenant-authored NamespacedValidatingPolicy read cross-namespace GlobalContextEntry data",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-59v6-2x73-wfg4",
+      "published_at": "2026-09-10T07:38:44Z",
+      "updated_at": "2026-09-10T07:38:44Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: >= 1.16.0, < 1.19.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-MMQQ-9F45-G6RH",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Incorrect Authorization Vulnerability in Generic Resource API Endpoints Permits Unauthorized Writes to Cluster-Scoped Resources",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-mmqq-9f45-g6rh",
+      "published_at": "2026-09-05T15:59:49Z",
+      "updated_at": "2026-09-05T15:59:49Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        " ghcr.io/akuity/kargo: >= v1.7.0",
+        "ghcr.io/akuity/kargo-charts/kargo: >= v1.7.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-GP97-G7W8-W8C7",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Missing Authorization Vulnerability in Resource Refresh API Endpoints",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-gp97-g7w8-w8c7",
+      "published_at": "2026-09-05T15:59:03Z",
+      "updated_at": "2026-09-05T15:59:03Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v1.5.0",
+        "ghcr.io/akuity/kargo: >= v1.5.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-VX42-GHC9-GW65",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Malicious Packages Served from Unauthorized Registry Server",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-vx42-ghc9-gw65",
+      "published_at": "2026-09-01T00:34:08Z",
+      "updated_at": "2026-09-04T18:00:42Z",
+      "severity": "critical",
+      "cves": [],
+      "affected_versions": [
+        ": <2.37.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-XQHM-7XHV-6PPJ",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Cilium secret sync name collision enables cross-namespace L7 policy bypass",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-xqhm-7xhv-6ppj",
+      "published_at": "2026-08-12T15:36:03Z",
+      "updated_at": "2026-08-20T20:48:20Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-77531"
+      ],
+      "affected_versions": [
+        "github.com/cilium/cilium: < v1.17.18",
+        "github.com/cilium/cilium: >= v1.18.0, < 1.18.12",
+        "github.com/cilium/cilium: >= v1.19.0, < 1.19.6"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-33QQ-JQ9C-6GCC",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Identity spoofing in Cilium mutual authentication via certificate substitution",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-33qq-jq9c-6gcc",
+      "published_at": "2026-08-12T15:35:45Z",
+      "updated_at": "2026-09-01T16:17:26Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-83620"
+      ],
+      "affected_versions": [
+        "Cilium: >= v1.14.0, < v1.17.18",
+        "Cilium: >= v1.18.0, < v1.18.12",
+        "Cilium: >= v1.19.0, < v1.19.6"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-VH48-R624-P8V7",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Ingress host and L7 network policies bypassed when attaching to a VLAN interface and its parent",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-vh48-r624-p8v7",
+      "published_at": "2026-08-12T15:35:21Z",
+      "updated_at": "2026-10-01T19:04:29Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-104149"
+      ],
+      "affected_versions": [
+        "Cilium: >= 1.16.0, <= 1.16.19",
+        "Cilium: >= 1.17.0, < 1.17.15",
+        "Cilium: >= 1.18.0, < 1.18.9"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-VPRW-XCRV-287H",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "IP spoofing via X-Forwarded-For header parsing enables rate-limit bypass and audit log falsification",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-vprw-xcrv-287h",
+      "published_at": "2026-08-11T11:22:26Z",
+      "updated_at": "2026-08-11T11:22:27Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.34.0",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.7"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-HRHJ-HPWC-9HMC",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Cross-organization Terraform module file disclosure via provisioner daemon DownloadFile RPC",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-hrhj-hpwc-9hmc",
+      "published_at": "2026-08-10T10:05:57Z",
+      "updated_at": "2026-08-10T10:05:57Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.34.8"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-CVRM-2XXR-HPCV",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Workspace ACL endpoint exposes group member PII to low-privilege users",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-cvrm-2xxr-hpcv",
+      "published_at": "2026-08-10T10:05:47Z",
+      "updated_at": "2026-08-10T10:05:47Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.26.0, < 2.34.8"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-98QX-9P2X-C4WH",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Open redirect via unsanitized path in workspace app subdomain proxy redirect",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-98qx-9p2x-c4wh",
+      "published_at": "2026-08-10T10:00:36Z",
+      "updated_at": "2026-08-10T10:03:47Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.0.0, < 2.34.8"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-73WG-WXVV-9R4J",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Unauthenticated agent debug manifest endpoint exposes environment variable values across workspace users",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-73wg-wxvv-9r4j",
+      "published_at": "2026-08-10T10:00:29Z",
+      "updated_at": "2026-08-10T10:00:29Z",
+      "severity": "low",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.10.0, < 2.34.8"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-H58H-QVV5-XVWG",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Workspace proxy hostname prefix match lets an attacker-controlled domain steal a victim's workspace app credential",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-h58h-qvv5-xvwg",
+      "published_at": "2026-08-10T10:00:20Z",
+      "updated_at": "2026-08-10T10:00:20Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.20",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.12",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.8",
+        "github.com/coder/coder/v2: >= 2.35.0, < 2.35.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-7V78-W67V-PM2G",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "User-level ACL grants on org-scoped resources bypass organization membership checks",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-7v78-w67v-pm2g",
+      "published_at": "2026-08-10T10:00:14Z",
+      "updated_at": "2026-08-10T10:03:45Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.0.0, < 2.34.8"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-XX8H-GW9M-M95P",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Privilege escalation via Generic Resource Creation API Endpoints ",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-xx8h-gw9m-m95p",
+      "published_at": "2026-07-15T00:15:13Z",
+      "updated_at": "2026-08-20T21:30:14Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-77624"
+      ],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v0.1.0, < v1.11.0",
+        "ghcr.io/akuity/kargo: >= v0.1.0, < v1.11.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-F72X-6FM6-94RQ",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Missing Authorization Vulnerability in Generic Resource Creation API Endpoints",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-f72x-6fm6-94rq",
+      "published_at": "2026-07-15T00:14:56Z",
+      "updated_at": "2026-08-20T21:30:09Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-77623"
+      ],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v0.1.0, < v1.11.0",
+        "ghcr.io/akuity/kargo: >= v0.1.0, < v1.11.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-79GF-7FRW-68M9",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "NamespacedMutatingPolicy generator.apply() namespace argument unvalidated in v1.18.1 - allows cross-namespace resource generation via admission controller",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-79gf-7frw-68m9",
+      "published_at": "2026-07-13T07:03:42Z",
+      "updated_at": "2026-08-03T13:10:45Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-54523"
+      ],
+      "affected_versions": [
+        ": v1.18.0, v1.18.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-W7C2-W76W-5HMJ",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Namespaced HTTPRoutes can redirect traffic to other namespaces",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-w7c2-w76w-5hmj",
+      "published_at": "2026-07-06T13:17:17Z",
+      "updated_at": "2026-07-06T13:17:17Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-56742"
+      ],
+      "affected_versions": [
+        "Cilium: < 1.17.17",
+        "Cilium: >= 1.18.0, < 1.18.11",
+        "Cilium: >= 1.19.0, < 1.19.5"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-FM8W-2M5W-9J7R",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Cilium may unexpectedly allow ingress traffic from the local namespace when a Kubernetes NetworkPolicy is configured with an ipBlock match",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-fm8w-2m5w-9j7r",
+      "published_at": "2026-07-06T13:15:48Z",
+      "updated_at": "2026-07-06T13:15:48Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-56743"
+      ],
+      "affected_versions": [
+        "cilium: >= v1.19.0, < v1.19.5"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-M3CR-VC2J-PM27",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Command injection via dotfiles URI parameter combined with workspace auto-creation",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-m3cr-vc2j-pm27",
+      "published_at": "2026-07-02T15:38:37Z",
+      "updated_at": "2026-07-02T15:38:37Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-44454"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.7, < 2.30.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-QRWJ-VH9X-GW5V",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Workspace agent API insecure redirect handling allowed cross-agent file read and write",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-qrwj-vh9x-gw5v",
+      "published_at": "2026-07-01T08:20:32Z",
+      "updated_at": "2026-07-16T21:48:52Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-63443"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.27.0, < 2.29.19",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.9",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.10",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-WP4P-HR79-Q4G8",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Privilege escalation via Project RBAC management in the Kargo API",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-wp4p-hr79-q4g8",
+      "published_at": "2026-06-26T16:10:01Z",
+      "updated_at": "2026-08-26T20:13:38Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-61850"
+      ],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v0.6.0",
+        "ghcr.io/akuity/kargo: >= v0.6.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-Q6H5-Q3Q6-F87X",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "CiliumLocalRedirectPolicy addressMatcher allows cross-namespace service traffic hijacking and can break service translation",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-q6h5-q3q6-f87x",
+      "published_at": "2026-06-16T10:01:37Z",
+      "updated_at": "2026-06-16T10:01:37Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-53935"
+      ],
+      "affected_versions": [
+        ": < 1.17.16",
+        ": >= 1.18.2, < 1.18.10",
+        ": >= 1.19.0, < 1.19.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5WG6-JMQ2-53PW",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Workspace app CORS origin check can be bypassed via UUID-based subdomain spoofing",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-5wg6-jmq2-53pw",
+      "published_at": "2026-06-12T15:02:43Z",
+      "updated_at": "2026-06-16T22:11:34Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55438"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-7QW2-F75V-62F7",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Stored HTML injection via workspace agent logs in AgentLogLine component",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-7qw2-f75v-62f7",
+      "published_at": "2026-06-12T15:01:11Z",
+      "updated_at": "2026-06-16T22:11:28Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55437"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-WQXV-W64V-5WH6",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Suspended users retain access to AI Bridge LLM proxy endpoints",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-wqxv-w64v-5wh6",
+      "published_at": "2026-06-12T15:01:04Z",
+      "updated_at": "2026-06-16T22:11:19Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55435"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-84RM-42XW-MX52",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "AI Bridge Proxy skips TLS certificate verification in default configuration",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-84rm-42xw-mx52",
+      "published_at": "2026-06-12T15:00:56Z",
+      "updated_at": "2026-06-16T22:11:24Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-55436"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-F5VP-W269-392G",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Denial of service via unbounded request body in AI Bridge provider endpoints",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-f5vp-w269-392g",
+      "published_at": "2026-06-12T15:00:42Z",
+      "updated_at": "2026-06-16T22:11:13Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55434"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-H58C-XCCX-75M3",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Stored HTML injection via unescaped ApplicationName and LogoURL appearance settings",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-h58c-xccx-75m3",
+      "published_at": "2026-06-12T15:00:35Z",
+      "updated_at": "2026-06-12T15:00:35Z",
+      "severity": "low",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-JQJ2-X4C5-JFXM",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Devcontainer recreate endpoint missing write authorization allows read-only roles to destroy containers",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-jqj2-x4c5-jfxm",
+      "published_at": "2026-06-12T15:00:29Z",
+      "updated_at": "2026-06-16T22:11:09Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55433"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-8FXQ-53RX-PH5F",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Login endpoint user enumeration via timing-defense placeholder in password comparison",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-8fxq-53rx-ph5f",
+      "published_at": "2026-06-12T15:00:21Z",
+      "updated_at": "2026-06-12T15:00:21Z",
+      "severity": "low",
+      "cves": [],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-X9QQ-2QH5-8RXF",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Sub-agent app registration bypasses template port-sharing policy enforcement",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-x9qq-2qh5-8rxf",
+      "published_at": "2026-06-12T15:00:13Z",
+      "updated_at": "2026-06-16T22:11:06Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55432"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-V54H-CP2W-9X4G",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Session token leaked to arbitrary hosts via `coder open app` for external workspace apps",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-v54h-cp2w-9x4g",
+      "published_at": "2026-06-12T15:00:01Z",
+      "updated_at": "2026-06-16T22:10:59Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-55431"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-2MG2-P7R7-G27F",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Zip upload decompression lacks aggregate size limit, enabling denial of service",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-2mg2-p7r7-g27f",
+      "published_at": "2026-06-12T14:59:48Z",
+      "updated_at": "2026-06-16T15:12:25Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55078"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.17.0, < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5G4W-3VW9-478W",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Subdomain workspace app routing trusts unauthenticated X-Forwarded-Host header, enabling cross-app data access",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-5g4w-3vw9-478w",
+      "published_at": "2026-06-12T14:59:42Z",
+      "updated_at": "2026-06-16T22:10:54Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55430"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-9RJW-3GWP-F59V",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Workspace app upsert allows cross-workspace agent rebinding via user-controlled app ID",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-9rjw-3gwp-f59v",
+      "published_at": "2026-06-12T14:59:28Z",
+      "updated_at": "2026-06-16T22:10:49Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-55429"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-WRQ8-FCV5-8HVP",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Agent-supplied AllowedIPs not validated by tailnet coordinator allows route hijacking",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-wrq8-fcv5-8hvp",
+      "published_at": "2026-06-12T14:59:19Z",
+      "updated_at": "2026-06-16T22:10:43Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-55428"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-MCQQ-FQGF-RXWM",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "SSH config injection via unsanitized server-supplied values in `coder config-ssh`",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-mcqq-fqgf-rxwm",
+      "published_at": "2026-06-12T14:59:12Z",
+      "updated_at": "2026-06-16T22:10:37Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-55427"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-F962-QM93-MJ4C",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "Unbounded memory allocation in provisioner file upload allows authenticated denial of service",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-f962-qm93-mj4c",
+      "published_at": "2026-06-12T14:59:03Z",
+      "updated_at": "2026-06-16T15:12:35Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-55079"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: >= 2.24.0, < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-29XF-69GQ-M9JX",
+      "source": "github:coder/coder",
+      "product": "Coder",
+      "title": "User-admin role can reset owner account password",
+      "url": "https://github.com/coder/coder/security/advisories/GHSA-29xf-69gq-m9jx",
+      "published_at": "2026-06-12T14:58:52Z",
+      "updated_at": "2026-06-16T15:12:17Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-55077"
+      ],
+      "affected_versions": [
+        "github.com/coder/coder/v2: < 2.29.17",
+        "github.com/coder/coder/v2: >= 2.30.0, < 2.32.7",
+        "github.com/coder/coder/v2: >= 2.33.0, < 2.33.8",
+        "github.com/coder/coder/v2: >= 2.34.0, < 2.34.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-3FCV-JVFP-M4Q9",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Sensitive information disclosure and cluster disruption via local Envoy admin socket access",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-3fcv-jvfp-m4q9",
+      "published_at": "2026-06-01T12:00:20Z",
+      "updated_at": "2026-06-01T12:00:20Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-49445"
+      ],
+      "affected_versions": [
+        ": < 1.17.14",
+        ": >= 1.18.0, < 1.18.8",
+        ": >= 1.19.0, < 1.19.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-H98R-WV3H-FR38",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Stored XSS in application link annotations enables developer-to-admin privilege escalation",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-h98r-wv3h-fr38",
+      "published_at": "2026-05-13T17:59:47Z",
+      "updated_at": "2026-05-13T17:59:48Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-45738"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd: < 3.0.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-RG3G-4RW9-GQRP",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Kubernetes Secret Extraction via ArgoCD ServerSideDiff via sensitive annotations",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-rg3g-4rw9-gqrp",
+      "published_at": "2026-05-13T17:57:01Z",
+      "updated_at": "2026-05-13T17:57:01Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-45737"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v3: 3.2.0 through 3.2.11, 3.3.9, and 3.4.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-3V3M-WC6V-X4X3",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Kubernetes Secret Extraction via ArgoCD ServerSideDiff",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-3v3m-wc6v-x4x3",
+      "published_at": "2026-05-01T01:44:55Z",
+      "updated_at": "2026-05-04T15:41:18Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-42880"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v3: 3.2.0 - 3.3.8"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-Q98M-7W8C-W388",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "[policy-reporter-ui] XSS via Stored Property Values in PropertyCard Component",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-q98m-7w8c-w388",
+      "published_at": "2026-04-29T08:35:49Z",
+      "updated_at": "2026-05-05T17:42:01Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-44245"
+      ],
+      "affected_versions": [
+        "github.com/kyverno/policy-reporter-ui: < 2.5.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-G7GW-M874-7RMF",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Open Redirect in UI OIDC Login Flow via redirectTo Query Parameter",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-g7gw-m874-7rmf",
+      "published_at": "2026-04-22T16:26:27Z",
+      "updated_at": "2026-08-26T20:20:27Z",
+      "severity": "low",
+      "cves": [
+        "CVE-2026-42350"
+      ],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: <= v1.10.1",
+        "ghcr.io/akuity/kargo: <= v1.10.1"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-GJ49-89WH-H4GJ",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Sensitive information included in cilium-bugtool debug archive",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-gj49-89wh-h4gj",
+      "published_at": "2026-04-22T10:17:59Z",
+      "updated_at": "2026-04-22T10:17:59Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-41520"
+      ],
+      "affected_versions": [
+        "cilium-bugtool: < 1.17.15",
+        "cilium-bugtool: >= 1.18.0, < 1.18.9",
+        "cilium-bugtool: >= 1.19.0, < 1.19.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-FPJQ-C37H-CQCV",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno Controller Denial of Service via forEach Mutation Panic",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-fpjq-c37h-cqcv",
+      "published_at": "2026-04-22T07:33:06Z",
+      "updated_at": "2026-04-22T07:33:07Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-41485"
+      ],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: >=1.13.0, <=1.17.1, <=1.16.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-8WFP-579W-6R25",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno apiCall automatically forwards ServiceAccount token to external endpoints (credential leak)",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-8wfp-579w-6r25",
+      "published_at": "2026-04-15T18:44:05Z",
+      "updated_at": "2026-10-20T19:10:27Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-41323"
+      ],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: < 1.16.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-F9G8-6PPC-PQQ4",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "ServiceAccount token leaked to external servers via apiCall service URL",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-f9g8-6ppc-pqq4",
+      "published_at": "2026-04-15T18:43:09Z",
+      "updated_at": "2026-04-20T16:09:23Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-41323"
+      ],
+      "affected_versions": [
+        ": < 1.16.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-CVQ5-HHX3-F99P",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Cross-Namespace Read Bypasses RBAC Isolation (CVE-2026-22039 Incomplete Fix)",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-cvq5-hhx3-f99p",
+      "published_at": "2026-04-15T18:42:01Z",
+      "updated_at": "2026-04-17T15:28:32Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-41068"
+      ],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: <= 1.17.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-Q93Q-V844-JRQP",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "kyverno apicall servicecall implicit bearer token injection leaks kyverno serviceaccount token",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-q93q-v844-jrqp",
+      "published_at": "2026-04-13T04:55:18Z",
+      "updated_at": "2026-06-30T20:18:53Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-40868"
+      ],
+      "affected_versions": [
+        ": < 1.16.4"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-RGGM-JJMC-3394",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "SSRF via CEL http.Get/http.Post in NamespacedValidatingPolicy allows cross-namespace data access",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-rggm-jjmc-3394",
+      "published_at": "2026-04-13T04:53:39Z",
+      "updated_at": "2026-06-30T20:15:41Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-4789"
+      ],
+      "affected_versions": [
+        "github.com/kyverno/kyverno: >= 1.16.0, < 1.17.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-FMQP-4WFC-W3V7",
+      "source": "github:kyverno/kyverno",
+      "product": "Kyverno",
+      "title": "Kyverno APICall SSRF Vulnerability Leading to Multi-Tenant Isolation Breach",
+      "url": "https://github.com/kyverno/kyverno/security/advisories/GHSA-fmqp-4wfc-w3v7",
+      "published_at": "2026-04-13T04:51:29Z",
+      "updated_at": "2026-10-23T19:30:11Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-84199"
+      ],
+      "affected_versions": [
+        ": <1.16.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-56J8-6QR5-CG75",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "About CVE-2026-4404 ",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-56j8-6qr5-cg75",
+      "published_at": "2026-04-07T10:15:56Z",
+      "updated_at": "2026-04-17T05:58:29Z",
+      "severity": "low",
+      "cves": [
+        "CVE-2026-4404"
+      ],
+      "affected_versions": [
+        ": >1.0.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-PRH4-VHFH-24MJ",
+      "source": "github:goharbor/harbor",
+      "product": "Harbor",
+      "title": "LDAP password and OIDC secret is not redacted in the audit log",
+      "url": "https://github.com/goharbor/harbor/security/advisories/GHSA-prh4-vhfh-24mj",
+      "published_at": "2026-03-25T07:04:02Z",
+      "updated_at": "2026-03-25T07:04:02Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "Harbor: >2.13.0, <2.14.3"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-HXV8-4J4R-CQGV",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Cilium L7 proxy may bypass Kubernetes NetworkPolicy for same-node traffic",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-hxv8-4j4r-cqgv",
+      "published_at": "2026-03-24T08:20:24Z",
+      "updated_at": "2026-03-24T08:20:24Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-33726"
+      ],
+      "affected_versions": [
+        "Cilium: < v1.17.14",
+        "Cilium: >= v1.18.0, < v1.18.8",
+        "Cilium: >= v1.19.0, < v1.19.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-J94X-8WCP-X7HM",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "SSRF in Promotion http/http-download Steps Enables Internal Network Access and Data Exfiltration",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-j94x-8wcp-x7hm",
+      "published_at": "2026-03-14T16:00:54Z",
+      "updated_at": "2026-09-03T18:45:20Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-32828"
+      ],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v1.1.0",
+        "ghcr.io/akuity/kargo: >= v1.1.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5R23-PRX4-MQG3",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Cilium may not enforce host firewall policies when Native Routing, WireGuard and Node Encryption are enabled",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-5r23-prx4-mqg3",
+      "published_at": "2026-02-19T11:36:05Z",
+      "updated_at": "2026-02-19T11:36:05Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-26963"
+      ],
+      "affected_versions": [
+        "cilium: < v1.18.5 >= v1.18.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-7G9X-CP9G-92MR",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Authorization Bypass Vulnerability in Batch Resource Creation API Endpoints",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-7g9x-cp9g-92mr",
+      "published_at": "2026-02-17T22:06:00Z",
+      "updated_at": "2026-02-28T21:02:17Z",
+      "severity": "critical",
+      "cves": [
+        "CVE-2026-27112"
+      ],
+      "affected_versions": [
+        "gchr.io/akuity/kargo: >= v1.7.0, <= v1.9.2",
+        "ghcr.io/akuity/kargo-charts/kargo: >= v1.7.0, <= v1.9.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-5VVM-67PJ-72G4",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Missing Authorization Vulnerabilities in Approval & Promotion REST API Endpoints",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-5vvm-67pj-72g4",
+      "published_at": "2026-02-17T22:05:51Z",
+      "updated_at": "2026-08-26T20:16:43Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-27111"
+      ],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: v1.9.0 - v1.9.2",
+        "ghcr.io/akuity/kargo: v1.9.0 - v1.9.2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-W5WV-WVRP-V5M5",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "`GetConfig()` and `RefreshResource()` API endpoints allow unauthenticated access",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-w5wv-wvrp-v5m5",
+      "published_at": "2026-01-27T03:28:02Z",
+      "updated_at": "2026-01-27T03:28:02Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-24748"
+      ],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: <= v1.8.6",
+        "ghcr.io/akuity/kargo: <= 1.8.6"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-38PP-6GCP-RQVM",
+      "source": "github:cilium/cilium",
+      "product": "Cilium (OSS)",
+      "title": "Misconfigured toGroups in policies can lead to unrestricted egress traffic",
+      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-38pp-6gcp-rqvm",
+      "published_at": "2025-11-27T11:00:41Z",
+      "updated_at": "2025-11-27T11:00:41Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2025-64715"
+      ],
+      "affected_versions": [
+        "Cilium: < v1.16.17",
+        "Cilium: >= v1.17.0, < v1.17.10",
+        "Cilium: >= v1.18.0, < v1.18.4"
+      ],
+      "patched_versions": []
+    }
+  ]
 }
