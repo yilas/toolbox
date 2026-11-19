@@ -152,9 +152,9 @@
     <header>
       <div>
         <h1>Clean Text</h1>
-        <p class="subtitle">Version web autonome de <code>scripts/clean_text.py</code> : nettoyage typographique sûr pour Markdown, conversion ASCII, simplification stylistique et linter P3 activés par défaut.</p>
+        <p class="subtitle">Nettoie la typographie et allège les tournures artificielles.</p>
       </div>
-      <div class="privacy">100 % local — aucun texte n'est envoyé</div>
+      <div class="privacy">Traitement local</div>
     </header>
 
     <section class="card toolbar" aria-label="Actions">
@@ -166,7 +166,7 @@
       <span class="filename" id="filename">Saisie manuelle</span>
       <button class="button" id="copyBtn" type="button">Copier le résultat</button>
       <button class="button" id="downloadBtn" type="button">Télécharger</button>
-      <button class="button primary" id="runBtn" type="button">Nettoyer & analyser</button>
+      <button class="button primary" id="runBtn" type="button">Nettoyer</button>
     </section>
 
     <section class="workspace">
@@ -181,26 +181,26 @@
     </section>
 
     <section class="card options">
-      <div class="card-title" style="padding:0 0 12px;border:0"><span>Options</span><span class="counter">alignées sur le script Python</span></div>
+      <div class="card-title" style="padding:0 0 12px;border:0"><span>Options</span><span class="counter">Activées par défaut</span></div>
       <div class="options-grid">
         <label class="option">
           <input id="asciiMode" type="checkbox" checked />
-          <span><strong>Typographie ASCII</strong><small>Équivalent de <code>--ascii</code> : apostrophes, guillemets, tirets et points de suspension.</small></span>
+          <span><strong>Typographie ASCII</strong><small>Tirets, guillemets, apostrophes, points de suspension.</small></span>
         </label>
         <label class="option">
           <input id="styleMode" type="checkbox" checked />
-          <span><strong>Simplification stylistique</strong><small>Équivalent de <code>--style</code>. Modifie certaines formulations ; activé par défaut, désactivable.</small></span>
+          <span><strong>Simplification stylistique</strong><small>Allège certaines formulations.</small></span>
         </label>
         <label class="option">
           <input id="lintMode" type="checkbox" checked />
-          <span><strong>Linter stylistique</strong><small>Équivalent de <code>--lint-style</code>. Diagnostic uniquement, sans réécriture.</small></span>
+          <span><strong>Linter stylistique</strong><small>Signale les répétitions.</small></span>
         </label>
         <div class="option number-option">
-          <span><strong>Seuil connecteurs</strong><small>Vide = seuil automatique du script.</small></span>
+          <span><strong>Seuil connecteurs</strong><small>Vide = auto.</small></span>
           <input id="connectorThreshold" type="number" min="1" step="1" placeholder="auto" aria-label="Seuil des connecteurs" />
         </div>
         <div class="option number-option">
-          <span><strong>Débuts répétés</strong><small>Seuil du linter pour les débuts de paragraphes.</small></span>
+          <span><strong>Débuts répétés</strong><small>Répétitions tolérées.</small></span>
           <input id="openingThreshold" type="number" min="2" step="1" value="3" aria-label="Seuil des débuts répétés" />
         </div>
       </div>
@@ -208,7 +208,7 @@
 
     <section class="results">
       <article class="card">
-        <div class="card-title"><span>Statistiques de nettoyage</span><span class="counter" id="totalChanges">0 transformation</span></div>
+        <div class="card-title"><span>Modifications</span><span class="counter" id="totalChanges">0 transformation</span></div>
         <div class="stats">
           <div class="stat"><div class="stat-value" id="statUnicode">0</div><div class="stat-label">Unicode</div></div>
           <div class="stat"><div class="stat-value" id="statWhitespace">0</div><div class="stat-label">Espaces</div></div>
@@ -220,28 +220,28 @@
         <div class="status" id="status">En attente d'un texte.</div>
       </article>
       <article class="card">
-        <div class="card-title"><span>Diagnostics stylistiques</span><span class="counter" id="findingCount">0 finding</span></div>
-        <div class="findings" id="findings"><div class="empty">Aucune analyse effectuée.</div></div>
+        <div class="card-title"><span>Points à vérifier</span><span class="counter" id="findingCount">0 alerte</span></div>
+        <div class="findings" id="findings"><div class="empty">Aucune analyse.</div></div>
       </article>
     </section>
 
     <section class="card diff-card">
       <div class="card-title">
         <div class="diff-toolbar">
-          <span>Diff unifié</span>
+          <span>Comparaison</span>
           <span class="counter" id="diffSummary">0 ajout · 0 suppression</span>
         </div>
         <div class="diff-legend"><span class="removed">supprimé</span><span class="added">ajouté</span></div>
       </div>
       <div class="diff-view" id="diffView" aria-label="Diff entre le texte source et le résultat">
-        <div class="empty">Le diff apparaîtra après le nettoyage.</div>
+        <div class="empty">Aucune comparaison.</div>
       </div>
     </section>
 
     <details class="card">
-      <summary>Ce que la page protège et transforme</summary>
+      <summary>À savoir</summary>
       <div class="help">
-        Le nettoyage protège les blocs fenced Markdown (backticks ou tildes), le code indenté, le code inline et les URL avant toute transformation. Les deux espaces finaux servant de hard line break Markdown sont conservés, ainsi que l'indentation. Le linter ignore également ces zones techniques. La page fonctionne sans bibliothèque externe et peut être ouverte directement depuis le système de fichiers, même hors ligne.
+        Le code, les URL et la structure Markdown sont préservés. Fonctionne hors ligne.
       </div>
     </details>
   </main>
@@ -709,7 +709,7 @@
       source.value = ""; output.value = ""; currentFilename = "texte.txt"; $("filename").textContent = "Saisie manuelle";
       updateCounter($("sourceCounter"), ""); updateCounter($("outputCounter"), "");
       $("diffSummary").textContent = "0 ajout · 0 suppression";
-      $("diffView").innerHTML = '<div class="empty">Le diff apparaîtra après le nettoyage.</div>';
+      $("diffView").innerHTML = '<div class="empty">Aucune comparaison.</div>';
       renderStats({ unicode: 0, whitespace: 0, punctuation: 0, ascii: 0, style: 0, total: 0 }, false);
       $("status").className = "status"; $("status").textContent = "En attente d'un texte.";
       renderFindings([], false);
