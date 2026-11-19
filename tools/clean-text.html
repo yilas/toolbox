@@ -81,6 +81,7 @@
     .option input[type="checkbox"] { margin-top: 3px; accent-color: var(--primary); }
     .option strong { display: block; font-size: .91rem; }
     .option small { display: block; margin-top: 3px; color: var(--muted); line-height: 1.35; }
+    #outputFormat { margin:8px 0 0; padding:9px; border:1px solid var(--border); border-radius:8px; background:var(--panel); color:var(--text); width:100%; max-width:260px; }
     .number-option { display: grid; grid-template-columns: 1fr 82px; align-items: center; gap: 8px; }
     .number-option input { width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--text); }
     .results { display: grid; grid-template-columns: 1.1fr .9fr; gap: 14px; margin-top: 14px; }
@@ -206,6 +207,17 @@
       </div>
     </section>
 
+    <section class="card options" aria-label="Format de sortie">
+      <div class="card-title" style="padding:0 0 10px;border:0"><span>Format</span></div>
+      <label for="outputFormat" class="counter">Choisir le rendu</label>
+      <select id="outputFormat" aria-label="Format de sortie">
+        <option value="markdown">Markdown</option>
+        <option value="plain">Texte brut</option>
+        <option value="professional">Professionnel</option>
+      </select>
+      <label class="option" style="margin-top:10px"><input id="aiCleanup" type="checkbox" checked /><span><strong>Formulations IA</strong><small>Retire les introductions et expressions superflues.</small></span></label>
+      <label class="option" style="margin-top:8px"><input id="markdownCleanup" type="checkbox" checked /><span><strong>Markdown superflu</strong><small>Retire les séparateurs et titres décoratifs.</small></span></label>
+    </section>
     <section class="results">
       <article class="card">
         <div class="card-title"><span>Modifications</span><span class="counter" id="totalChanges">0 transformation</span></div>
@@ -414,6 +426,48 @@
       return text.replace(colon, (match) => match.replace(":", ","));
     }
 
+    // Only rewrite natural-language lines; protected Markdown code and URLs stay opaque.
+    function removeAiPreambles(text, stats) {
+      const patterns = [
+        /^\\s*(?:Bien sûr[,.!]\\s*)?(?:Voici|Ci-dessous)\\s+(?:une?\\s+)?(?:version|texte|proposition|réponse|reformulation)(?:\\s+(?:améliorée|corrigée|reformulée|demandée))?\\s*[:：]\\s*$/i,
+        /^\\s*(?:J'espère que (?:cela|cette version) vous convient|N'hésitez pas à (?:me demander|revenir vers moi)[^\\n]*)[.!]?\\s*$/i
+      ];
+      return text.split("\\n").filter(line => {
+        if (patterns.some(pattern => pattern.test(line))) { stats.style++; return false; }
+        return true;
+      }).join("\\n");
+    }
+
+    function cleanDecorativeMarkdown(text, stats) {
+      return text.split("\\n").filter(line => {
+        if (/^\\s*(?:-{3,}|\\*{3,}|_{3,})\\s*$/.test(line)) { stats.style++; return false; }
+        return true;
+      }).map(line => {
+        // Only redundant heading markers (e.g. a heading consisting of bold markup).
+        const next = line.replace(/^(#{1,6})\\s+\\*\\*(.+?)\\*\\*\\s*$/, "$1 $2");
+        if (next !== line) stats.style++;
+        return next;
+      }).join("\\n");
+    }
+
+    function formatOutput(text, format, stats) {
+      if (format === "markdown") return text;
+      const protectedResult = protectMarkdown(text);
+      let value = protectedResult.text;
+      value = value.split("\\n").map(line => {
+        let next = line.replace(/^\\s{0,3}#{1,6}\\s+/, "");
+        next = next.replace(/^\\s{0,3}>\\s?/, "");
+        next = next.replace(/^(\\s*)[-*+]\\s+/, "$1• ");
+        next = next.replace(/\\*\\*([^*\\n]+)\\*\\*/g, "$1").replace(/__([^_\\n]+)__/g, "$1");
+        next = next.replace(/(?<!\\*)\\*([^*\\n]+)\\*(?!\\*)/g, "$1");
+        next = next.replace(/\\[([^\\]\\n]+)\\]\\(([^)\\n]+)\\)/g, "$1 ($2)");
+        if (format === "professional") next = next.replace(/^\\s*•\\s+/, "- ");
+        if (next !== line) stats.style++;
+        return next;
+      }).join("\\n");
+      return restoreProtected(value, protectedResult.protectedValues);
+    }
+
     function ensureFinalNewline(text) {
       return text.endsWith("\n") ? text : text + "\n";
     }
@@ -492,6 +546,20 @@
           findings.push({ severity: "WARNING", line: occurrences[0].line, code: "repeated-opening", message: `Début de paragraphe répété ${occurrences.length} fois (lignes ${occurrences.map((o) => o.line).join(", ")})`, excerpt: occurrences[0].opening });
         }
       }
+      // Repeated long words are signals, not grounds for automatic deletion.
+      const stopwords = new Set(["dans","avec","pour","cette","comme","mais","plus","nous","vous","leur","leurs","cela","donc","ainsi","texte","être","sont","tout","tous","elles","entre","après","avant"]);
+      const words = new Map();
+      for (const match of lintSource.matchAll(/\\b[A-Za-zÀ-ÖØ-öø-ÿ]{5,}\\b/g)) {
+        const word = match[0].toLocaleLowerCase("fr");
+        if (stopwords.has(word)) continue;
+        if (!words.has(word)) words.set(word, []);
+        words.get(word).push(match.index);
+      }
+      for (const [word, offsets] of words) {
+        if (offsets.length >= 5 && offsets.length / Math.max(1, lintSource.split(/\\s+/).length) >= 0.025) {
+          findings.push({ severity: "INFO", line: lineNumber(lintSource, offsets[0]), code: "repeated-word", message: `Mot répété ${offsets.length} fois`, excerpt: word });
+        }
+      }
       const order = { WARNING: 0, INFO: 1 };
       findings.sort((a, b) => a.line - b.line || order[a.severity] - order[b.severity] || a.code.localeCompare(b.code));
       return findings;
@@ -500,7 +568,7 @@
     function options() {
       const connectorValue = $("connectorThreshold").value.trim();
       return {
-        ascii: $("asciiMode").checked,
+        ascii: $("asciiMode").checked,\n        aiCleanup: $("aiCleanup").checked,\n        markdownCleanup: $("markdownCleanup").checked,\n        format: $("outputFormat").value,
         style: $("styleMode").checked,
         lint: $("lintMode").checked,
         connectorThreshold: connectorValue ? Math.max(1, Number(connectorValue)) : null,
@@ -676,7 +744,7 @@
 
     $("runBtn").addEventListener("click", run);
     source.addEventListener("input", () => updateCounter($("sourceCounter"), source.value));
-    for (const id of ["asciiMode", "styleMode", "lintMode", "connectorThreshold", "openingThreshold"]) {
+    for (const id of ["asciiMode", "styleMode", "lintMode", "connectorThreshold", "openingThreshold", "aiCleanup", "markdownCleanup", "outputFormat"]) {
       $(id).addEventListener("change", () => { if (source.value) run(); });
     }
 
