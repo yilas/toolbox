@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr"><meta charset="utf-8"><title>Tests Clean Text</title>
+<h1>Tests Clean Text</h1><pre id="results">Chargement…</pre>
+<iframe src="../tools/clean-text.html" hidden></iframe>
+<script>
+const frame = document.querySelector("iframe");
+frame.addEventListener("load", () => {
+  const w = frame.contentWindow;
+  const options = {ascii:true,style:true,lint:true,aiCleanup:true,markdownCleanup:true,format:"markdown"};
+  const cases = [
+    ["tiret cadratin", "Bonjour — monde", "Bonjour - monde"],
+    ["introduction", "Voici une version améliorée :\nBonjour.", "Bonjour."],
+    ["separateur decoratif", "Avant\n---\nAprès", "Avant\nAprès"],
+    ["titre gras", "## **Titre**", "## Titre"],
+    ["code inline", "Utiliser `echo — test`.", "`echo — test`"],
+    ["url protegee", "https://example.org/a—b", "https://example.org/a—b"],
+    ["bloc fenced", "```md\n---\nVoici une version :\n```", "```md\n---\nVoici une version :\n```"],
+    ["markdown par defaut", "# Titre", "# Titre"]
+  ];
+  const results = [];
+  for (const [name, input, expected] of cases) {
+    const actual = w.processText(input, options).cleaned.trim();
+    results.push((actual.includes(expected) ? "PASS " : "FAIL ") + name + " : " + JSON.stringify(actual));
+  }
+  const plain = w.processText("# **Titre**\n\nTexte **important**", {...options,format:"plain"}).cleaned;
+  results.push((plain.includes("Titre") && !plain.includes("**") && !plain.includes("#") ? "PASS " : "FAIL ") + "texte brut");
+  const professional = w.processText("# **Titre**", {...options,format:"professional"}).cleaned;
+  results.push((professional.trim() === "Titre" ? "PASS " : "FAIL ") + "professionnel");
+  const findings = w.analyseStyle("Architecture architecture architecture architecture architecture architecture.",null,3);
+  results.push((findings.some(f => f.code === "repeated-word") ? "PASS " : "FAIL ") + "repetition");
+  const out = document.querySelector("#results");
+  out.textContent = results.join("\n") + "\n" + results.filter(x=>x.startsWith("PASS")).length + "/" + results.length;
+  if(results.some(x=>x.startsWith("FAIL"))) document.title="ÉCHEC - Tests Clean Text";
+});
+</script></html>
