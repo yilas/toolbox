@@ -152,7 +152,7 @@
     <header>
       <div>
         <h1>Clean Text</h1>
-        <p class="subtitle">Version web autonome de <code>scripts/clean_text.py</code> : nettoyage typographique sûr pour Markdown, conversion ASCII optionnelle, simplification stylistique et linter P3.</p>
+        <p class="subtitle">Version web autonome de <code>scripts/clean_text.py</code> : nettoyage typographique sûr pour Markdown, conversion ASCII, simplification stylistique et linter P3 activés par défaut.</p>
       </div>
       <div class="privacy">100 % local — aucun texte n'est envoyé</div>
     </header>
@@ -184,12 +184,12 @@
       <div class="card-title" style="padding:0 0 12px;border:0"><span>Options</span><span class="counter">alignées sur le script Python</span></div>
       <div class="options-grid">
         <label class="option">
-          <input id="asciiMode" type="checkbox" />
+          <input id="asciiMode" type="checkbox" checked />
           <span><strong>Typographie ASCII</strong><small>Équivalent de <code>--ascii</code> : apostrophes, guillemets, tirets et points de suspension.</small></span>
         </label>
         <label class="option">
-          <input id="styleMode" type="checkbox" />
-          <span><strong>Simplification stylistique</strong><small>Équivalent de <code>--style</code>. Modifie certaines formulations ; à utiliser volontairement.</small></span>
+          <input id="styleMode" type="checkbox" checked />
+          <span><strong>Simplification stylistique</strong><small>Équivalent de <code>--style</code>. Modifie certaines formulations ; activé par défaut, désactivable.</small></span>
         </label>
         <label class="option">
           <input id="lintMode" type="checkbox" checked />
