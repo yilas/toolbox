@@ -1,57 +1,202 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-19T00:20:00Z",
+  "generated_at": "2026-11-21T07:01:41Z",
   "sources": {
     "aks": {
       "product": "AKS",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     },
     "github:argoproj/argo-cd": {
       "product": "Argo CD",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     },
     "github:cilium/cilium": {
       "product": "Cilium (OSS)",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     },
     "github:kyverno/kyverno": {
       "product": "Kyverno",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     },
     "github:goharbor/harbor": {
       "product": "Harbor",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     },
     "github:coder/coder": {
       "product": "Coder",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     },
     "github:akuity/kargo": {
       "product": "Kargo",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     },
     "github:kubernetes/kubernetes": {
       "product": "Kubernetes",
       "status": "ok",
-      "checked_at": "2026-11-19T00:20:00Z",
-      "last_success_at": "2026-11-19T00:20:00Z"
+      "checked_at": "2026-11-21T07:01:41Z",
+      "last_success_at": "2026-11-21T07:01:41Z"
     }
   },
   "alerts": [
+    {
+      "id": "GHSA-JJ8J-82J2-7PH7",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Secret masking is skipped when last-applied-configuration is not valid JSON (incomplete fix for CVE-2026-45737)",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-jj8j-82j2-7ph7",
+      "published_at": "2026-11-20T04:04:43Z",
+      "updated_at": "2026-11-20T04:04:43Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-45737"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v3: >= 3.2.12, < 3.3.0 || >= 3.3.10, < 3.3.14 || >= 3.4.2, < 3.4.7 || = 3.5.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-HR74-G9PW-J38M",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "ApplicationSet cluster generator exposes cluster credentials through the last-applied-configuration annotation",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-hr74-g9pw-j38m",
+      "published_at": "2026-11-20T03:59:51Z",
+      "updated_at": "2026-11-20T03:59:51Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.4.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.19 || >= 3.4.0, < 3.4.13 || >= 3.5.0, < 3.5.7 || >= 3.6.0-rc1, < 3.6.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-RQ7V-Q562-VWCQ",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Symlinks in a tar archive allow writing files outside the extraction directory",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-rq7v-q562-vwcq",
+      "published_at": "2026-11-20T03:49:28Z",
+      "updated_at": "2026-11-20T03:49:28Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.4.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.3.16 || >= 3.4.0, < 3.4.11 || >= 3.5.0, < 3.5.5 || = 3.6.0-rc1 || = 3.6.0-rc2"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-8F76-VWJJ-HXGQ",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "ApplicationSet SCM provider allowlist not enforced for Bitbucket Cloud and Azure DevOps pull request generators",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-8f76-vwjj-hxgq",
+      "published_at": "2026-11-20T03:47:14Z",
+      "updated_at": "2026-11-20T03:47:15Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.8.0, < 2.10.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-H67H-99W8-XF8R",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Unauthenticated webhook request with an empty repository path crashes the API server",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-h67h-99w8-xf8r",
+      "published_at": "2026-11-20T03:41:41Z",
+      "updated_at": "2026-11-20T03:41:41Z",
+      "severity": "high",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.0.0",
+        "github.com/argoproj/argo-cd/v3: >= 3.0.0, < 3.1.0",
+        "github.com/argoproj/argo-cd: >= 0.4.0, < 2.0.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-9MRF-WVV5-62P9",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Unauthenticated pprof endpoints on the controller and API server metrics ports",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-9mrf-wvv5-62p9",
+      "published_at": "2026-11-20T03:38:50Z",
+      "updated_at": "2026-11-20T03:38:50Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.2.0, < 2.13.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-V9XR-FWQF-MGQ4",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Parameter override files can follow symlinks out of the repository",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-v9xr-fwqf-mgq4",
+      "published_at": "2026-11-20T03:37:09Z",
+      "updated_at": "2026-11-20T03:37:10Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.0.0, < 2.5.0",
+        "github.com/argoproj/argo-cd: >= 1.8.0, < 2.0.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-86M4-Q4HW-93P2",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "Logging out does not revoke local user session tokens, which never expire",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-86m4-q4hw-93p2",
+      "published_at": "2026-11-20T03:35:31Z",
+      "updated_at": "2026-11-20T03:35:31Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2021-26922"
+      ],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd: < 2.0.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-94MC-2CH7-R5R5",
+      "source": "github:argoproj/argo-cd",
+      "product": "Argo CD",
+      "title": "A broken Helm repository entry stops Helm dependency builds for all projects",
+      "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-94mc-2ch7-r5r5",
+      "published_at": "2026-11-20T03:31:59Z",
+      "updated_at": "2026-11-20T03:32:00Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "github.com/argoproj/argo-cd/v2: >= 2.0.0, < 2.6.13 || >= 2.7.0, < 2.7.8",
+        "github.com/argoproj/argo-cd: >= 1.3.0, < 2.0.0"
+      ],
+      "patched_versions": []
+    },
     {
       "id": "GHSA-373G-4PF2-FJ6M",
       "source": "github:akuity/kargo",
@@ -906,7 +1051,7 @@
       "title": "A Jsonnet import can read files from the repo-server",
       "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-m3vr-7329-44ww",
       "published_at": "2026-10-07T15:58:41Z",
-      "updated_at": "2026-10-20T17:39:41Z",
+      "updated_at": "2026-11-20T03:13:07Z",
       "severity": "critical",
       "cves": [
         "CVE-2026-113672"
@@ -2078,7 +2223,7 @@
       "title": "Kubernetes Secret Extraction via ArgoCD ServerSideDiff",
       "url": "https://github.com/argoproj/argo-cd/security/advisories/GHSA-3v3m-wc6v-x4x3",
       "published_at": "2026-05-01T01:44:55Z",
-      "updated_at": "2026-05-04T15:41:18Z",
+      "updated_at": "2026-11-20T03:13:06Z",
       "severity": "critical",
       "cves": [
         "CVE-2026-42880"
