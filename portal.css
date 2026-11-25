@@ -168,7 +168,7 @@ a { color: inherit; }
   color: var(--muted); font-size: .72rem; font-weight: 660;
   white-space: nowrap;
 }
-.tool-card h2 {
+:is(.tool-card h2, .tool-card h3) {
   font-size: 1.05rem; line-height: 1.27; letter-spacing: -.018em;
   font-weight: 755; margin: 0 0 9px;
 }
@@ -240,3 +240,13 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+.portal-nav { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 30px; }
+.portal-nav a { padding:8px 16px; border:1px solid var(--border); border-radius:10px; background:var(--surface); text-decoration:none; font-weight:650; }
+.portal-nav a:hover { border-color:var(--accent); }
+.portal-section { margin:0 0 34px; scroll-margin-top:20px; }
+.portal-section .section-title { font-size:1.35rem; margin-bottom:4px; }
+.section-description { color:var(--muted); margin:0 0 15px; }
+.tool-card { min-height:175px; padding:16px; }
+.tool-meta { margin-bottom:10px; }
+.tool-card p { margin-bottom:12px; }
