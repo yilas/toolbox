@@ -5,24 +5,26 @@
       <link rel="icon" href="../favicon.ico" type="image/x-icon" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Subnets calculator</title>
+    <link rel="stylesheet" href="../assets/css/tokens.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
     <style>
       body {
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
           Arial, sans-serif;
         line-height: 1.6;
-        color: #333;
+        color: var(--text);
         margin: 0;
         padding: 20px;
-        background-color: #f4f7f9;
+        background-color: var(--bg);
         display: flex;
         justify-content: center;
       }
       .container {
-        background: white;
+        background: var(--surface);
         padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
         width: 95%;
         max-width: 1800px;
       }
@@ -58,7 +60,7 @@
 
       button {
         padding: 10px 25px;
-        background-color: #3498db;
+        background-color: var(--accent);
         color: white;
         border: none;
         border-radius: 4px;
@@ -67,7 +69,8 @@
         white-space: nowrap;
       }
       button:hover {
-        background-color: #2980b9;
+        background-color: var(--accent);
+        filter: brightness(.92);
       }
       button.btn-reset {
         background-color: #e74c3c;
@@ -230,21 +233,18 @@
         color: #333;
       }
       /* Lien de retour dans le conteneur pour préserver le layout flex du body */
-      .toolbox-return-nav { margin: 0 0 20px; }
-      .toolbox-return-nav a { display: inline-block; color: #475569; font-size: 14px; font-weight: 650; text-decoration: none; }
-      .toolbox-return-nav a:hover { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; }
-      .toolbox-return-nav a:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; border-radius: 3px; }
     html[data-theme="dark"]{color-scheme:dark}
-html[data-theme="dark"] body{background:#0b1120;color:#edf1fb}
-html[data-theme="dark"] .container,html[data-theme="dark"] .filter-group,html[data-theme="dark"] select,html[data-theme="dark"] input[type="text"]{background:#141f34;color:#edf1fb;border-color:#2a3a56}
-html[data-theme="dark"] .filter-item,html[data-theme="dark"] .mask-header,html[data-theme="dark"] .network-item{background:#1a2940;color:#edf1fb;border-color:#2a3a56}
-html[data-theme="dark"] .mask-block,html[data-theme="dark"] .toolbar{border-color:#2a3a56}
-html[data-theme="dark"] .mask-info,html[data-theme="dark"] .toolbox-return-nav a{color:#a1afc9}
-html[data-theme="dark"] .network-summary{background:#1a2940;border-color:#2a3a56}
-html[data-theme="dark"] .summary-item,html[data-theme="dark"] .summary-item strong{color:#edf1fb}
+
+html[data-theme="dark"] .filter-group,html[data-theme="dark"] select,html[data-theme="dark"] input[type="text"]{background:var(--surface);color:var(--text);border-color:var(--border)}
+html[data-theme="dark"] .filter-item,html[data-theme="dark"] .mask-header,html[data-theme="dark"] .network-item{background:var(--soft);color:var(--text);border-color:var(--border)}
+html[data-theme="dark"] .mask-block,html[data-theme="dark"] .toolbar{border-color:var(--border)}
+html[data-theme="dark"] .mask-info,html[data-theme="dark"] .toolbox-return-nav a{color:var(--muted)}
+html[data-theme="dark"] .network-summary{background:var(--soft);border-color:var(--border)}
+html[data-theme="dark"] .summary-item,html[data-theme="dark"] .summary-item strong{color:var(--text)}
 html[data-theme="dark"] .network-item.master-checked,html[data-theme="dark"] .network-item.inherited{color:#182139}
+html[data-theme="dark"] button:not(.btn-reset):not(#theme){color:#0b1120}
+@media(max-width:640px){body{padding:10px}.container{width:100%;padding:16px;min-width:0}.input-group{flex-wrap:wrap}.input-group input,.input-group select{min-width:0;flex:1 1 100%}.grid{grid-template-columns:minmax(0,1fr);padding:10px}}
 html[data-theme="dark"] .network-item.partially-occupied,html[data-theme="dark"] .network-item.fully-occupied{color:#182139}
-.toolbox-return-nav{display:flex;align-items:center;justify-content:space-between;gap:12px}.toolbox-return-nav #theme{padding:6px 12px;border-radius:8px;min-width:36px}
 </style>
   <script src="../assets/js/theme.js" defer></script></head>
   <body>
