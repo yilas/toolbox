@@ -215,3 +215,13 @@ test("Les trois univers contiennent les bons outils et IT Watch est accessible",
     assert.ok(fs.existsSync(path.resolve(root, "watch", link)));
   }
 });
+
+test("Workflow status badges link to their official GitHub workflows",()=>{
+  const base="https://github.com/yilas/toolbox/actions/workflows/";
+  for(const workflow of ["deploy-pages.yml","dependabot/dependabot-updates","security-advisories-refresh.yml"]){
+    assert.ok(html.includes('href="'+base+workflow+'"'));
+    assert.ok(html.includes('src="'+base+workflow+'/badge.svg"'));
+  }
+  assert.ok(html.includes("img-src 'self' data: "+base+";"));
+  assert.ok(html.includes("connect-src 'none'"));
+});

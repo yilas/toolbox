@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f7fc">
   <meta name="description" content="Toolbox : utilitaires pour le développement, le texte et l'organisation.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https://github.com/yilas/toolbox/actions/workflows/; connect-src 'none'; base-uri 'none'; form-action 'none'">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="portal.css?v=2">
   <title>Toolbox — Outils</title>
@@ -256,6 +256,11 @@
   </main>
 
   <footer class="site-footer">
+    <div class="workflow-status" aria-label="Statut des workflows GitHub">
+      <a href="https://github.com/yilas/toolbox/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer"><img src="https://github.com/yilas/toolbox/actions/workflows/deploy-pages.yml/badge.svg" alt="Deploy Toolbox Pages" referrerpolicy="no-referrer" loading="lazy"></a>
+      <a href="https://github.com/yilas/toolbox/actions/workflows/dependabot/dependabot-updates" target="_blank" rel="noopener noreferrer"><img src="https://github.com/yilas/toolbox/actions/workflows/dependabot/dependabot-updates/badge.svg" alt="Dependabot Updates" referrerpolicy="no-referrer" loading="lazy"></a>
+      <a href="https://github.com/yilas/toolbox/actions/workflows/security-advisories-refresh.yml" target="_blank" rel="noopener noreferrer"><img src="https://github.com/yilas/toolbox/actions/workflows/security-advisories-refresh.yml/badge.svg" alt="Refresh security advisory snapshot" referrerpolicy="no-referrer" loading="lazy"></a>
+    </div>
     <div class="footer-inner">
       <span>© 2026 Yann ILAS</span>
       <a href="https://github.com/yilas/toolbox" target="_blank" rel="noopener noreferrer">Code source sur GitHub</a>
