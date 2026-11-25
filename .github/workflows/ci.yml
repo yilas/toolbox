@@ -121,7 +121,7 @@ jobs:
         env:
           PDF_SCREENSHOTS: screenshots
         run: NODE_PATH="$RUNNER_TEMP/pdf-browser/node_modules" node --test tests/browser/pdf-compressor.test.cjs
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: pdf-compressor-screenshots
