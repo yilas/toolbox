@@ -429,42 +429,42 @@
     // Only rewrite natural-language lines; protected Markdown code and URLs stay opaque.
     function removeAiPreambles(text, stats) {
       const patterns = [
-        /^\\s*(?:Bien sûr[,.!]\\s*)?(?:Voici|Ci-dessous)\\s+(?:une?\\s+)?(?:version|texte|proposition|réponse|reformulation)(?:\\s+(?:améliorée|corrigée|reformulée|demandée))?\\s*[:：]\\s*$/i,
-        /^\\s*(?:J'espère que (?:cela|cette version) vous convient|N'hésitez pas à (?:me demander|revenir vers moi)[^\\n]*)[.!]?\\s*$/i
+        /^\s*(?:Bien sûr[,.!]\s*)?(?:Voici|Ci-dessous)\s+(?:une?\s+)?(?:version|texte|proposition|réponse|reformulation)(?:\s+(?:améliorée|corrigée|reformulée|demandée))?\s*[:：]\s*$/i,
+        /^\s*(?:J'espère que (?:cela|cette version) vous convient|N'hésitez pas à (?:me demander|revenir vers moi)[^\n]*)[.!]?\s*$/i
       ];
-      return text.split("\\n").filter(line => {
+      return text.split("\n").filter(line => {
         if (patterns.some(pattern => pattern.test(line))) { stats.style++; return false; }
         return true;
-      }).join("\\n");
+      }).join("\n");
     }
 
     function cleanDecorativeMarkdown(text, stats) {
-      return text.split("\\n").filter(line => {
-        if (/^\\s*(?:-{3,}|\\*{3,}|_{3,})\\s*$/.test(line)) { stats.style++; return false; }
+      return text.split("\n").filter(line => {
+        if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) { stats.style++; return false; }
         return true;
       }).map(line => {
         // Only redundant heading markers (e.g. a heading consisting of bold markup).
-        const next = line.replace(/^(#{1,6})\\s+\\*\\*(.+?)\\*\\*\\s*$/, "$1 $2");
+        const next = line.replace(/^(#{1,6})\s+\*\*(.+?)\*\*\s*$/, "$1 $2");
         if (next !== line) stats.style++;
         return next;
-      }).join("\\n");
+      }).join("\n");
     }
 
     function formatOutput(text, format, stats) {
       if (format === "markdown") return text;
       const protectedResult = protectMarkdown(text);
       let value = protectedResult.text;
-      value = value.split("\\n").map(line => {
-        let next = line.replace(/^\\s{0,3}#{1,6}\\s+/, "");
-        next = next.replace(/^\\s{0,3}>\\s?/, "");
-        next = next.replace(/^(\\s*)[-*+]\\s+/, "$1• ");
-        next = next.replace(/\\*\\*([^*\\n]+)\\*\\*/g, "$1").replace(/__([^_\\n]+)__/g, "$1");
-        next = next.replace(/(?<!\\*)\\*([^*\\n]+)\\*(?!\\*)/g, "$1");
-        next = next.replace(/\\[([^\\]\\n]+)\\]\\(([^)\\n]+)\\)/g, "$1 ($2)");
-        if (format === "professional") next = next.replace(/^\\s*•\\s+/, "- ");
+      value = value.split("\n").map(line => {
+        let next = line.replace(/^\s{0,3}#{1,6}\s+/, "");
+        next = next.replace(/^\s{0,3}>\s?/, "");
+        next = next.replace(/^(\s*)[-*+]\s+/, "$1• ");
+        next = next.replace(/\*\*([^*\n]+)\*\*/g, "$1").replace(/__([^_\n]+)__/g, "$1");
+        next = next.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, "$1");
+        next = next.replace(/\[([^\]\n]+)\]\(([^)\n]+)\)/g, "$1 ($2)");
+        if (format === "professional") next = next.replace(/^\s*•\s+/, "- ");
         if (next !== line) stats.style++;
         return next;
-      }).join("\\n");
+      }).join("\n");
       return restoreProtected(value, protectedResult.protectedValues);
     }
 
@@ -484,7 +484,10 @@
         text = normalizeWhitespace(text, stats);
       }
       if (options.style) text = simplifyStyle(text, stats);
+      if (options.aiCleanup) text = removeAiPreambles(text, stats);
+      if (options.markdownCleanup) text = cleanDecorativeMarkdown(text, stats);
       text = restoreProtected(text, protectedResult.protectedValues);
+      text = formatOutput(text, options.format || "markdown", stats);
       text = ensureFinalNewline(text);
       stats.total = stats.unicode + stats.whitespace + stats.punctuation + stats.ascii + stats.style;
       return { cleaned: text, changed: original !== text, stats };
@@ -549,14 +552,14 @@
       // Repeated long words are signals, not grounds for automatic deletion.
       const stopwords = new Set(["dans","avec","pour","cette","comme","mais","plus","nous","vous","leur","leurs","cela","donc","ainsi","texte","être","sont","tout","tous","elles","entre","après","avant"]);
       const words = new Map();
-      for (const match of lintSource.matchAll(/\\b[A-Za-zÀ-ÖØ-öø-ÿ]{5,}\\b/g)) {
+      for (const match of lintSource.matchAll(/\b[A-Za-zÀ-ÖØ-öø-ÿ]{5,}\b/g)) {
         const word = match[0].toLocaleLowerCase("fr");
         if (stopwords.has(word)) continue;
         if (!words.has(word)) words.set(word, []);
         words.get(word).push(match.index);
       }
       for (const [word, offsets] of words) {
-        if (offsets.length >= 5 && offsets.length / Math.max(1, lintSource.split(/\\s+/).length) >= 0.025) {
+        if (offsets.length >= 5 && offsets.length / Math.max(1, lintSource.split(/\s+/).length) >= 0.025) {
           findings.push({ severity: "INFO", line: lineNumber(lintSource, offsets[0]), code: "repeated-word", message: `Mot répété ${offsets.length} fois`, excerpt: word });
         }
       }
@@ -568,7 +571,10 @@
     function options() {
       const connectorValue = $("connectorThreshold").value.trim();
       return {
-        ascii: $("asciiMode").checked,\n        aiCleanup: $("aiCleanup").checked,\n        markdownCleanup: $("markdownCleanup").checked,\n        format: $("outputFormat").value,
+        ascii: $("asciiMode").checked,
+        aiCleanup: $("aiCleanup").checked,
+        markdownCleanup: $("markdownCleanup").checked,
+        format: $("outputFormat").value,
         style: $("styleMode").checked,
         lint: $("lintMode").checked,
         connectorThreshold: connectorValue ? Math.max(1, Number(connectorValue)) : null,
