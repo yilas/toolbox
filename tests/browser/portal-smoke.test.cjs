@@ -28,5 +28,14 @@ test("Published tools load without uncaught JavaScript errors",async()=>{
     if(file.endsWith("worktime-calculator.html"))assert.equal(await page.locator("#templates option").count(),14);
    }finally{await page.close();}
   }
+  const context=await browser.newContext({colorScheme:"light"});
+  try {
+   const pages=await Promise.all(["index.html","tools/service-status.html","tools/security-advisories.html","tools/security-advisories-sources.html"].map(async file=>{const p=await context.newPage();await p.goto(base+"/"+file);return p;}));
+   await pages[0].locator("#themeToggle").click();
+   await pages[0].locator("#themeToggle").click();
+   for(const p of pages) await p.waitForFunction(()=>document.documentElement.dataset.theme==="dark");
+   await pages[1].locator("#themeToggle").click();
+   for(const p of pages) await p.waitForFunction(()=>document.documentElement.dataset.theme==="light"&&localStorage.getItem("password-studio-theme")==="system");
+  } finally {await context.close();}
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 });

@@ -18,7 +18,7 @@ test("Trente pages fournisseurs et un agrégateur communautaire",()=>{
  ["status.cloud.microsoft","azure.status.microsoft","status.dev.azure.com","githubstatus.com","slack-status.com"].forEach(host=>assert.ok(links.some(url=>url.includes(host)),host));
 });
 test("Recherche, filtres, thème et politique réseau restrictive",()=>{
- assert.match(js,/aria-pressed/);assert.match(js,/password-studio-theme/);
+ assert.match(js,/aria-pressed/);assert.match(html,/src="\.\.\/assets\/js\/theme\.js"/);assert.match(fs.readFileSync(path.join(root,"assets/js/theme.js"),"utf8"),/password-studio-theme/);assert.doesNotMatch(js,/password-studio-theme/);
  assert.match(html,/connect-src 'none'/);assert.match(html,/pas de supervision en temps réel/);
  assert.match(css,/@media\(max-width:570px\)/);
 });
