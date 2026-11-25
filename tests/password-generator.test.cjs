@@ -124,9 +124,9 @@ test("Phrases de passe FR et EN : nombre de mots et calcul d'entropie", () => {
 
 test("Les scripts locaux déclarés existent et tous les sélecteurs d'ID de l'UI sont présents", () => {
   const scripts = [...htmlSource.matchAll(/<script[^>]+src="([^"]+)"/g)].map(match => match[1]);
-  assert.equal(scripts.length, 3);
+  assert.deepEqual(scripts, ["./password-wordlists.js", "./password-generator-core.js", "./password-generator-ui.js", "../assets/js/theme.js"]);
   scripts.forEach(src => {
-    assert.ok(src.startsWith("./"));
+    assert.ok(src.startsWith("./") || src === "../assets/js/theme.js");
     assert.ok(fs.existsSync(path.join(toolsDir, src)));
   });
   const ids = [...uiSource.matchAll(/\$\("([a-zA-Z0-9]+)"\)/g)].map(match => match[1]);
