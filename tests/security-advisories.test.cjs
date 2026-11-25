@@ -21,7 +21,7 @@ const cards = [...html.matchAll(/<article class="status-link security-card" data
   }));
 
 test("annuaire complet et navigation bidirectionnelle", () => {
-  assert.equal(cards.length, 35);
+  assert.equal(cards.length, 43);
   assert.equal(cards.filter(c => c.focus === "yes").length > 20, true);
   assert.match(portal, /href="tools\/security-advisories\.html"/);
   assert.match(html, /href="\.\.\/index\.html" aria-label="Retour à Toolbox"/);
@@ -38,10 +38,10 @@ test("liens officiels en HTTPS, pas de flux externe exécuté", () => {
     "github.com", "kubernetes.io", "learn.microsoft.com", "msrc.microsoft.com", "www.microsoft.com", "www.elastic.co",
     "grafana.com", "www.postgresql.org", "trino.io", "access.redhat.com",
     "ubuntu.com", "www.vmware.com", "support.broadcom.com",
-    "www.synology.com", "www.debian.org", "security-tracker.debian.org"
+    "www.synology.com", "www.debian.org", "security-tracker.debian.org", "lore.kernel.org", "www.kernel.org", "git.kernel.org", "kernel.org", "linuxcvetracker.com", "www.suse.com"
   ];
   for (const card of cards) {
-    assert.equal(card.links.length, 2);
+    assert.equal(card.links.length, card.search.startsWith("LinuxCVETracker") ? 1 : 2);
     for (const link of card.links) {
       const url = new URL(link.replaceAll("&amp;", "&"));
       assert.equal(url.protocol, "https:");
@@ -131,7 +131,7 @@ function createPage() {
 
 test("recherche, catégorie prioritaire, remise à zéro et compteur", () => {
   const page = createPage();
-  assert.equal(page.elements.resultCount.textContent, "35 produits");
+  assert.equal(page.elements.resultCount.textContent, "43 produits");
   page.elements.statusSearch.value = "kyverno";
   page.elements.statusSearch.dispatch("input");
   assert.equal(page.elements.resultCount.textContent, "1 produit");
@@ -141,6 +141,15 @@ test("recherche, catégorie prioritaire, remise à zéro et compteur", () => {
   assert.equal(page.elements.resultCount.textContent, "0 produits");
   assert.equal(page.elements.emptyState.hidden, false);
   page.elements.clearSearch.dispatch("click");
-  assert.equal(page.elements.resultCount.textContent, "35 produits");
+  assert.equal(page.elements.resultCount.textContent, "43 produits");
   assert.equal(page.elements.emptyState.hidden, true);
+});
+
+test("Linux Kernel category and primary sources", () => {
+  const page = createPage();
+  page.buttons.find(b => b.dataset.category === "Linux Kernel").dispatch("click");
+  assert.equal(page.elements.resultCount.textContent, "8 produits");
+  for (const url of ["https://linuxcvetracker.com/", "https://lore.kernel.org/linux-cve-announce/", "https://git.kernel.org/pub/scm/linux/security/vulns.git/", "https://kernel.org/releases.html"]) {
+    assert.ok(cards.some(card => card.links.includes(url)), url);
+  }
 });
