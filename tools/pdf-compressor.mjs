@@ -210,16 +210,6 @@ $('compress').addEventListener('click', async () => {
     $('result').hidden = false; $('progress').value = 100; message('Traitement terminé. Votre téléchargement est prêt.'); $('result').focus();
   } catch (error) { clearResult(); fail(error); } finally { finish(); }
 });
-const media = matchMedia('(prefers-color-scheme: dark)'); let theme = 'system';
-try { const saved = localStorage.getItem('password-studio-theme'); if (['dark', 'light'].includes(saved)) theme = saved; } catch {}
-function applyTheme() {
-  const dark = theme === 'dark' || (theme === 'system' && media.matches);
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light'; $('theme').textContent = dark ? '☀' : '☾';
-  $('theme').setAttribute('aria-label', dark ? 'Activer le thème clair' : 'Activer le thème sombre');
-  document.querySelector('meta[name="theme-color"]').content = dark ? '#0b1120' : '#f5f7fc';
-}
-$('theme').addEventListener('click', () => { theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('password-studio-theme', theme); } catch {} applyTheme(); });
-media.addEventListener('change', applyTheme); applyTheme();
 try {
   pdfjs = await import('../assets/vendor/pdfjs/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc = new URL('../assets/vendor/pdfjs/pdf.worker.min.mjs', import.meta.url).href;
