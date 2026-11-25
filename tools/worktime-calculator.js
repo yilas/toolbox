@@ -17,3 +17,24 @@ $('entries').addEventListener('drop',e=>{e.preventDefault();calculate()});
 $('theme').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme!=='dark';document.documentElement.dataset.theme=dark?'dark':'light';$('theme').textContent=dark?'☀':'☾';save()});
 $('copy').addEventListener('click',async()=>{const text='Temps travaillé : '+$('result').textContent+'\nObjectif : '+$('target').value+'h\nÉcart : '+$('delta').textContent+'\nPauses : '+$('breaks').textContent+'\n'+$('summary').textContent;try{await navigator.clipboard.writeText(text);$('status').textContent='Récapitulatif copié.'}catch{$('status').textContent='Copie automatique indisponible.'}});
 let saved=[],opts={};try{const value=JSON.parse(localStorage.getItem(STORAGE)||'[]');if(Array.isArray(value))saved=value.filter(x=>x&&typeof x==='object').slice(0,100);opts=JSON.parse(localStorage.getItem(OPTIONS)||'{}')||{}}catch{}if(opts.theme==='dark'){document.documentElement.dataset.theme='dark';$('theme').textContent='☀'}if(opts.target!==undefined&&Number.isFinite(Number(opts.target))&&Number(opts.target)>=0&&Number(opts.target)<=24)$('target').value=opts.target;(saved.length?saved:[{start:'',end:''}]).forEach(addEntry);calculate();
+
+const TEMPLATE_KEY='worktime-calculator_templates';
+const presets=[
+ ['Journée standard',[['08:00','12:00'],['13:00','17:00']]],
+ ['Arrivée tôt',[['07:00','12:00'],['12:30','15:30']]],
+ ['Pause courte',[['08:00','12:00'],['12:30','16:30']]],
+ ['Arrivée tardive',[['09:00','12:30'],['13:30','18:00']]],
+ ['Demi-journée',[['08:00','12:00']]],
+ ['Journée fractionnée',[['07:00','10:00'],['10:15','12:00'],['13:00','16:15']]]
+].map(([name,slots])=>({name,slots}));
+function validSlots(slots){return Array.isArray(slots)&&slots.length>0&&slots.length<=100&&slots.every(p=>Array.isArray(p)&&p.length===2&&validTime(p[0])&&validTime(p[1])&&minutes(p[1])>minutes(p[0]))&&slots.slice().sort((a,b)=>minutes(a[0])-minutes(b[0])).every((p,i,a)=>!i||minutes(p[0])>=minutes(a[i-1][1]));}
+let custom=[],selected=-1;
+try{const data=JSON.parse(localStorage.getItem(TEMPLATE_KEY)||'[]');if(Array.isArray(data))custom=data.filter(t=>t&&typeof t.name==='string'&&t.name.trim()&&validSlots(t.slots)).slice(0,100);}catch{}
+function currentSlots(){return rows().map(r=>[r.querySelector('.start').value,r.querySelector('.end').value]);}
+function persistTemplates(){try{localStorage.setItem(TEMPLATE_KEY,JSON.stringify(custom));return true;}catch{return false;}}
+function message(value){$('templateStatus').textContent=value;}
+function renderTemplates(){const all=[...presets,...custom];$('templates').replaceChildren();all.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.className='templateButton';b.setAttribute('aria-pressed',String(i===selected));const name=document.createElement('strong');name.textContent=t.name;const detail=document.createElement('small');detail.textContent=t.slots.map(p=>p.join('–')).join(' / ')+' · '+fmt(t.slots.reduce((n,p)=>n+minutes(p[1])-minutes(p[0]),0));b.append(name,detail);b.addEventListener('click',()=>{const existing=currentSlots();if(existing.some(p=>p.some(Boolean))&&JSON.stringify(existing)!==JSON.stringify(t.slots)&&!confirm('Remplacer les plages horaires actuelles ?'))return;$('entries').replaceChildren();t.slots.forEach(([start,end])=>addEntry({start,end}));selected=i;renderTemplates();message('Modèle appliqué.');});$('templates').append(b);});$('updateTemplate').disabled=selected<presets.length;$('deleteTemplate').disabled=selected<presets.length;}
+$('saveTemplate').addEventListener('click',()=>{const slots=currentSlots();if(!validSlots(slots)){message('Complétez des plages valides et sans chevauchement.');return;}if(custom.length>=100){message('Limite de 100 modèles atteinte.');return;}const name=prompt('Nom du modèle');if(!name||!name.trim())return;custom.push({name:name.trim().slice(0,80),slots});selected=presets.length+custom.length-1;message(persistTemplates()?'Modèle enregistré.':'Stockage indisponible.');renderTemplates();});
+$('updateTemplate').addEventListener('click',()=>{const i=selected-presets.length;if(!custom[i])return;const slots=currentSlots();if(!validSlots(slots)){message('Complétez des plages valides et sans chevauchement.');return;}const name=prompt('Nom du modèle',custom[i].name);if(!name||!name.trim())return;custom[i]={name:name.trim().slice(0,80),slots};message(persistTemplates()?'Modèle modifié.':'Stockage indisponible.');renderTemplates();});
+$('deleteTemplate').addEventListener('click',()=>{const i=selected-presets.length;if(!custom[i]||!confirm('Supprimer ce modèle ?'))return;custom.splice(i,1);selected=-1;message(persistTemplates()?'Modèle supprimé.':'Stockage indisponible.');renderTemplates();});
+renderTemplates();
