@@ -3,7 +3,8 @@
   "use strict";
   const key = "password-studio-theme";
   const media = window.matchMedia("(prefers-color-scheme: dark)");
-  const button = document.getElementById("theme");
+  const button = document.getElementById("theme") || document.getElementById("themeToggle");
+  const moon = document.getElementById("themeMoon"), sun = document.getElementById("themeSun"), icon = document.getElementById("themeIcon");
   let preference = "system";
   try {
     const value = localStorage.getItem(key);
@@ -14,12 +15,14 @@
     const dark = preference === "dark" || (preference === "system" && media.matches);
     document.documentElement.dataset.theme = dark ? "dark" : "light";
     if (button) {
-      button.textContent = dark ? "☀" : "☾";
+      if (moon && sun) { moon.hidden = dark; sun.hidden = !dark; }
+      else if (icon) icon.textContent = dark ? "☀" : "☾";
+      else button.textContent = dark ? "☀" : "☾";
       button.setAttribute("aria-label", "Thème : " + ({system:"système",light:"clair",dark:"sombre"})[preference]);
       button.title = button.getAttribute("aria-label");
     }
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = dark ? "#0b1120" : "#f5f7fc";
+    if (meta) meta.setAttribute("content", dark ? "#0b1120" : "#f5f7fc");
   }
   if (button) button.addEventListener("click", () => {
     preference = ({system:"light",light:"dark",dark:"system"})[preference];
@@ -27,7 +30,7 @@
     apply();
   });
   media.addEventListener("change", apply);
-  window.addEventListener("storage", e => {
+  window.addEventListener?.("storage", e => {
     if (e.key === key) { preference = ["light","dark","system"].includes(e.newValue) ? e.newValue : "system"; apply(); }
   });
   apply();
