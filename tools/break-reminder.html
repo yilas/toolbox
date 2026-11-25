@@ -36,7 +36,7 @@
     #standup-btn { width:100%; }
     @media(max-width:680px) { .layout { grid-template-columns:1fr; } .nav { padding:16px; flex-wrap:wrap; } .nav strong { order:-1; width:100%; } .panel { padding:20px; } }
   </style>
-</head>
+<script src="../assets/js/theme.js" defer></script></head>
 <body>
   <header class="nav"><a href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a><strong><span class="mark" aria-hidden="true">◷</span> Rappel de pause</strong><button type="button" id="theme" aria-label="Changer le thème" title="Changer le thème">☾</button></header>
 
@@ -338,22 +338,6 @@
   /* ---------------------------------------------------------------
      Initialisation
   --------------------------------------------------------------- */
-  const themeButton = document.getElementById('theme');
-  const media = window.matchMedia('(prefers-color-scheme: dark)');
-  let theme = 'system';
-  try { theme = localStorage.getItem('password-studio-theme') || 'system'; } catch (_) {}
-  function applyTheme() {
-    const dark = theme === 'dark' || (theme === 'system' && media.matches);
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    themeButton.textContent = dark ? '☀' : '☾';
-  }
-  themeButton.addEventListener('click', () => {
-    theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    try { localStorage.setItem('password-studio-theme', theme); } catch (_) {}
-    applyTheme();
-  });
-  if (media.addEventListener) media.addEventListener('change', applyTheme);
-  applyTheme();
   loadState();
   resetTimer();
   </script>

@@ -30,7 +30,8 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
       this.blurred = false;
     }
     addEventListener(type, handler) { this.events.set(type, handler); }
-    setAttribute(name, value) { this.attrs[name] = value; }
+    setAttribute(name, value) { this.attrs[name] = String(value); }
+    getAttribute(name) { return Object.hasOwn(this.attrs, name) ? this.attrs[name] : null; }
     dispatch(type, event = {}) {
       const handler = this.events.get(type);
       assert.ok(handler, "Événement non câblé : " + type);
@@ -82,12 +83,14 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
     addEventListener(type, callback) { docEvents.set(type, callback); }
   };
   const media = { matches: darkSystem, addEventListener() {} };
-  const window = { matchMedia() { return media; } };
+  const windowEvents = new Map();
+  const window = { matchMedia() { return media; }, addEventListener(type, callback) { windowEvents.set(type, callback); } };
   const storage = {
     getItem(key) { assert.equal(key, "password-studio-theme"); return savedTheme; },
     setItem(key, value) { assert.equal(key, "password-studio-theme"); savedTheme = value; }
   };
 
+  vm.runInNewContext(fs.readFileSync(path.join(root, "assets/js/theme.js"), "utf8"), { document: doc, window, localStorage: storage });
   vm.runInNewContext(source, {
     document: doc, window, localStorage: storage, HTMLElement: Element
   }, { filename: "portal.js" });
@@ -95,6 +98,7 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
   return {
     elements, cardEls, sections, htmlElement, meta, bodyClass,
     get savedTheme() { return savedTheme; },
+    storageEvent(value) { savedTheme = value; windowEvents.get("storage")({ key: "password-studio-theme", newValue: value }); },
     keydown(event) {
       const handler = docEvents.get("keydown");
       assert.ok(handler);
@@ -180,6 +184,14 @@ test("Thème : partage de la préférence avec le générateur de mots de passe"
 
   const existing = createPage({ storedTheme: "dark", darkSystem: false });
   assert.equal(existing.htmlElement.dataset.theme, "dark");
+  page.elements.themeToggle.dispatch("click");
+  assert.equal(page.savedTheme, "dark");
+  page.elements.themeToggle.dispatch("click");
+  assert.equal(page.savedTheme, "system");
+  assert.equal(page.htmlElement.dataset.theme, "dark");
+  page.storageEvent("light");
+  assert.equal(page.htmlElement.dataset.theme, "light");
+  assert.equal(page.elements.themeToggle.getAttribute("aria-label"), "Thème : clair");
 });
 
 test("Les trois univers contiennent les bons outils et IT Watch est accessible", () => {
