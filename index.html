@@ -100,8 +100,8 @@
 
   <main class="page" id="main">
     <section class="intro" aria-labelledby="pageTitle">
-      <h1 id="pageTitle">Outils</h1>
-      <p>Des utilitaires pour le développement, le texte et l'organisation.</p>
+      <h1 id="pageTitle">Toolbox</h1>
+      <p>Travail, utilitaires et veille IT.</p>
     </section>
 
     <div class="catalogue-toolbar">
@@ -114,153 +114,145 @@
       <p class="count" id="resultCount" role="status" aria-live="polite">12 outils</p>
     </div>
 
-    <section aria-label="Outils disponibles">
-      <div class="tool-grid" id="toolsGrid">
+    <nav class="portal-nav" aria-label="Univers"><a href="#work">Work</a><a href="#tools">Tools</a><a href="#watch">IT Watch</a></nav>
+<section aria-label="Outils disponibles">
+<section class="portal-section" id="work" aria-labelledby="work-title">
+<h2 class="section-title" id="work-title">Work</h2>
+<p class="section-description">Organisation quotidienne et temps de travail.</p>
 
-        <a class="tool-card" href="tools/pdf-compressor.html" data-search="pdf compresser compression réduire taille document scan jpeg optimisation local">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-note"></use></svg></span>
-            <span class="tool-category">Documents</span>
-          </span>
-          <h2>Compresser un PDF</h2>
-          <p>Réduction de taille en local, profils de qualité et aperçu par page.</p>
-          <span class="tool-footer"><span>Ouvrir l’outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/scratchpad.html" data-search="scratchpad notes commandes urls json liens blocs tags recherche stockage local">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-note"></use></svg></span>
-            <span class="tool-category">Productivité</span>
-          </span>
-          <h2>Scratchpad</h2>
-          <p>Notes, commandes et liens, avec recherche et stockage local.</p>
-          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/random-numbers-generator.html" data-search="mot de passe phrase de passe passwords générateur sécurité cryptographie aléatoire">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-shield"></use></svg></span>
-            <span class="tool-category">Sécurité</span>
-          </span>
-          <h2>Générateur de mots de passe</h2>
-          <p>Mots de passe et phrases de passe, avec options de génération.</p>
-          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/clean-text.html" data-search="clean text texte nettoyage markdown normaliser ascii reformulation diff édition">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-type"></use></svg></span>
-            <span class="tool-category">Texte</span>
-          </span>
-          <h2>Clean Text</h2>
-          <p>Nettoyage de texte, normalisation et analyse de rédaction.</p>
-          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/base64-encoder-decoder.html" data-search="base64 encoder decoder encodage décodage texte utf8 conversion">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-code"></use></svg></span>
-            <span class="tool-category">Développement</span>
-          </span>
-          <h2>Encodeur / Décodeur Base64</h2>
-          <p>Encodage et décodage Base64, avec copie rapide du résultat.</p>
-          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/decodeur_analyseur_jwt_standalone.html" data-search="jwt token json web token claims signature décodeur analyseur authentification sécurité">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-key"></use></svg></span>
-            <span class="tool-category">Développement</span>
-          </span>
-          <h2>Analyseur JWT</h2>
-          <p>Inspection des tokens JWT, des claims et des signatures.</p>
-          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/subnets_calculator.html" data-search="cidr subnets sous réseaux subnet adresse ip ipv4 masque réseau calculateur">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-network"></use></svg></span>
-            <span class="tool-category">Développement</span>
-          </span>
-          <h2>Calculateur de sous-réseaux</h2>
-          <p>Découpage CIDR, calcul des plages IP et inventaire réseau.</p>
-          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/worktime-calculator.html" data-search="calculateur temps travail heures horaires pauses entrée sortie durée">
+<div class="tool-grid">
+<a class="tool-card" href="tools/worktime-calculator.html" data-search="calculateur temps travail heures horaires pauses entrée sortie durée">
           <span class="tool-meta">
             <span class="tool-icon" aria-hidden="true"><svg><use href="#i-clock"></use></svg></span>
             <span class="tool-category">Productivité</span>
           </span>
-          <h2>Temps de travail</h2>
+          <h3>Temps de travail</h3>
           <p>Calcul des heures travaillées à partir de plusieurs plages horaires.</p>
           <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
         </a>
-
-        <a class="tool-card" href="tools/auto-reply-generator.html" data-search="message absence email mail automatique vacances multilingue réponse">
-          <span class="tool-meta">
-            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-mail"></use></svg></span>
-            <span class="tool-category">Productivité</span>
-          </span>
-          <h2>Message d'absence</h2>
-          <p>Réponse automatique multilingue, avec dates et contact optionnel.</p>
-          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
-        </a>
-
-        <a class="tool-card" href="tools/break-reminder.html" data-search="break reminder rappel pause active minuterie timer sédentarité exercice">
+<a class="tool-card" href="tools/break-reminder.html" data-search="break reminder rappel pause active minuterie timer sédentarité exercice">
           <span class="tool-meta">
             <span class="tool-icon" aria-hidden="true"><svg><use href="#i-coffee"></use></svg></span>
             <span class="tool-category">Productivité</span>
           </span>
-          <h2>Rappel de pause</h2>
+          <h3>Rappel de pause</h3>
           <p>Minuteur de pauses actives, rappels et suivi des sessions.</p>
           <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
         </a>
+<a class="tool-card" href="tools/auto-reply-generator.html" data-search="message absence email mail automatique vacances multilingue réponse">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-mail"></use></svg></span>
+            <span class="tool-category">Productivité</span>
+          </span>
+          <h3>Message d'absence</h3>
+          <p>Réponse automatique multilingue, avec dates et contact optionnel.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+<a class="tool-card" href="tools/scratchpad.html" data-search="scratchpad notes commandes urls json liens blocs tags recherche stockage local">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-note"></use></svg></span>
+            <span class="tool-category">Productivité</span>
+          </span>
+          <h3>Scratchpad</h3>
+          <p>Notes, commandes et liens, avec recherche et stockage local.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+</div>
+</section>
+<section class="portal-section" id="tools" aria-labelledby="tools-title">
+<h2 class="section-title" id="tools-title">Tools</h2>
+<p class="section-description">Développement, réseau, texte, documents et sécurité.</p>
 
-        <a class="tool-card" href="tools/security-advisories.html" data-search="sécurité security advisories bulletins vulnérabilités cve aks kubernetes cilium argocd kyverno harbor terraform docker elastic">
+<div class="tool-grid">
+<a class="tool-card" href="tools/base64-encoder-decoder.html" data-search="base64 encoder decoder encodage décodage texte utf8 conversion">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-code"></use></svg></span>
+            <span class="tool-category">Développement</span>
+          </span>
+          <h3>Encodeur / Décodeur Base64</h3>
+          <p>Encodage et décodage Base64, avec copie rapide du résultat.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+<a class="tool-card" href="tools/decodeur_analyseur_jwt_standalone.html" data-search="jwt token json web token claims signature décodeur analyseur authentification sécurité">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-key"></use></svg></span>
+            <span class="tool-category">Développement</span>
+          </span>
+          <h3>Analyseur JWT</h3>
+          <p>Inspection des tokens JWT, des claims et des signatures.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+<a class="tool-card" href="tools/subnets_calculator.html" data-search="cidr subnets sous réseaux subnet adresse ip ipv4 masque réseau calculateur">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-network"></use></svg></span>
+            <span class="tool-category">Développement</span>
+          </span>
+          <h3>Calculateur de sous-réseaux</h3>
+          <p>Découpage CIDR, calcul des plages IP et inventaire réseau.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+<a class="tool-card" href="tools/clean-text.html" data-search="clean text texte nettoyage markdown normaliser ascii reformulation diff édition">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-type"></use></svg></span>
+            <span class="tool-category">Texte</span>
+          </span>
+          <h3>Clean Text</h3>
+          <p>Nettoyage de texte, normalisation et analyse de rédaction.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+<a class="tool-card" href="tools/pdf-compressor.html" data-search="pdf compresser compression réduire taille document scan jpeg optimisation local">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-note"></use></svg></span>
+            <span class="tool-category">Documents</span>
+          </span>
+          <h3>Compresser un PDF</h3>
+          <p>Réduction de taille en local, profils de qualité et aperçu par page.</p>
+          <span class="tool-footer"><span>Ouvrir l’outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+<a class="tool-card" href="tools/random-numbers-generator.html" data-search="mot de passe phrase de passe passwords générateur sécurité cryptographie aléatoire">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-shield"></use></svg></span>
+            <span class="tool-category">Sécurité</span>
+          </span>
+          <h3>Générateur de mots de passe</h3>
+          <p>Mots de passe et phrases de passe, avec options de génération.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+</div>
+</section>
+<section class="portal-section" id="watch" aria-labelledby="watch-title">
+<h2 class="section-title" id="watch-title">IT Watch</h2>
+<p class="section-description">Veille de sécurité et disponibilité des services.</p>
+<p><a class="nav-link" href="watch/index.html">Ouvrir IT Watch</a></p>
+<div class="tool-grid">
+<a class="tool-card" href="tools/security-advisories.html" data-search="sécurité security advisories bulletins vulnérabilités cve aks kubernetes cilium argocd kyverno harbor terraform docker elastic">
           <span class="tool-meta">
             <span class="tool-icon" aria-hidden="true"><svg><use href="#i-shield"></use></svg></span>
             <span class="tool-category">Infrastructure</span>
           </span>
-          <h2>Security Advisories</h2>
+          <h3>Security Advisories</h3>
           <p>Bulletins de sécurité officiels pour AKS, GitOps, conteneurs et autres produits.</p>
           <span class="tool-footer"><span>Ouvrir l’outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
         </a>
-
-        <a class="tool-card" href="tools/service-status.html" data-search="status incidents état disponibilité cloud azure microsoft 365 m365 github slack devops docker monitoring">
+<a class="tool-card" href="tools/service-status.html" data-search="status incidents état disponibilité cloud azure microsoft 365 m365 github slack devops docker monitoring">
           <span class="tool-meta">
             <span class="tool-icon" aria-hidden="true"><svg><use href="#i-network"></use></svg></span>
             <span class="tool-category">Infrastructure</span>
           </span>
-          <h2>Service Status</h2>
+          <h3>Service Status</h3>
           <p>Annuaire des pages officielles de statut Cloud, DevOps et SaaS.</p>
           <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
         </a>
-
-      </div>
-
-      <div class="empty-state" id="emptyState" hidden>
+</div>
+</section>
+<div class="empty-state" id="emptyState" hidden>
         <h2>Aucun outil trouvé</h2>
         <p>Essayez avec un autre terme.</p>
         <button class="reset-button" id="clearSearch" type="button">Effacer la recherche</button>
       </div>
     </section>
 
-    <section class="upcoming" id="upcomingSection" aria-labelledby="upcomingTitle">
-      <h2 class="section-title" id="upcomingTitle">En préparation</h2>
-      <div class="upcoming-list">
-        <div class="upcoming-item">
-          <svg aria-hidden="true"><use href="#i-calendar"></use></svg>
-          <strong>Convertisseur de dates ISO</strong>
-          <span class="upcoming-state">À venir</span>
-        </div>
-        <div class="upcoming-item">
-          <svg aria-hidden="true"><use href="#i-alert"></use></svg>
-          <strong>Analyseur d'e-mails suspects</strong>
-          <span class="upcoming-state">À venir</span>
-        </div>
-      </div>
-    </section>
+    
   </main>
 
   <footer class="site-footer">
