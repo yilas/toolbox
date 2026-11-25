@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Verify collector tests
@@ -29,7 +29,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/collect_security_advisories.py
       - name: Propose updated JSON for review (never auto-merge)
-        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8
         with:
           token: ${{ github.token }}
           add-paths: tools/data/security-advisories.json
