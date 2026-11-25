@@ -8,7 +8,7 @@
   const count = document.getElementById("resultCount");
   const empty = document.getElementById("emptyState");
   const clear = document.getElementById("clearSearch");
-  const upcoming = document.getElementById("upcomingSection");
+  const sections = [...document.querySelectorAll(".portal-section")];
   const cards = [...document.querySelectorAll(".tool-card")];
   const themeButton = document.getElementById("themeToggle");
   const themeMoon = document.getElementById("themeMoon");
@@ -45,7 +45,9 @@
 
     count.textContent = visible + (visible === 1 ? " outil" : " outils");
     empty.hidden = visible !== 0;
-    upcoming.hidden = query !== "";
+    sections.forEach(section => {
+      section.hidden = !section.querySelector(".tool-card:not([hidden])");
+    });
   }
 
   function setTheme() {
