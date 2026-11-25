@@ -19,3 +19,12 @@ test("Worktime template controls exist and script parses",()=>{
  const html=fs.readFileSync(path.join(__dirname,"../tools/worktime-calculator.html"),"utf8");
  for(const id of ["templates","saveTemplate","updateTemplate","deleteTemplate","templateStatus"])assert.ok(html.includes('id="'+id+'"'));
 });
+
+test("Compact template selector and explicit apply",()=>{
+ const html=fs.readFileSync(path.join(__dirname,"../tools/worktime-calculator.html"),"utf8");
+ assert.match(html, /<select id="templates"/);
+ assert.match(html, /id="applyTemplate" disabled/);
+ assert.match(html, /id="templateActions" hidden/);
+ assert.match(source, /createElement\('optgroup'\)/);
+ assert.match(source, /\$\('applyTemplate'\)\.addEventListener\('click'/);
+});
