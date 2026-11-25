@@ -20,3 +20,13 @@ test("Scratchpad shares palette and preserves full-width note grid",()=>{
  assert.match(html,/repeat\(auto-fill, minmax\(min\(100%, 360px\), 1fr\)\)/);
  assert.match(html,/--field: var\(--soft\)/);
 });
+
+test("Portal consumes shared palette and keeps system fallback",()=>{
+ const css=fs.readFileSync(path.join(root,"portal.css"),"utf8");
+ const tokens=fs.readFileSync(path.join(root,"assets/css/tokens.css"),"utf8");
+ assert.ok(css.includes('@import url("./assets/css/tokens.css")'));
+ assert.ok(css.includes("--background:var(--bg)"));
+ assert.ok(!/--accent:\s*#/.test(css));
+ assert.ok(tokens.includes("html:not([data-theme])"));
+ assert.ok(tokens.includes("--portal-shadow:"));
+});
