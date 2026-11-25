@@ -4,215 +4,88 @@
   <meta charset="UTF-8">
     <link rel="icon" href="../favicon.ico" type="image/x-icon" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏃 Break Reminder – Rappel de pause active</title>
+  <title>Rappel de pause — Toolbox</title>
+  <link rel="stylesheet" href="../assets/css/toolbox-shared.css">
   <style>
-    /* ---------- Base / thème aligné sur le portail ---------- */
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      color: #1a1a1a;
-    }
-    header {
-      background-color: #0a66c2;
-      color: white;
-      padding: 24px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-    }
-    main {
-      max-width: 640px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-
-    /* ---------- Carte principale ---------- */
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      padding: 32px;
-      text-align: center;
-      border-top: 6px solid #0a66c2;
-    }
-
-    /* Décompte géant */
-    #countdown {
-      font-size: 72px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 2px;
-      margin: 10px 0 4px;
-      color: #0a66c2;
-    }
-    #status-line {
-      color: #666;
-      font-size: 14px;
-      min-height: 20px;
-      margin-bottom: 24px;
-    }
-
-    /* ---------- Boutons ---------- */
-    button {
-      font-family: inherit;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      transition: transform .1s ease, background .2s ease, opacity .2s ease;
-    }
-    button:active { transform: scale(0.97); }
-
-    .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .btn {
-      padding: 12px 22px;
-      font-size: 15px;
-      background: #0a66c2;
-      color: white;
-    }
-    .btn.secondary { background: #e2e8f0; color: #1a1a1a; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; }
-
-    /* ---------- Réglages ---------- */
-    .settings {
-      margin-top: 26px;
-      padding-top: 22px;
-      border-top: 1px solid #eee;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      text-align: left;
-      font-size: 14px;
-    }
-    .setting-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .setting-line input[type="number"] { width: 80px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-
-    /* Interrupteur (toggle) */
-    .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; inset: 0; background: #ccc; border-radius: 26px; transition: .2s; }
-    .slider::before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s; }
-    .switch input:checked + .slider { background: #0a66c2; }
-    .switch input:checked + .slider::before { transform: translateX(22px); }
-
-    /* ---------- Compteur / Streak ---------- */
-    .stats { display: flex; gap: 16px; justify-content: center; margin: 4px 0 24px; }
-    .stat-box { background: #f4f6f8; border-radius: 10px; padding: 12px 20px; min-width: 96px; }
-    .stat-box .num { font-size: 30px; font-weight: 700; color: #0a66c2; }
-    .stat-box .lbl { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: .5px; }
-
-    /* ---------- Overlay Hardcore ---------- */
-    #overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(10, 30, 60, 0.82);
-      backdrop-filter: blur(4px);
-      display: none;               /* affiché en flex par JS */
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 20px;
-      animation: fadeIn .25s ease;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    #overlay .panel {
-      background: white;
-      border-radius: 16px;
-      padding: 40px 32px;
-      max-width: 480px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-    }
-    #overlay h1 { font-size: 30px; margin: 0 0 8px; color: #d32f2f; }
-    #overlay p { color: #555; margin: 0 0 24px; }
-
-    #standup-btn {
-      background: #2e7d32;
-      color: white;
-      font-size: 22px;
-      padding: 20px 30px;
-      width: 100%;
-      border-radius: 12px;
-    }
-
-    footer { text-align: center; padding: 24px; font-size: 13px; color: #999; }
-    .hint { font-size: 12px; color: #999; }
-    /* Navigation commune vers Toolbox */
-    .toolbox-return-nav { background: #0a66c2; padding: 12px 24px 0; }
-    .toolbox-return-nav a { display: inline-block; color: #fff; text-decoration: none; font-size: 14px; font-weight: 650; }
-    .toolbox-return-nav a:hover { text-decoration: underline; text-underline-offset: 3px; }
-    .toolbox-return-nav a:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 3px; }
+    body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
+    button,input { font:inherit; } button { cursor:pointer; } button:disabled { opacity:.45; cursor:not-allowed; }
+    :focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    .shell { max-width:960px; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:16px; align-items:start; }
+    .card { text-align:center; }
+    #countdown { font-size:clamp(48px,9vw,80px); font-weight:750; font-variant-numeric:tabular-nums; letter-spacing:-.04em; color:var(--accent); line-height:1.2; }
+    #status-line { color:var(--muted); min-height:24px; margin:6px 0 22px; }
+    .btn-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    .btn,#standup-btn { background:var(--accent); color:#fff; border:1px solid transparent; border-radius:10px; padding:10px 14px; font-weight:650; }
+    html[data-theme=dark] .btn:not(.secondary),html[data-theme=dark] #standup-btn { color:#0b1120; }
+    .btn.secondary { background:var(--soft); color:var(--text); border-color:var(--border); }
+    .settings { display:grid; gap:0; }
+    .setting-line { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 0; border-bottom:1px solid var(--border); }
+    .setting-line:last-of-type { border-bottom:0; }
+    .setting-line input[type=number] { width:80px; background:var(--soft); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:7px; }
+    .switch { display:inline-flex; align-items:center; }
+    .switch input { width:22px; height:22px; accent-color:var(--accent); cursor:pointer; }
+    .slider { display:none; }
+    .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:24px 0 0; }
+    .stat-box { background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px; }
+    .num { font-size:26px; font-weight:750; font-variant-numeric:tabular-nums; }
+    .lbl,.hint { color:var(--muted); font-size:12px; }
+    #overlay { position:fixed; inset:0; background:rgba(10,20,40,.78); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px; }
+    #overlay .panel { max-width:440px; width:100%; text-align:center; }
+    #overlay h1 { font-size:26px; margin:0 0 10px; } #overlay p { color:var(--muted); }
+    #standup-btn { width:100%; }
+    @media(max-width:680px) { .layout { grid-template-columns:1fr; } .nav { padding:16px; flex-wrap:wrap; } .nav strong { order:-1; width:100%; } .panel { padding:20px; } }
   </style>
 </head>
 <body>
-  <nav class="toolbox-return-nav" aria-label="Navigation">
-    <a href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a>
-  </nav>
-  <header>🏃 Break Reminder – Rappel de pause active</header>
+  <header class="nav"><a href="../index.html" aria-label="Retour à Toolbox">← Retour à Toolbox</a><strong><span class="mark" aria-hidden="true">◷</span> Rappel de pause</strong><button type="button" id="theme" aria-label="Changer le thème" title="Changer le thème">☾</button></header>
 
-  <main>
-    <div class="card">
+  <main class="shell">
+    <div class="hero"><h1>Rappel de pause</h1></div>
+    <div class="layout"><section class="panel card" aria-label="Minuteur">
       <!-- Décompte principal -->
       <div id="countdown">60:00</div>
-      <div id="status-line">Prêt à bosser. Le rappel se déclenchera à zéro.</div>
-
-      <!-- Statistiques / Streak -->
-      <div class="stats">
-        <div class="stat-box">
-          <div class="num" id="streak-val">0</div>
-          <div class="lbl">Streak 🔥</div>
-        </div>
-        <div class="stat-box">
-          <div class="num" id="total-val">0</div>
-          <div class="lbl">Total pauses</div>
-        </div>
-      </div>
+      <div id="status-line">Prêt</div>
 
       <!-- Contrôles -->
       <div class="btn-row">
-        <button class="btn" id="start-btn">▶️ Démarrer</button>
-        <button class="btn secondary" id="pause-btn" disabled>⏸️ Pause</button>
-        <button class="btn secondary" id="reset-btn">🔄 Réinitialiser</button>
+        <button class="btn" id="start-btn">Démarrer</button>
+        <button class="btn secondary" id="pause-btn" disabled>Pause</button>
+        <button class="btn secondary" id="reset-btn">Réinitialiser</button>
       </div>
 
+      <div class="stats"><div class="stat-box"><div class="num" id="streak-val">0</div><div class="lbl">Série</div></div><div class="stat-box"><div class="num" id="total-val">0</div><div class="lbl">Total pauses</div></div></div>
+      </section><section class="panel" aria-labelledby="settings-title"><h2 id="settings-title">Réglages</h2>
       <!-- Réglages -->
       <div class="settings">
         <div class="setting-line">
-          <label for="minutes-input">⏱️ Intervalle (minutes)</label>
+          <label for="minutes-input">Intervalle (minutes)</label>
           <input type="number" id="minutes-input" min="1" max="240" value="60">
         </div>
         <div class="setting-line">
-          <label for="hardcore-toggle">💪 Mode Hardcore (blocage écran obligatoire)</label>
+          <label for="hardcore-toggle">Confirmation obligatoire</label>
           <label class="switch">
             <input type="checkbox" id="hardcore-toggle" checked>
             <span class="slider"></span>
           </label>
         </div>
         <div class="setting-line">
-          <label for="alert-toggle">🔔 Alertes hors navigateur (notif + son + onglet clignotant)</label>
+          <label for="alert-toggle">Notifications, son et titre clignotant</label>
           <label class="switch">
             <input type="checkbox" id="alert-toggle" checked>
             <span class="slider"></span>
           </label>
         </div>
-        <p class="hint">Les alertes hors navigateur permettent d'être prévenu même si tu travailles dans une autre appli. Un navigateur ne peut pas forcer le passage au premier plan : clique la notification système pour revenir sur la page.</p>
+        <p class="hint">Les notifications nécessitent l’autorisation du navigateur.</p>
       </div>
-    </div>
-
-    <footer>Reste actif, ménage ton dos. 🪑➡️🧍</footer>
+    </section></div>
   </main>
 
   <!-- ======================= OVERLAY HARDCORE ======================= -->
   <div id="overlay">
     <div class="panel">
-      <h1 id="overlay-title">🚨 LÈVE TES FESSES !</h1>
-      <p id="overlay-sub">Ça fait assez longtemps que tu es collé à cette chaise.</p>
-      <button id="standup-btn">🧍 Je suis debout !</button>
+      <h1 id="overlay-title">C’est l’heure de la pause !</h1>
+      <button id="standup-btn">Je suis debout</button>
     </div>
   </div>
 
@@ -229,13 +102,7 @@
   const LS_ALERTS   = 'breakReminder.alerts';
 
   // ---- Banque de messages piquants (aléatoires)
-  const TAUNTS = [
-    "🚨 LÈVE TES FESSES !",
-    "🪑 La chaise n'est pas ton amie.",
-    "🧍 Debout, feignant !",
-    "🔥 Ton dos te dit merci d'avance.",
-    "🚶 On bouge, on ne discute pas."
-  ];
+  const TAUNTS = ["C’est l’heure de la pause !"];
 
   // ---- Récupération des éléments du DOM
   const el = {
@@ -385,7 +252,7 @@
       : configuredSeconds(); // nouveau cycle
     running = true;
     el.countdown.textContent = fmt(remaining);
-    el.status.textContent = '⏳ Le compte à rebours tourne. Concentre-toi !';
+    el.status.textContent = 'En cours';
     el.start.disabled = true;
     el.pause.disabled = false;
     mainTimer = setInterval(tick, 1000);
@@ -393,7 +260,7 @@
 
   function pauseTimer() {
     stopMainTimer();
-    el.status.textContent = '⏸️ En pause. Clique « Démarrer » pour reprendre.';
+    el.status.textContent = 'En pause';
   }
 
   function stopMainTimer() {
@@ -408,7 +275,7 @@
     stopMainTimer();
     remaining = configuredSeconds();
     el.countdown.textContent = fmt(remaining);
-    el.status.textContent = 'Réinitialisé. Prêt à repartir.';
+    el.status.textContent = 'Prêt';
   }
 
   /* ---------------------------------------------------------------
@@ -421,7 +288,7 @@
     if (!el.hardcore.checked) {
       // Mode doux : on valide direct et on relance un cycle
       validateBreak();
-      el.status.textContent = '✅ Rappel (mode doux). Nouveau cycle lancé.';
+      el.status.textContent = 'Nouveau cycle.';
       remaining = configuredSeconds();
       startTimer();
       return;
@@ -437,7 +304,7 @@
     stopTitleFlash();
     el.overlay.style.display = 'none';
     validateBreak();
-    el.status.textContent = '💪 Bien joué ! Streak +1. Nouveau cycle lancé.';
+    el.status.textContent = 'Pause validée.';
     remaining = configuredSeconds();
     startTimer();
   }
@@ -471,6 +338,22 @@
   /* ---------------------------------------------------------------
      Initialisation
   --------------------------------------------------------------- */
+  const themeButton = document.getElementById('theme');
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  let theme = 'system';
+  try { theme = localStorage.getItem('password-studio-theme') || 'system'; } catch (_) {}
+  function applyTheme() {
+    const dark = theme === 'dark' || (theme === 'system' && media.matches);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    themeButton.textContent = dark ? '☀' : '☾';
+  }
+  themeButton.addEventListener('click', () => {
+    theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('password-studio-theme', theme); } catch (_) {}
+    applyTheme();
+  });
+  if (media.addEventListener) media.addEventListener('change', applyTheme);
+  applyTheme();
   loadState();
   resetTimer();
   </script>
