@@ -8,10 +8,7 @@ const buttons=[...document.querySelectorAll(".category-button")];
 const count=document.getElementById("resultCount");
 const empty=document.getElementById("emptyState");
 const clear=document.getElementById("clearSearch");
-const toggle=document.getElementById("themeToggle");
-const themeIcon=document.getElementById("themeIcon");
-const media=window.matchMedia?window.matchMedia("(prefers-color-scheme: dark)"):null;
-let category="all",theme="system";
+let category="all";
 const normalize=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("fr").trim();
 function filter(){
  const terms=normalize(search.value).split(/\s+/).filter(Boolean);
@@ -48,17 +45,5 @@ document.addEventListener("keydown",event=>{
  else if(event.key==="Escape"&&document.activeElement===search){search.value="";filter();search.blur();}
 });
 }
-try{const value=localStorage.getItem("password-studio-theme");if(value==="dark"||value==="light")theme=value;}catch(_){}
-function setTheme(){
- const dark=theme==="dark"||(theme==="system"&&media&&media.matches);
- document.documentElement.dataset.theme=dark?"dark":"light";
- themeIcon.textContent=dark?"☀":"☾";
- const label=dark?"Activer le thème clair":"Activer le thème sombre";
- toggle.setAttribute("aria-label",label);toggle.title=label;
- const meta=document.querySelector('meta[name="theme-color"]');
- if(meta)meta.content=dark?"#0b1120":"#f5f7fc";
-}
-toggle.addEventListener("click",()=>{theme=document.documentElement.dataset.theme==="dark"?"light":"dark";try{localStorage.setItem("password-studio-theme",theme);}catch(_){}setTheme();});
-if(media){const change=()=>{if(theme==="system")setTheme();};if(media.addEventListener)media.addEventListener("change",change);else if(media.addListener)media.addListener(change);}
-setTheme();if(search && count && empty && clear)filter();
+if(search && count && empty && clear)filter();
 })();
