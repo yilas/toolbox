@@ -70,15 +70,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check JavaScript syntax
-        run: |
-          node --check portal.js
-          node --check tools/jwt-analyzer-core.js
-          node --check tools/jwt-analyzer-ui.js
-          node --check tools/service-status.js
-          node --check tools/security-advisories-feed.js
-          node --check tools/pdf-compressor.mjs
-          node --check tools/pdf-compressor-core.mjs
+      - name: Check JavaScript syntax (including inline scripts)
+        run: python3 scripts/check-javascript.py
       - name: Run all Node.js tests once
         run: node --test tests/*.test.cjs
 
@@ -130,6 +123,21 @@ jobs:
           name: pdf-compressor-screenshots
           path: screenshots
           if-no-files-found: ignore
+
+  portal-smoke:
+    name: Toolbox browser smoke tests
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --prefix "$RUNNER_TEMP/toolbox-browser" --ignore-scripts --no-audit --no-fund playwright@1.65.1
+          "$RUNNER_TEMP/toolbox-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - run: NODE_PATH="$RUNNER_TEMP/toolbox-browser/node_modules" node --test tests/browser/portal-smoke.test.cjs
 
   integration-tests:
     name: Microsoft AKS source integration

@@ -1,0 +1,3 @@
+/* Toolbox Minimal Premium shared primitives. Loaded before tool-specific styles. */
+:root{color-scheme:light;--bg:#f5f7fc;--surface:#fff;--soft:#f7f8fc;--text:#182139;--muted:#66728d;--border:#e3e8f2;--accent:#5253c9;--shadow:0 22px 70px rgba(37,49,89,.09)}
+html[data-theme=dark]{color-scheme:dark;--bg:#0b1120;--surface:#141f34;--soft:#1a2940;--text:#edf1fb;--muted:#a1afc9;--border:#2a3a56;--accent:#8988f5;--shadow:0 24px 70px rgba(0,0,0,.28)}
