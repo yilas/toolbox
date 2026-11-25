@@ -29,6 +29,7 @@ test("annuaire complet et navigation bidirectionnelle", () => {
   assert.match(status, /href="security-advisories\.html"/);
   assert.match(html, /href="service-status\.css"/);
   assert.match(html, /src="service-status\.js"/);
+  assert.match(html, /src="\.\.\/assets\/js\/theme\.js"/);
   assert.doesNotMatch(html, /src="security-advisories-feed\.js"/);
   assert.match(html, /href="security-advisories\.html"/);
 });
