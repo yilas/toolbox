@@ -250,3 +250,31 @@ a { color: inherit; }
 .tool-card { min-height:175px; padding:16px; }
 .tool-meta { margin-bottom:10px; }
 .tool-card p { margin-bottom:12px; }
+
+/* Compact launcher: keep the entire card clickable. */
+.page { max-width: 1080px; padding-top: 36px; }
+.catalogue-toolbar { margin: 24px 0 16px; }
+.portal-nav { gap: 6px; padding: 5px; background: var(--surface-strong); border: 1px solid var(--border); border-radius: 12px; width: fit-content; margin-bottom: 28px; }
+.portal-nav a { background: transparent; border: 1px solid transparent; padding: 7px 18px; }
+.portal-nav a:hover, .portal-nav a:focus-visible { background: var(--surface); border-color: var(--border); color: var(--accent-text); }
+.portal-section { margin-bottom: 30px; }
+.portal-section + .portal-section { border-top: 1px solid var(--border); padding-top: 24px; }
+.portal-section .section-title { font-size: 1.4rem; letter-spacing: -.035em; }
+.section-description { font-size: .86rem; margin-bottom: 14px; }
+.tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tool-card { display: grid; grid-template-columns: 40px minmax(0, 1fr) 18px; grid-template-rows: auto auto; column-gap: 12px; row-gap: 4px; align-content: center; min-height: 96px; padding: 14px; border-radius: 12px; box-shadow: none; }
+.tool-meta { grid-column: 1; grid-row: 1 / 3; margin: 0; align-self: center; }
+.tool-icon { width: 40px; height: 40px; border-radius: 10px; }
+.tool-category { display: none; }
+.tool-card h2, .tool-card h3 { grid-column: 2; grid-row: 1; margin: 0; font-size: .98rem; line-height: 1.3; }
+.tool-card p { grid-column: 2; grid-row: 2; margin: 0; font-size: .8rem; line-height: 1.4; }
+.tool-footer { grid-column: 3; grid-row: 1 / 3; align-self: center; border: 0; padding: 0; }
+.tool-footer span { display: none; }
+.tool-card:hover, .tool-card:focus-visible { transform: none; box-shadow: none; background: var(--surface-soft); }
+#watch .nav-link { color: var(--accent-text); padding: 0; }
+@media (max-width: 650px) {
+  .tool-grid { grid-template-columns: minmax(0, 1fr); }
+  .portal-nav { width: 100%; }
+  .portal-nav a { flex: 1; text-align: center; padding-inline: 8px; }
+  .tool-card { min-height: 88px; }
+}
