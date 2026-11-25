@@ -89,6 +89,10 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_build_pages.py'
           python scripts/build-pages.py "$RUNNER_TEMP/toolbox-site"
+      - name: Check published internal links
+        run: |
+          python -m unittest discover -s tests -p 'test_check_links.py'
+          python scripts/check-links.py "$RUNNER_TEMP/toolbox-site"
       - name: Offline collector tests
         run: python -m unittest discover -s tests -p 'test_security_collector.py'
       - name: Validate advisory JSON structure
