@@ -70,7 +70,7 @@
           </label>
         </div>
         <div class="setting-line">
-          <label for="alert-toggle">Notifications et son</label>
+          <label for="alert-toggle">Notifications, son et titre clignotant</label>
           <label class="switch">
             <input type="checkbox" id="alert-toggle" checked>
             <span class="slider"></span>
@@ -85,7 +85,6 @@
   <div id="overlay">
     <div class="panel">
       <h1 id="overlay-title">C’est l’heure de la pause !</h1>
-      <p id="overlay-sub"></p>
       <button id="standup-btn">Je suis debout</button>
     </div>
   </div>
@@ -103,13 +102,7 @@
   const LS_ALERTS   = 'breakReminder.alerts';
 
   // ---- Banque de messages piquants (aléatoires)
-  const TAUNTS = [
-    "🚨 LÈVE TES FESSES !",
-    "🪑 La chaise n'est pas ton amie.",
-    "🧍 Debout, feignant !",
-    "🔥 Ton dos te dit merci d'avance.",
-    "🚶 On bouge, on ne discute pas."
-  ];
+  const TAUNTS = ["C’est l’heure de la pause !"];
 
   // ---- Récupération des éléments du DOM
   const el = {
@@ -295,7 +288,7 @@
     if (!el.hardcore.checked) {
       // Mode doux : on valide direct et on relance un cycle
       validateBreak();
-      el.status.textContent = '✅ Rappel (mode doux). Nouveau cycle lancé.';
+      el.status.textContent = 'Nouveau cycle.';
       remaining = configuredSeconds();
       startTimer();
       return;
@@ -311,7 +304,7 @@
     stopTitleFlash();
     el.overlay.style.display = 'none';
     validateBreak();
-    el.status.textContent = '💪 Bien joué ! Streak +1. Nouveau cycle lancé.';
+    el.status.textContent = 'Pause validée.';
     remaining = configuredSeconds();
     startTimer();
   }
