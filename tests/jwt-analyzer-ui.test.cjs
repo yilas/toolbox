@@ -12,6 +12,7 @@ const dir = path.join(__dirname, "..", "tools");
 const coreSource = fs.readFileSync(path.join(dir, "jwt-analyzer-core.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(dir, "jwt-analyzer-ui.js"), "utf8");
 const html = fs.readFileSync(path.join(dir, "decodeur_analyseur_jwt_standalone.html"), "utf8");
+const themeSource = fs.readFileSync(path.join(dir, "../assets/js/theme.js"), "utf8");
 const encoder = new TextEncoder();
 
 class Element {
@@ -42,6 +43,7 @@ class Element {
     });
   }
   setAttribute(name, value) { this.attrs[name] = String(value); }
+  getAttribute(name) { return Object.hasOwn(this.attrs, name) ? this.attrs[name] : null; }
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this.children = [...nodes]; }
   focus() { this.focused = true; }
@@ -56,8 +58,7 @@ function makePage(seed = {}) {
   const doc = {
     documentElement: { dataset: {} },
     getElementById(id) {
-      assert.ok(elements[id], "Élément absent : " + id);
-      return elements[id];
+      return elements[id] || null;
     },
     querySelector(selector) {
       if (selector === 'meta[name="theme-color"]') return meta;
@@ -88,6 +89,7 @@ function makePage(seed = {}) {
   vm.runInNewContext(coreSource, sandbox, { filename: "jwt-analyzer-core.js" });
   vm.runInNewContext(uiSource, sandbox, { filename: "jwt-analyzer-ui.js" });
 
+  vm.runInNewContext(themeSource, sandbox, { filename: "theme.js" });
   return { elements, stored, window, copied, meta };
 }
 
@@ -194,7 +196,10 @@ test("Modification du JWT : ne conserve pas de statut de vérification obsolète
 test("La préférence du thème est la seule valeur écrite hors des règles explicites", () => {
   const page = makePage();
   page.elements.themeToggle.dispatch("click");
+  assert.equal(page.stored.get("password-studio-theme"), "light");
+  page.elements.themeToggle.dispatch("click");
   assert.equal(page.stored.get("password-studio-theme"), "dark");
+  assert.equal(page.stored.size, 1);
   assert.equal(page.stored.has("jwt-decode-analyze"), false);
   page.elements.expectedIss.value = "https://issuer.example";
   page.elements.saveRules.dispatch("click");
