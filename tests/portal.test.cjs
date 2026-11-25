@@ -12,7 +12,7 @@ const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const css = fs.readFileSync(path.join(root, "portal.css"), "utf8");
 const source = fs.readFileSync(path.join(root, "portal.js"), "utf8");
 
-const cards = [...html.matchAll(/<a class="tool-card" href="([^"]+)" data-search="([^"]+)">[\s\S]*?<h2>([^<]+)<\/h2>[\s\S]*?<\/a>/g)]
+const cards = [...html.matchAll(/<a class="tool-card" href="([^"]+)" data-search="([^"]+)">[\s\S]*?<h3>([^<]+)<\/h3>[\s\S]*?<\/a>/g)]
   .map(match => ({ href: match[1], search: match[2], title: match[3] }));
 
 function createPage({ darkSystem = false, storedTheme = null } = {}) {
@@ -42,13 +42,23 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
 
   const names = [
     "toolSearch", "resultCount", "emptyState", "clearSearch",
-    "upcomingSection", "themeToggle", "themeMoon", "themeSun"
+    "themeToggle", "themeMoon", "themeSun"
   ];
   const elements = Object.fromEntries(names.map(id => [id, new Element(id === "toolSearch" ? "INPUT" : "DIV")]));
   const cardEls = cards.map(card => {
     const el = new Element("A");
     el.dataset.search = card.search;
     el.textContent = card.title;
+    return el;
+  });
+  const sections = [...html.matchAll(/<section class="portal-section" id="([^"]+)"[\s\S]*?<\/section>/g)].map(match => {
+    const el = new Element("SECTION");
+    el.id = match[1];
+    const members = cardEls.filter((_, i) => match[0].includes('href="' + cards[i].href + '"'));
+    el.querySelector = selector => {
+      assert.equal(selector, ".tool-card:not([hidden])");
+      return members.find(card => !card.hidden) || null;
+    };
     return el;
   });
   const bodyClass = new Set(["no-js"]);
@@ -62,6 +72,7 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
     getElementById(id) { return elements[id]; },
     querySelectorAll(selector) {
       if (selector === ".tool-card") return cardEls;
+      if (selector === ".portal-section") return sections;
       throw new Error("Sélecteur inattendu : " + selector);
     },
     querySelector(selector) {
@@ -82,7 +93,7 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
   }, { filename: "portal.js" });
 
   return {
-    elements, cardEls, htmlElement, meta, bodyClass,
+    elements, cardEls, sections, htmlElement, meta, bodyClass,
     get savedTheme() { return savedTheme; },
     keydown(event) {
       const handler = docEvents.get("keydown");
@@ -105,7 +116,7 @@ test("Le catalogue présente les douze outils réellement présents, sans lien f
 
 test("Le portail fonctionne sans JS et ne dépend pas de CDN", () => {
   assert.ok(html.includes('class="no-js"'));
-  assert.ok(html.includes('id="toolsGrid"'));
+  assert.equal((html.match(/class="tool-grid"/g) || []).length, 3);
   assert.ok(html.includes('href="portal.css"'));
   assert.ok(html.includes('src="portal.js"'));
   assert.ok(html.includes("connect-src 'none'"));
@@ -124,6 +135,7 @@ test("Recherche : accents, casse, plusieurs termes et aucun résultat", () => {
   page.elements.toolSearch.dispatch("input");
   assert.equal(page.elements.resultCount.textContent, "1 outil");
   assert.equal(page.cardEls.filter(card => !card.hidden).length, 1);
+  assert.deepEqual(page.sections.filter(section => !section.hidden).map(section => section.id), ["tools"]);
 
   page.elements.toolSearch.value = "mot de passe cryptographie";
   page.elements.toolSearch.dispatch("input");
@@ -133,12 +145,13 @@ test("Recherche : accents, casse, plusieurs termes et aucun résultat", () => {
   page.elements.toolSearch.dispatch("input");
   assert.equal(page.elements.resultCount.textContent, "0 outils");
   assert.equal(page.elements.emptyState.hidden, false);
-  assert.equal(page.elements.upcomingSection.hidden, true);
+  assert.ok(page.sections.every(section => section.hidden));
 
   page.elements.clearSearch.dispatch("click");
   assert.equal(page.elements.toolSearch.value, "");
   assert.equal(page.elements.emptyState.hidden, true);
   assert.equal(page.cardEls.filter(card => !card.hidden).length, 12);
+  assert.ok(page.sections.every(section => !section.hidden));
 });
 
 test("Clavier : slash focalise la recherche, Escape la réinitialise", () => {
@@ -169,9 +182,24 @@ test("Thème : partage de la préférence avec le générateur de mots de passe"
   assert.equal(existing.htmlElement.dataset.theme, "dark");
 });
 
-test("Les deux futurs outils ne sont pas annoncés comme des liens accessibles", () => {
-  assert.match(html, /En préparation/);
-  assert.match(html, /Convertisseur de dates ISO/);
-  assert.match(html, /Analyseur d'e-mails suspects/);
-  assert.ok(html.includes('id="upcomingSection"'));
+test("Les trois univers contiennent les bons outils et IT Watch est accessible", () => {
+  const expected = {
+    work: ["worktime-calculator", "break-reminder", "auto-reply-generator", "scratchpad"],
+    tools: ["base64-encoder-decoder", "decodeur_analyseur_jwt_standalone", "subnets_calculator", "clean-text", "pdf-compressor", "random-numbers-generator"],
+    watch: ["security-advisories", "service-status"]
+  };
+  for (const [id, names] of Object.entries(expected)) {
+    const section = [...html.matchAll(/<section class="portal-section" id="([^"]+)"[\s\S]*?<\/section>/g)].find(m => m[1] === id);
+    assert.ok(section, id);
+    assert.deepEqual([...section[0].matchAll(/class="tool-card" href="tools\/([^"]+)\.html"/g)].map(m => m[1]), names);
+    assert.ok(html.includes('href="#' + id + '"'));
+  }
+  assert.ok(html.includes('href="watch/index.html"'));
+  assert.doesNotMatch(html, /id="upcomingSection"/);
+  const watch = fs.readFileSync(path.join(root, "watch/index.html"), "utf8");
+  assert.deepEqual([...watch.matchAll(/class="tool-card" href="([^"]+)"/g)].map(m => m[1]), expected.watch.map(name => "../tools/" + name + ".html"));
+  for (const link of ["../index.html", "../portal.css", "../portal.js"]) {
+    assert.ok(watch.includes('"' + link + '"'));
+    assert.ok(fs.existsSync(path.resolve(root, "watch", link)));
+  }
 });
