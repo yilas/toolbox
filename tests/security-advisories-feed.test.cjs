@@ -66,9 +66,11 @@ const aks = {
   url: "https://learn.microsoft.com/en-us/azure/aks/security-bulletins/overview#aks-2026-0008",
 };
 
-test("page retains the directory and uses only same-origin feed fetch", () => {
+test("page separates directory and uses only same-origin feed fetch", () => {
   assert.match(html, /href="service-status\.css"/);
-  assert.match(html, /id="statusSections"/);
+  assert.doesNotMatch(html, /id="statusSections"/);
+  assert.match(html, /href="security-advisories-sources\.html"/);
+  assert.match(html, /id="advisoryFeed"/);
   assert.match(html, /connect-src 'self'/);
   assert.match(html, /src="security-advisories-feed\.js"/);
   assert.doesNotMatch(script, /\.innerHTML\s*=/);
