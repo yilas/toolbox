@@ -12,3 +12,11 @@ test("Standalone tools use shared design tokens and navigation",()=>{
   assert.match(html,/var\(--accent\)/);
  }
 });
+
+test("Scratchpad shares palette and preserves full-width note grid",()=>{
+ const html=fs.readFileSync(path.join(root,"tools/scratchpad.html"),"utf8");
+ assert.match(html,/href="\.\.\/assets\/css\/tokens\.css"/);
+ assert.match(html,/\.wrap\s*\{[^}]*max-width:\s*none/);
+ assert.match(html,/repeat\(auto-fill, minmax\(min\(100%, 360px\), 1fr\)\)/);
+ assert.match(html,/--field: var\(--soft\)/);
+});
