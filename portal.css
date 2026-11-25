@@ -1,54 +1,6 @@
 /* Toolbox — accueil Minimal Premium | HTML/CSS/JS natifs */
-:root {
-  color-scheme: light;
-  --background: #f5f7fc;
-  --surface: #ffffff;
-  --surface-soft: #f7f8fc;
-  --surface-strong: #f0f2fa;
-  --text: #182139;
-  --muted: #66728d;
-  --border: #e3e8f2;
-  --accent: #5253c9;
-  --accent-hover: #4142ad;
-  --accent-subtle: #efefff;
-  --accent-text: #4446b5;
-  --shadow: 0 15px 48px rgba(37, 49, 89, .055), 0 3px 12px rgba(37, 49, 89, .025);
-  --focus: #7778e9;
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --background: #0b1120;
-  --surface: #141f34;
-  --surface-soft: #1a2940;
-  --surface-strong: #202f49;
-  --text: #edf1fb;
-  --muted: #a1afc9;
-  --border: #2a3a56;
-  --accent: #8988f5;
-  --accent-hover: #a6a4ff;
-  --accent-subtle: #25294c;
-  --accent-text: #c4c1ff;
-  --shadow: 0 18px 52px rgba(0, 0, 0, .18);
-  --focus: #c7c6ff;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    color-scheme: dark;
-    --background: #0b1120;
-    --surface: #141f34;
-    --surface-soft: #1a2940;
-    --surface-strong: #202f49;
-    --text: #edf1fb;
-    --muted: #a1afc9;
-    --border: #2a3a56;
-    --accent: #8988f5;
-    --accent-hover: #a6a4ff;
-    --accent-subtle: #25294c;
-    --accent-text: #c4c1ff;
-    --shadow: 0 18px 52px rgba(0, 0, 0, .18);
-    --focus: #c7c6ff;
-  }
-}
+@import url("./assets/css/tokens.css");
+:root{--background:var(--bg);--surface-soft:var(--soft)}
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { min-height: 100%; }
@@ -149,7 +101,7 @@ a { color: inherit; }
   display: flex; flex-direction: column; min-width: 0; min-height: 217px;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 17px; padding: 22px 22px 18px;
-  text-decoration: none; box-shadow: var(--shadow);
+  text-decoration: none; box-shadow: var(--portal-shadow);
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 .tool-card:hover, .tool-card:focus-visible {
