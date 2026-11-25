@@ -30,7 +30,7 @@ test("Published tools load without uncaught JavaScript errors",async()=>{
   }
   const context=await browser.newContext({colorScheme:"light"});
   try {
-   const pages=await Promise.all(["index.html","tools/service-status.html","tools/security-advisories.html","tools/security-advisories-sources.html","tools/auto-reply-generator.html","tools/base64-encoder-decoder.html"].map(async file=>{const p=await context.newPage();await p.goto(base+"/"+file);return p;}));
+   const pages=await Promise.all(["index.html","tools/service-status.html","tools/security-advisories.html","tools/security-advisories-sources.html","tools/auto-reply-generator.html","tools/base64-encoder-decoder.html","tools/decodeur_analyseur_jwt_standalone.html","tools/pdf-compressor.html","tools/random-numbers-generator.html"].map(async file=>{const p=await context.newPage();await p.goto(base+"/"+file);return p;}));
    await pages[0].locator("#themeToggle").click();
    await pages[0].locator("#themeToggle").click();
    for(const p of pages) await p.waitForFunction(()=>document.documentElement.dataset.theme==="dark");

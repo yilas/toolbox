@@ -4,13 +4,11 @@
 
   const $ = id => document.getElementById(id);
   const core = window.PasswordCore;
-  const themeMedia = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
   const state = {
     mode: "password",
     results: [],
     concealed: false,
     preset: "balanced",
-    theme: "system",
     statusTimer: null,
     generateFrame: null
   };
@@ -35,35 +33,6 @@
       : null;
   }
 
-  function setTheme() {
-    const dark = state.theme === "dark" || (state.theme === "system" && themeMedia && themeMedia.matches);
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    $("themeIcon").textContent = dark ? "☀" : "☾";
-    const label = dark ? "Activer le thème clair" : "Activer le thème sombre";
-    $("themeToggle").setAttribute("aria-label", label);
-    $("themeToggle").title = label;
-    document.querySelector('meta[name="theme-color"]').content = dark ? "#0b1120" : "#f5f7fc";
-  }
-
-  function initTheme() {
-    try {
-      const preference = window.localStorage.getItem("password-studio-theme");
-      if (preference === "light" || preference === "dark") state.theme = preference;
-    } catch (_) {
-      // Le stockage peut être désactivé ; les secrets n'y sont jamais enregistrés.
-    }
-    setTheme();
-    $("themeToggle").addEventListener("click", () => {
-      state.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      try { window.localStorage.setItem("password-studio-theme", state.theme); } catch (_) {}
-      setTheme();
-    });
-    if (themeMedia) {
-      const onChange = () => { if (state.theme === "system") setTheme(); };
-      if (typeof themeMedia.addEventListener === "function") themeMedia.addEventListener("change", onChange);
-      else if (typeof themeMedia.addListener === "function") themeMedia.addListener(onChange);
-    }
-  }
 
   function updateLabels() {
     $("passwordLengthValue").textContent = $("passwordLength").value;
@@ -320,7 +289,6 @@
     });
   }
 
-  initTheme();
   bindEvents();
   applyPreset("balanced");
 })();

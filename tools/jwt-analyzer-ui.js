@@ -11,13 +11,10 @@
   const LS_KEY = "jwt-decode-analyze";
   const THEME_KEY = "password-studio-theme";
   const MAX_HISTORY = 20;
-  const media = typeof window.matchMedia === "function"
-    ? window.matchMedia("(prefers-color-scheme: dark)") : null;
   const state = {
     history: [],
     current: null,
     serial: 0,
-    theme: "system",
     messageTimer: null,
     savedRules: null
   };
@@ -68,9 +65,6 @@
       }
     }
 
-    const currentTheme = readStorage(THEME_KEY);
-    if (currentTheme === "dark" || currentTheme === "light") state.theme = currentTheme;
-    applyTheme();
 
     if (state.savedRules) populateRules(state.savedRules);
     if (migrated) {
@@ -81,18 +75,6 @@
     }
   }
 
-  function applyTheme() {
-    const dark = state.theme === "dark" ||
-      (state.theme === "system" && media && media.matches);
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    $("themeMoon").hidden = Boolean(dark);
-    $("themeSun").hidden = !dark;
-    const label = dark ? "Activer le thème clair" : "Activer le thème sombre";
-    $("themeToggle").setAttribute("aria-label", label);
-    $("themeToggle").title = label;
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", dark ? "#0b1120" : "#f5f7fc");
-  }
 
   function currentRules() {
     return core.expectedRules({
@@ -481,16 +463,6 @@
       $("revealSecret").setAttribute("aria-label", revealed ? "Masquer le secret HMAC" : "Afficher le secret HMAC");
     });
 
-    $("themeToggle").addEventListener("click", () => {
-      state.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      writeStorage(THEME_KEY, state.theme);
-      applyTheme();
-    });
-    if (media) {
-      const onChange = () => { if (state.theme === "system") applyTheme(); };
-      if (media.addEventListener) media.addEventListener("change", onChange);
-      else if (media.addListener) media.addListener(onChange);
-    }
   }
 
   if (!core) {
