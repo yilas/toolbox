@@ -101,7 +101,7 @@ test('Scan : consentement, aperçu, compression, orientation, texte absent et na
     const { PDFDocument } = await import('../../assets/vendor/pdf-lib/pdf-lib.min.mjs'); const pdf = await PDFDocument.load(result);
     assert.equal(pdf.getPageCount(), 2); assert.equal(pdf.getPage(0).getWidth(), 400); assert.equal(pdf.getPage(1).getWidth(), 500); assert.equal(pdf.getPage(1).getHeight(), 300);
     const texts = await page.evaluate(async bytes => { const lib = await import('../assets/vendor/pdfjs/pdf.min.mjs'); const task = lib.getDocument({ data: new Uint8Array(bytes) }); const doc = await task.promise; const text = await (await doc.getPage(1)).getTextContent(); await task.destroy(); return text.items.length; }, [...result]); assert.equal(texts, 0);
-    await page.locator('#theme').click(); await page.screenshot({ path: path.join(output, 'desktop-dark.png'), fullPage: true });
+    await page.locator('#theme').click(); await page.locator('#theme').click(); assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark'); await page.screenshot({ path: path.join(output, 'desktop-dark.png'), fullPage: true });
     await page.locator('#next').click(); await page.waitForFunction(() => document.getElementById('pageLabel').textContent.includes('2 / 2'));
     assert.equal(await page.locator('#afterFigure').isVisible(), false);
     await page.locator('#preset').selectOption('small'); assert.equal(await page.locator('#result').isVisible(), false);
