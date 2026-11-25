@@ -5,9 +5,11 @@ test("Workday templates have valid non-overlapping slots and expected totals",()
  const helpers=source.slice(source.indexOf("const validTime="),source.indexOf("const rows="));
  const templates=source.slice(source.indexOf("const TEMPLATE_KEY="),source.indexOf("let custom=[],selected="));
  const {presets,validSlots,minutes}=vm.runInNewContext(helpers+templates+";({presets,validSlots,minutes})");
- assert.equal(presets.length,6);
+ assert.equal(presets.length,13);
  assert.equal(presets.every(t=>validSlots(t.slots)),true);
- assert.equal(Array.from(presets,t=>t.slots.reduce((n,p)=>n+minutes(p[1])-minutes(p[0]),0)).join(","),"480,480,480,480,240,480");
+ assert.equal(presets.filter(t=>t.group==='Journées partielles').length,2);
+ assert.equal(presets.filter(t=>t.group==='Journées complètes').length,11);
+ assert.equal(Array.from(presets,t=>t.slots.reduce((n,p)=>n+minutes(p[1])-minutes(p[0]),0)).join(","),"480,480,480,480,480,480,480,420,540,480,480,240,240");
  assert.equal(validSlots([["08:00","12:00"],["11:00","13:00"]]),false);
  assert.equal(validSlots([["12:00","08:00"]]),false);
  assert.equal(validSlots([["","12:00"]]),false);
