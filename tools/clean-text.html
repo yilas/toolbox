@@ -6,38 +6,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light dark" />
   <title>Clean Text — nettoyeur & linter</title>
-  <style>
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <style>
     :root {
       color-scheme: light;
-      --bg: #f5f7fb;
-      --panel: #ffffff;
-      --panel-2: #f8fafc;
-      --text: #172033;
-      --muted: #64748b;
-      --border: #dbe2ea;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
+
+      --panel: var(--surface);
+      --panel-2: var(--soft);
+
+
+
+      --primary: var(--accent);
+      --primary-hover: var(--accent);
       --good: #15803d;
       --warn: #b45309;
       --info: #0369a1;
       --danger: #b91c1c;
-      --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
     }
     :root[data-theme="dark"] { color-scheme: dark;
-        --bg: #0f172a;
-        --panel: #111c31;
-        --panel-2: #172238;
-        --text: #e5edf7;
-        --muted: #9fb0c6;
-        --border: #2c3b53;
-        --primary: #60a5fa;
-        --primary-hover: #93c5fd;
+
+        --panel: var(--surface);
+        --panel-2: var(--soft);
+
+
+
+        --primary: var(--accent);
+        --primary-hover: var(--accent);
         --good: #4ade80;
         --warn: #fbbf24;
         --info: #38bdf8;
         --danger: #f87171;
-        --shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+
     }
     * { box-sizing: border-box; }
     body {
@@ -58,8 +60,9 @@
     .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 14px; margin-bottom: 14px; }
     .button { border: 1px solid var(--border); border-radius: 9px; padding: 9px 13px; background: var(--panel-2); color: var(--text); font-weight: 650; }
     .button:hover { border-color: var(--primary); }
-    .button.primary { color: white; background: #2563eb; border-color: #2563eb; }
-    .button.primary:hover { background: #1d4ed8; }
+    .button.primary { color: white; background: var(--accent); border-color: var(--accent); }
+    .button.primary:hover { background: var(--accent); filter: brightness(.92); }
+    html[data-theme=dark] .button.primary { color: #0b1120; }
     .button.danger { color: var(--danger); }
     .spacer { flex: 1; }
     .filename { color: var(--muted); font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
@@ -138,11 +141,6 @@
       .filename { width: 100%; max-width: none; }
     }
     /* Retour au portail, dans la même palette que l'outil */
-    .toolbox-return-nav { margin-bottom: 18px; }
-    .toolbox-return-nav a { display: inline-block; padding: 5px 0; color: var(--muted); font-size: .88rem; font-weight: 650; text-decoration: none; }
-    .toolbox-return-nav a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
-    .toolbox-return-nav a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 3px; }
-  .toolbox-return-nav{display:flex;align-items:center;justify-content:space-between;gap:12px}.toolbox-return-nav #theme{padding:6px 12px;border-radius:8px;min-width:36px}
 </style>
 <script src="../assets/js/theme.js" defer></script></head>
 <body>
