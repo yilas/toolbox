@@ -107,8 +107,8 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
   };
 }
 
-test("Le catalogue présente les douze outils réellement présents, sans lien fictif", () => {
-  assert.equal(cards.length, 12);
+test("Le catalogue présente les quatorze outils réellement présents, sans lien fictif", () => {
+  assert.equal(cards.length, 14);
   assert.equal(new Set(cards.map(card => card.href)).size, cards.length);
   cards.forEach(card => {
     assert.match(card.href, /^tools\/[a-zA-Z0-9_.-]+\.html$/);
@@ -132,7 +132,7 @@ test("Le portail fonctionne sans JS et ne dépend pas de CDN", () => {
 
 test("Recherche : accents, casse, plusieurs termes et aucun résultat", () => {
   const page = createPage();
-  assert.equal(page.elements.resultCount.textContent, "12 outils");
+  assert.equal(page.elements.resultCount.textContent, "14 outils");
   assert.equal(page.bodyClass.has("no-js"), false);
 
   page.elements.toolSearch.value = "reseaux";
@@ -154,7 +154,7 @@ test("Recherche : accents, casse, plusieurs termes et aucun résultat", () => {
   page.elements.clearSearch.dispatch("click");
   assert.equal(page.elements.toolSearch.value, "");
   assert.equal(page.elements.emptyState.hidden, true);
-  assert.equal(page.cardEls.filter(card => !card.hidden).length, 12);
+  assert.equal(page.cardEls.filter(card => !card.hidden).length, 14);
   assert.ok(page.sections.every(section => !section.hidden));
 });
 
@@ -170,7 +170,7 @@ test("Clavier : slash focalise la recherche, Escape la réinitialise", () => {
   page.keydown({ key: "Escape", target: page.elements.toolSearch });
   assert.equal(page.elements.toolSearch.value, "");
   assert.equal(page.elements.toolSearch.blurred, true);
-  assert.equal(page.elements.resultCount.textContent, "12 outils");
+  assert.equal(page.elements.resultCount.textContent, "14 outils");
 });
 
 test("Thème : partage de la préférence avec le générateur de mots de passe", () => {
@@ -197,7 +197,7 @@ test("Thème : partage de la préférence avec le générateur de mots de passe"
 test("Les trois univers contiennent les bons outils et IT Watch est accessible", () => {
   const expected = {
     work: ["worktime-calculator", "break-reminder", "auto-reply-generator", "scratchpad"],
-    tools: ["base64-encoder-decoder", "decodeur_analyseur_jwt_standalone", "subnets_calculator", "clean-text", "pdf-compressor", "random-numbers-generator"],
+    tools: ["base64-encoder-decoder", "decodeur_analyseur_jwt_standalone", "subnets_calculator", "clean-text", "pdf-compressor", "random-numbers-generator", "cron-builder", "date-time-converter"],
     watch: ["security-advisories", "service-status"]
   };
   for (const [id, names] of Object.entries(expected)) {
