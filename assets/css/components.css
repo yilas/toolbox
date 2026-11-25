@@ -1,0 +1,7 @@
+/* Opt-in components for standalone tools. */
+.toolbox-return-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px}
+.toolbox-return-nav a{color:var(--muted);font-size:14px;font-weight:650;text-decoration:none}
+.toolbox-return-nav a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.toolbox-return-nav #theme{display:inline-grid;place-items:center;width:40px;height:40px;padding:0;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);font:inherit;cursor:pointer}
+.toolbox-return-nav #theme:hover{border-color:var(--accent);background:var(--soft)}
+.toolbox-return-nav :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
