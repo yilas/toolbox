@@ -117,7 +117,7 @@ test("Le catalogue présente les douze outils réellement présents, sans lien f
 test("Le portail fonctionne sans JS et ne dépend pas de CDN", () => {
   assert.ok(html.includes('class="no-js"'));
   assert.equal((html.match(/class="tool-grid"/g) || []).length, 3);
-  assert.ok(html.includes('href="portal.css"'));
+  assert.match(html, /href="portal\.css(?:\?v=\d+)?"/);
   assert.ok(html.includes('src="portal.js"'));
   assert.ok(html.includes("connect-src 'none'"));
   assert.doesNotMatch(html, /on(click|input|change)\s*=/i);
@@ -199,7 +199,7 @@ test("Les trois univers contiennent les bons outils et IT Watch est accessible",
   const watch = fs.readFileSync(path.join(root, "watch/index.html"), "utf8");
   assert.deepEqual([...watch.matchAll(/class="tool-card" href="([^"]+)"/g)].map(m => m[1]), expected.watch.map(name => "../tools/" + name + ".html"));
   for (const link of ["../index.html", "../portal.css", "../portal.js"]) {
-    assert.ok(watch.includes('"' + link + '"'));
+    assert.ok(watch.includes('"' + link + '"') || (link.endsWith(".css") && watch.includes('"' + link + '?v=2"')));
     assert.ok(fs.existsSync(path.resolve(root, "watch", link)));
   }
 });
