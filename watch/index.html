@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fc">
+  <meta name="description" content="Toolbox : utilitaires pour le développement, le texte et l'organisation.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="../portal.css">
+  <title>Toolbox — IT Watch</title>
+  <script src="../portal.js" defer></script>
+</head>
+<body>
+  <svg class="sr-only" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-toolbox" viewBox="0 0 24 24">
+      <rect x="3" y="8" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M8 8V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3M3 13h18M10 13v2h4v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="10.8" cy="10.8" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="m16 16 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-external" viewBox="0 0 24 24">
+      <path d="M13 5h6v6M19 5l-9 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+      <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.5 1.5m11.2 11.2 1.5 1.5M19.1 4.9l-1.5 1.5M6.4 17.6l-1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-note" viewBox="0 0 24 24">
+      <rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M8 8h8M8 12h8M8 16h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 2 20 5v6c0 5-3.5 8.7-8 11-4.5-2.3-8-6-8-11V5l8-3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="m8 12 2.6 2.6L16 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-type" viewBox="0 0 24 24">
+      <path d="M4 7V5h16v2M12 5v14m-4 0h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-code" viewBox="0 0 24 24">
+      <path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-key" viewBox="0 0 24 24">
+      <circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="m11 12 9-9 2 2-2 2 1.5 1.5-3 3L17 10l-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-network" viewBox="0 0 24 24">
+      <rect x="9" y="2" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="2" y="16" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="16" y="16" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M12 8v4M5 16v-4h14v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24">
+      <rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="m3 7 9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24">
+      <path d="M4 8h14v6a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6V8ZM18 9h2a2 2 0 0 1 0 4h-2M4 22h15M9 2v3m4-3v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M7 3v4m10-4v4M3 10h18m-13 4h3m-3 3h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="M12 3 2.6 20h18.8L12 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M12 9v5m0 3v.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="../index.html" aria-label="Accueil Toolbox">
+        <span class="brand-mark" aria-hidden="true"><svg><use href="#i-toolbox"></use></svg></span>
+        <span>Toolbox</span>
+      </a>
+      <nav class="nav-actions" aria-label="Liens principaux">
+        <a class="nav-link" href="https://github.com/yilas/toolbox" target="_blank" rel="noopener noreferrer">
+          GitHub <svg aria-hidden="true"><use href="#i-external"></use></svg>
+        </a>
+        <button class="icon-button" type="button" id="themeToggle" title="Changer le thème" aria-label="Changer le thème">
+          <svg id="themeMoon" aria-hidden="true"><use href="#i-moon"></use></svg>
+          <svg id="themeSun" aria-hidden="true" hidden><use href="#i-sun"></use></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page" id="main">
+    <section class="intro" aria-labelledby="pageTitle">
+      <h1 id="pageTitle">IT Watch</h1>
+      <p>Bulletins de sécurité et pages officielles de statut des services.</p>
+    </section>
+
+    <div class="catalogue-toolbar">
+      <label class="search-field" for="toolSearch">
+        <span class="sr-only">Rechercher un outil</span>
+        <svg aria-hidden="true"><use href="#i-search"></use></svg>
+        <input id="toolSearch" type="search" placeholder="Rechercher un outil…" autocomplete="off" spellcheck="false">
+        <kbd class="shortcut" aria-hidden="true">/</kbd>
+      </label>
+      <p class="count" id="resultCount" role="status" aria-live="polite">2 outils</p>
+    </div>
+
+    <section aria-label="Outils disponibles">
+      <div class="tool-grid" id="toolsGrid">
+<a class="tool-card" href="../tools/security-advisories.html" data-search="sécurité security advisories bulletins vulnérabilités cve aks kubernetes cilium argocd kyverno harbor terraform docker elastic">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-shield"></use></svg></span>
+            <span class="tool-category">Infrastructure</span>
+          </span>
+          <h2>Security Advisories</h2>
+          <p>Bulletins de sécurité officiels pour AKS, GitOps, conteneurs et autres produits.</p>
+          <span class="tool-footer"><span>Ouvrir l’outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+<a class="tool-card" href="../tools/service-status.html" data-search="status incidents état disponibilité cloud azure microsoft 365 m365 github slack devops docker monitoring">
+          <span class="tool-meta">
+            <span class="tool-icon" aria-hidden="true"><svg><use href="#i-network"></use></svg></span>
+            <span class="tool-category">Infrastructure</span>
+          </span>
+          <h2>Service Status</h2>
+          <p>Annuaire des pages officielles de statut Cloud, DevOps et SaaS.</p>
+          <span class="tool-footer"><span>Ouvrir l'outil</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+        </a>
+</div>
+<div class="empty-state" id="emptyState" hidden>
+        <h2>Aucun outil trouvé</h2>
+        <p>Essayez avec un autre terme.</p>
+        <button class="reset-button" id="clearSearch" type="button">Effacer la recherche</button>
+      </div>
+    </section>
+
+    
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>© 2026 Yann ILAS</span>
+      <a href="https://github.com/yilas/toolbox" target="_blank" rel="noopener noreferrer">Code source sur GitHub</a>
+    </div>
+  </footer>
+  <noscript><p>Les outils restent accessibles sans JavaScript ; la recherche et le bouton de thème nécessitent JavaScript.</p></noscript>
+</body>
+</html>
