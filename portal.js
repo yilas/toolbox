@@ -10,15 +10,6 @@
   const clear = document.getElementById("clearSearch");
   const sections = [...document.querySelectorAll(".portal-section")];
   const cards = [...document.querySelectorAll(".tool-card")];
-  const themeButton = document.getElementById("themeToggle");
-  const themeMoon = document.getElementById("themeMoon");
-  const themeSun = document.getElementById("themeSun");
-  const themeMedia = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-
-  // Même préférence que Password Studio, pour une navigation cohérente.
-  const THEME_KEY = "password-studio-theme";
-  let theme = "system";
-
   function normalize(value) {
     return value
       .normalize("NFD")
@@ -48,42 +39,6 @@
     sections.forEach(section => {
       section.hidden = !section.querySelector(".tool-card:not([hidden])");
     });
-  }
-
-  function setTheme() {
-    const dark = theme === "dark" || (theme === "system" && themeMedia && themeMedia.matches);
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    themeMoon.hidden = Boolean(dark);
-    themeSun.hidden = !dark;
-    const label = dark ? "Activer le thème clair" : "Activer le thème sombre";
-    themeButton.setAttribute("aria-label", label);
-    themeButton.title = label;
-    const themeMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeMeta) themeMeta.setAttribute("content", dark ? "#0b1120" : "#f5f7fc");
-  }
-
-  try {
-    const storedTheme = localStorage.getItem(THEME_KEY);
-    if (storedTheme === "dark" || storedTheme === "light") theme = storedTheme;
-  } catch (_) {
-    // Le stockage peut être interdit par le navigateur.
-  }
-  setTheme();
-
-  themeButton.addEventListener("click", () => {
-    theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-    try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
-    setTheme();
-  });
-  if (themeMedia) {
-    const onThemeChange = () => {
-      if (theme === "system") setTheme();
-    };
-    if (typeof themeMedia.addEventListener === "function") {
-      themeMedia.addEventListener("change", onThemeChange);
-    } else if (typeof themeMedia.addListener === "function") {
-      themeMedia.addListener(onThemeChange);
-    }
   }
 
   search.addEventListener("input", filterTools);
