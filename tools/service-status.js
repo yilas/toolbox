@@ -36,6 +36,7 @@ function selectCategory(value){
  buttons.forEach(b=>{const active=b.dataset.category===category;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));});
  filter();
 }
+if(search && count && empty && clear){
 buttons.forEach(button=>button.addEventListener("click",()=>selectCategory(button.dataset.category)));
 search.addEventListener("input",filter);
 clear.addEventListener("click",()=>{search.value="";selectCategory("all");search.focus();});
@@ -46,6 +47,7 @@ document.addEventListener("keydown",event=>{
  if(event.key==="/"&&!editing){event.preventDefault();search.focus();}
  else if(event.key==="Escape"&&document.activeElement===search){search.value="";filter();search.blur();}
 });
+}
 try{const value=localStorage.getItem("password-studio-theme");if(value==="dark"||value==="light")theme=value;}catch(_){}
 function setTheme(){
  const dark=theme==="dark"||(theme==="system"&&media&&media.matches);
@@ -58,5 +60,5 @@ function setTheme(){
 }
 toggle.addEventListener("click",()=>{theme=document.documentElement.dataset.theme==="dark"?"light":"dark";try{localStorage.setItem("password-studio-theme",theme);}catch(_){}setTheme();});
 if(media){const change=()=>{if(theme==="system")setTheme();};if(media.addEventListener)media.addEventListener("change",change);else if(media.addListener)media.addListener(change);}
-setTheme();filter();
+setTheme();if(search && count && empty && clear)filter();
 })();
