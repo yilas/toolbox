@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="portal.css?v=2">
   <title>Toolbox — Outils</title>
   <script src="portal.js" defer></script>
-  <script src="assets/js/quick-access.js" defer></script>
+  <script src="assets/js/command-palette.js" defer></script>
 <script src="assets/js/theme.js" defer></script></head>
 <body>
   <svg class="sr-only" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -105,10 +105,6 @@
       <p>Travail, utilitaires et veille IT.</p>
     </section>
 
-    <section id="quickAccess" class="quick-access" aria-label="Accès rapide" hidden>
-      <div hidden><h2>Favoris</h2><div id="favoriteLinks" class="quick-links"></div></div>
-      <div hidden><div class="quick-heading"><h2>Récents</h2><button id="clearRecent" type="button">Effacer</button></div><div id="recentLinks" class="quick-links"></div></div>
-    </section>
     <div class="catalogue-toolbar">
       <label class="search-field" for="toolSearch">
         <span class="sr-only">Rechercher un outil</span>
@@ -116,6 +112,7 @@
         <input id="toolSearch" type="search" placeholder="Rechercher un outil…" autocomplete="off" spellcheck="false">
         <kbd class="shortcut" aria-hidden="true">/</kbd>
       </label>
+      <button type="button" id="commandOpen" class="command-open" hidden aria-label="Ouvrir la palette de commandes">Ctrl / ⌘ K</button>
       <p class="count" id="resultCount" role="status" aria-live="polite">12 outils</p>
     </div>
 
@@ -259,6 +256,7 @@
 
     
   </main>
+  <dialog id="commandPalette" aria-labelledby="commandTitle"><div class="command-head"><h2 id="commandTitle">Ouvrir un outil</h2><button type="button" id="commandClose" aria-label="Fermer">×</button></div><label class="sr-only" for="commandSearch">Rechercher un outil</label><input id="commandSearch" type="search" placeholder="Rechercher…" autocomplete="off"><div id="commandResults"></div><p id="commandEmpty" hidden>Aucun outil trouvé.</p></dialog>
 
   <footer class="site-footer">
     <div class="workflow-status" aria-label="Statut des workflows GitHub">
