@@ -3,25 +3,64 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+
 permissions:
   contents: read
-  pages: write
-  id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: false
+
 jobs:
-  deploy:
+  build:
+    name: Build and upload Pages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - name: Build static site
+        run: python3 scripts/build-pages.py "$RUNNER_TEMP/toolbox-site"
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/toolbox-site
+
+  deploy:
+    name: Deploy Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/configure-pages@v6
-      - run: python3 scripts/build-pages.py "$RUNNER_TEMP/toolbox-site"
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: ${{ runner.temp }}/toolbox-site
-      - uses: actions/deploy-pages@v5
+      - name: Wait until Pages artifact is discoverable
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" \
+              --jq '[.artifacts[] | select(.name == "github-pages" and .expired == false)] | length')
+            if [[ "$count" == "1" ]]; then
+              echo "github-pages artifact is discoverable (attempt $attempt)."
+              exit 0
+            fi
+            if [[ "$count" != "0" ]]; then
+              echo "::error::Expected exactly one github-pages artifact, found $count. Use a fresh workflow run rather than re-running build/upload."
+              exit 1
+            fi
+            echo "Artifact is not yet listed (attempt $attempt/18); retrying in 5s."
+            sleep 5
+          done
+          echo "::error::github-pages artifact was uploaded but is still not discoverable after retries."
+          exit 1
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v5
         id: deployment
