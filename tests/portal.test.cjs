@@ -88,6 +88,7 @@ function createPage({ darkSystem = false, storedTheme = null } = {}) {
     setItem(key, value) { assert.equal(key, "password-studio-theme"); savedTheme = value; }
   };
 
+  vm.runInNewContext(fs.readFileSync(path.join(root, "assets/js/theme.js"), "utf8"), { document: doc, window, localStorage: storage });
   vm.runInNewContext(source, {
     document: doc, window, localStorage: storage, HTMLElement: Element
   }, { filename: "portal.js" });
