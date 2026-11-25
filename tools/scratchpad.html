@@ -6,16 +6,7 @@
   <meta name="theme-color" content="#0e121a">
   <title>Scratchpad · Toolbox</title>
   <script>
-    // Choisir le thème avant le rendu afin d'éviter un flash de mauvais thème.
-    (() => {
-      let saved = null;
-      try { saved = localStorage.getItem("toolbox-scratchpad-theme"); } catch {}
-      const systemDark = window.matchMedia
-        ? window.matchMedia("(prefers-color-scheme: dark)").matches
-        : true;
-      document.documentElement.dataset.theme =
-        saved === "dark" || saved === "light" ? saved : (systemDark ? "dark" : "light");
-    })();
+    try { const old = localStorage.getItem("toolbox-scratchpad-theme"); if (!localStorage.getItem("password-studio-theme") && ["light","dark"].includes(old)) localStorage.setItem("password-studio-theme", old); } catch {}
   </script>
   <style>
     :root {
@@ -181,7 +172,7 @@
     [hidden] { display: none !important; }
     @media (max-width: 600px) { .wrap { padding: 20px 14px 55px; } .toolbar > button { flex-grow: 1; } }
   </style>
-</head>
+<script src="../assets/js/theme.js" defer></script></head>
 <body>
   <div class="wrap">
     <header>
@@ -192,7 +183,7 @@
       </div>
       <div class="header-actions">
         <button id="help-trigger" type="button" title="Aide (touche ?)" aria-label="Ouvrir l’aide" aria-haspopup="dialog">?</button>
-        <button id="theme-toggle" type="button" aria-label="Changer le thème">☀️ Mode jour</button>
+        <button id="theme" type="button" aria-label="Changer le thème">☾</button>
         <button class="primary" id="add" type="button">＋ Nouveau bloc</button>
       </div>
     </header>
@@ -279,7 +270,7 @@
     const SESSION_KEY = "toolbox-scratchpad-session-v1";
     const TRASH_SESSION_KEY = "toolbox-scratchpad-trash-v1";
     const LEGACY_KEY = "scratchpad.v1";
-    const THEME_KEY = "toolbox-scratchpad-theme";
+
     const LAST_NOTE_KEY = "toolbox-scratchpad-last-note-v1";
     const ACTIVE_CATEGORY_KEY = "toolbox-scratchpad-active-category-v1";
     const TRASH_RETENTION = 7 * 24 * 60 * 60 * 1000;
@@ -444,32 +435,6 @@
     }
     let showingTrash = false;
     let toastTimer;
-
-    function applyTheme(theme) {
-      const dark = theme === "dark";
-      document.documentElement.dataset.theme = dark ? "dark" : "light";
-      const toggle = $("#theme-toggle");
-      toggle.textContent = dark ? "☀️ Mode jour" : "🌙 Mode nuit";
-      toggle.setAttribute("aria-label", dark ? "Activer le mode jour" : "Activer le mode nuit");
-      toggle.title = dark ? "Passer au thème clair" : "Passer au thème sombre";
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.content = dark ? "#0e121a" : "#f4f7fb";
-    }
-    applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
-    $("#theme-toggle").addEventListener("click", () => {
-      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      applyTheme(next);
-      try { localStorage.setItem(THEME_KEY, next); }
-      catch { console.warn("Préférence de thème non sauvegardée"); }
-    });
-    const systemTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
-    if (systemTheme && systemTheme.addEventListener) {
-      systemTheme.addEventListener("change", event => {
-        let manual = null;
-        try { manual = localStorage.getItem(THEME_KEY); } catch {}
-        if (manual !== "light" && manual !== "dark") applyTheme(event.matches ? "dark" : "light");
-      });
-    }
 
     const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random());
 
