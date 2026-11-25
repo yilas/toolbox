@@ -6,7 +6,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
-const html = fs.readFileSync(path.join(root, "tools/security-advisories.html"), "utf8");
+const html = fs.readFileSync(path.join(root, "tools/security-advisories-sources.html"), "utf8");
 const status = fs.readFileSync(path.join(root, "tools/service-status.html"), "utf8");
 const portal = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const js = fs.readFileSync(path.join(root, "tools/service-status.js"), "utf8");
@@ -29,7 +29,8 @@ test("annuaire complet et navigation bidirectionnelle", () => {
   assert.match(status, /href="security-advisories\.html"/);
   assert.match(html, /href="service-status\.css"/);
   assert.match(html, /src="service-status\.js"/);
-  assert.match(html, /src="security-advisories-feed\.js"/);
+  assert.doesNotMatch(html, /src="security-advisories-feed\.js"/);
+  assert.match(html, /href="security-advisories\.html"/);
 });
 
 test("liens officiels en HTTPS, pas de flux externe exécuté", () => {
@@ -47,7 +48,7 @@ test("liens officiels en HTTPS, pas de flux externe exécuté", () => {
       assert.ok(allowed.includes(url.hostname), url.hostname);
     }
   }
-  assert.match(html, /connect-src 'self'/); // Only same-origin JSON snapshot is fetched.
+  assert.match(html, /connect-src 'none'/); // Directory does not fetch data.
   assert.match(html, /pas de veille en temps réel/i);
   assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/i);
   assert.match(css, /prefers-reduced-motion/);
