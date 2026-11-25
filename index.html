@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="portal.css?v=2">
   <title>Toolbox — Outils</title>
   <script src="portal.js" defer></script>
+  <script src="assets/js/quick-access.js" defer></script>
 <script src="assets/js/theme.js" defer></script></head>
 <body>
   <svg class="sr-only" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -104,6 +105,10 @@
       <p>Travail, utilitaires et veille IT.</p>
     </section>
 
+    <section id="quickAccess" class="quick-access" aria-label="Accès rapide" hidden>
+      <div hidden><h2>Favoris</h2><div id="favoriteLinks" class="quick-links"></div></div>
+      <div hidden><div class="quick-heading"><h2>Récents</h2><button id="clearRecent" type="button">Effacer</button></div><div id="recentLinks" class="quick-links"></div></div>
+    </section>
     <div class="catalogue-toolbar">
       <label class="search-field" for="toolSearch">
         <span class="sr-only">Rechercher un outil</span>
