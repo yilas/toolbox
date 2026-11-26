@@ -145,11 +145,25 @@ Old bulletin outside the retention window.
             result = collector.collect(
                 path, current=NOW, github_fetch=lambda *args, **kwargs: [],
                 aks_fetch=lambda **kwargs: (_ for _ in ()).throw(ValueError("upstream unavailable")),
+                elastic_fetch=lambda *args, **kwargs: [],
             )
             self.assertEqual(len(result["alerts"]), 1)
             self.assertEqual(result["sources"]["aks"]["status"], "error")
             self.assertEqual(result["sources"]["aks"]["last_success_at"], "2026-11-16T12:00:00Z")
             self.assertEqual(json.loads(path.read_text())["alerts"][0]["id"], "AKS-2026-0008")
+
+    def test_elastic_official_rss_product_and_severity(self):
+        rss = b"""<rss><channel><item><title>Kibana 9.5.7 Security Update (ESA-2026-wwmh-mqwj)</title><link>https://discuss.elastic.co/t/example/123</link><pubDate>Mon, 16 Nov 2026 12:00:00 GMT</pubDate><description>Severity: CVSSv3.1: High (8.1) CVE ID: CVE-2026-12345</description></item></channel></rss>"""
+        with patch.object(collector, "request_bytes", return_value=rss):
+            items = collector.elastic_advisories("Kibana", current=NOW)
+            self.assertEqual(collector.elastic_advisories("Elasticsearch", current=NOW), [])
+        self.assertEqual(items[0]["id"], "ESA-2026-WWMH-MQWJ")
+        self.assertEqual(items[0]["severity"], "high")
+        self.assertEqual(items[0]["cves"], ["CVE-2026-12345"])
+        self.assertEqual(items[0]["patched_versions"], [])
+        self.assertIn("kubernetes-sigs/external-dns", collector.REPOSITORIES)
+        self.assertIn("cert-manager/cert-manager", collector.REPOSITORIES)
+        self.assertIn("kyverno/kyverno", collector.REPOSITORIES)
 
     def test_all_sources_failed_never_overwrite_snapshot(self):
         old = {"schema_version": 1, "generated_at": None, "sources": {}, "alerts": []}
@@ -160,7 +174,7 @@ Old bulletin outside the retention window.
             def fail(*args, **kwargs):
                 raise ValueError("service unavailable")
             with self.assertRaises(RuntimeError):
-                collector.collect(path, current=NOW, github_fetch=fail, aks_fetch=fail)
+                collector.collect(path, current=NOW, github_fetch=fail, aks_fetch=fail, elastic_fetch=fail)
             self.assertEqual(path.read_text(), original)
 
 

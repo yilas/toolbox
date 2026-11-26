@@ -36,9 +36,9 @@ jobs:
           branch: automation/security-advisories-data
           base: main
           commit-message: 'data: refresh official security advisories snapshot'
-          title: 'data: refresh AKS and GitHub security advisories'
+          title: 'data: refresh AKS, GitHub and Elastic security advisories'
           body: |
-            Mise à jour automatique des bulletins de sécurité publics (AKS et GitHub).
+            Mise à jour automatique des bulletins de sécurité publics (AKS, GitHub et Elastic).
             **Aucune fusion automatique.**
             Vérifier les sources avec status=error dans le JSON : leurs données précédentes sont conservées.
             Les dates de publication, versions et criticités proviennent des sources officielles ; aucune applicabilité n'est présumée.

@@ -27,7 +27,7 @@
     try {
       const url = new URL(value);
       return url.protocol === "https:" &&
-        (url.hostname === "github.com" || url.hostname === "learn.microsoft.com");
+        (url.hostname === "github.com" || url.hostname === "learn.microsoft.com" || (url.hostname === "discuss.elastic.co" && url.pathname.startsWith("/t/")));
     } catch {
       return false;
     }
@@ -108,7 +108,7 @@
       if (old) parts.push("Données potentiellement périmées.");
       parts.push("Les avis ne prouvent pas qu'un environnement est affecté.");
       state.textContent = parts.join(" ");
-      const names = [...new Set(alerts.map(item => item.product))].sort((a, b) => a.localeCompare(b, "fr"));
+      const names = [...new Set([...alerts.map(item => item.product), ...sourceStates.map(source => source?.product).filter(name => typeof name === "string")])].sort((a, b) => a.localeCompare(b, "fr"));
       for (const name of names) {
         const option = node("option", "", name);
         option.value = name;

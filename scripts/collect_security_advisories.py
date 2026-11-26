@@ -14,6 +14,9 @@ from pathlib import Path
 import re
 import sys
 import time
+import xml.etree.ElementTree as ET
+from email.utils import parsedate_to_datetime
+from html.parser import HTMLParser
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -24,11 +27,14 @@ REPOSITORIES = {
     "argoproj/argo-cd": "Argo CD",
     "cilium/cilium": "Cilium (OSS)",
     "kyverno/kyverno": "Kyverno",
+    "kubernetes-sigs/external-dns": "ExternalDNS",
+    "cert-manager/cert-manager": "cert-manager",
     "goharbor/harbor": "Harbor",
     "coder/coder": "Coder",
     "akuity/kargo": "Kargo",
     "kubernetes/kubernetes": "Kubernetes",
 }
+ELASTIC_RSS = "https://discuss.elastic.co/c/announcements/security-announcements/31.rss"
 OUTPUT = Path("tools/data/security-advisories.json")
 CVE_RE = re.compile(r"\bCVE-\d{4}-\d{4,}\b", re.IGNORECASE)
 AKS_RE = re.compile(r"\bAKS-\d{4}-\d{4}\b", re.IGNORECASE)
@@ -250,6 +256,52 @@ def aks_advisories(*, current: datetime) -> list[dict]:
     return sorted(unique.values(), key=lambda item: (item["published_at"], item["id"]), reverse=True)[:MAX_PER_SOURCE]
 
 
+
+class ElasticText(HTMLParser):
+    def __init__(self, html):
+        super().__init__()
+        self.parts = []
+        self.feed(html)
+
+    def handle_data(self, data):
+        self.parts.append(data)
+
+def elastic_advisories(product, *, current):
+    root = ET.fromstring(request_bytes(ELASTIC_RSS))
+    channel = root.find("channel")
+    if channel is None or not channel.findall("item"):
+        raise ValueError("Unexpected Elastic RSS structure")
+    items = []
+    for entry in channel.findall("item"):
+        title = entry.findtext("title", "")
+        # Match explicit product names in the product heading, not references in prose.
+        heading = re.split(r"\b\d+\.\d+|Security Update", title, maxsplit=1, flags=re.I)[0]
+        if not re.search(r"\b" + re.escape(product) + r"\b", heading, re.I):
+            continue
+        esa = re.search(r"\bESA-\d{4}-[a-z0-9]+(?:-[a-z0-9]+)?\b", title, re.I)
+        url = entry.findtext("link", "")
+        if not esa or not re.fullmatch(r"https://discuss\.elastic\.co/t/[^?#]+(?:\?[^#]*)?", url):
+            continue
+        try:
+            date = parsedate_to_datetime(entry.findtext("pubDate", ""))
+            published = iso_date(date.isoformat())
+        except (ValueError, TypeError):
+            continue
+        if not recent(published, current=current):
+            continue
+        body = " ".join(ElasticText(entry.findtext("description", "")).parts)
+        severity = re.search(r"Severity:\s*(?:CVSSv?[\d.]+\s*:\s*)?(Critical|High|Medium|Moderate|Low)\b", body, re.I)
+        cves = set()
+        for match in re.finditer(r"CVE\s*IDs?\s*:\s*((?:CVE-\d{4}-\d{4,}(?:\s*[,;]\s*)?)+)", body, re.I):
+            cves.update(x.upper() for x in CVE_RE.findall(match.group(1)))
+        items.append({"id": esa.group(0).upper(), "source": "elastic:" + product.lower(),
+                      "product": product, "title": title[:240], "url": url,
+                      "published_at": published, "updated_at": None,
+                      "severity": {"medium": "moderate"}.get(severity.group(1).lower(), severity.group(1).lower()) if severity else "unknown",
+                      "cves": sorted(cves)[:12], "affected_versions": [], "patched_versions": []})
+    return sorted(items, key=lambda x: (x["published_at"], x["id"]), reverse=True)[:MAX_PER_SOURCE]
+
+
 def load_existing(path: Path) -> dict:
     try:
         previous = json.loads(path.read_text(encoding="utf-8"))
@@ -261,7 +313,7 @@ def load_existing(path: Path) -> dict:
 
 
 def collect(path: Path, *, token: str = "", current: datetime | None = None,
-            github_fetch=None, aks_fetch=None) -> dict:
+            github_fetch=None, aks_fetch=None, elastic_fetch=None) -> dict:
     current = current or datetime.now(timezone.utc)
     stamp = current.isoformat(timespec="seconds").replace("+00:00", "Z")
     previous = load_existing(path)
@@ -271,12 +323,14 @@ def collect(path: Path, *, token: str = "", current: datetime | None = None,
             prior_by_source.setdefault(alert["source"], []).append(alert)
     sources, all_items = {}, []
     success = 0
-    jobs = [("aks", "AKS")] + [(f"github:{repo}", product) for repo, product in REPOSITORIES.items()]
+    jobs = [("aks", "AKS")] + [(f"github:{repo}", product) for repo, product in REPOSITORIES.items()] + [("elastic:kibana", "Kibana"), ("elastic:elasticsearch", "Elasticsearch")]
     for key, product in jobs:
         prior_status = previous["sources"].get(key, {})
         try:
             if key == "aks":
                 items = (aks_fetch or aks_advisories)(current=current)
+            elif key.startswith("elastic:"):
+                items = (elastic_fetch or elastic_advisories)(product, current=current)
             else:
                 repo = key.removeprefix("github:")
                 items = (github_fetch or github_advisories)(repo, product, token=token, current=current)
@@ -284,7 +338,7 @@ def collect(path: Path, *, token: str = "", current: datetime | None = None,
                 raise ValueError("Collector returned invalid data")
             success += 1
             sources[key] = {"product": product, "status": "ok", "checked_at": stamp, "last_success_at": stamp}
-        except (ValueError, OSError, HTTPError, URLError, TimeoutError, json.JSONDecodeError) as error:
+        except (ValueError, OSError, HTTPError, URLError, TimeoutError, json.JSONDecodeError, ET.ParseError) as error:
             items = prior_by_source.get(key, [])
             # Never expose HTTP request headers, tokens or raw exception URLs.
             detail = f"HTTP {error.code}" if isinstance(error, HTTPError) else type(error).__name__
