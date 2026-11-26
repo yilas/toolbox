@@ -1,55 +1,55 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-25T10:43:30Z",
+  "generated_at": "2026-11-26T08:11:23Z",
   "sources": {
     "aks": {
       "product": "AKS",
       "status": "error",
-      "checked_at": "2026-11-25T10:43:30Z",
+      "checked_at": "2026-11-26T08:11:23Z",
       "last_success_at": "2026-11-19T00:20:00Z",
       "error": "HTTP 404"
     },
     "github:argoproj/argo-cd": {
       "product": "Argo CD",
       "status": "ok",
-      "checked_at": "2026-11-25T10:43:30Z",
-      "last_success_at": "2026-11-25T10:43:30Z"
+      "checked_at": "2026-11-26T08:11:23Z",
+      "last_success_at": "2026-11-26T08:11:23Z"
     },
     "github:cilium/cilium": {
       "product": "Cilium (OSS)",
       "status": "ok",
-      "checked_at": "2026-11-25T10:43:30Z",
-      "last_success_at": "2026-11-25T10:43:30Z"
+      "checked_at": "2026-11-26T08:11:23Z",
+      "last_success_at": "2026-11-26T08:11:23Z"
     },
     "github:kyverno/kyverno": {
       "product": "Kyverno",
       "status": "ok",
-      "checked_at": "2026-11-25T10:43:30Z",
-      "last_success_at": "2026-11-25T10:43:30Z"
+      "checked_at": "2026-11-26T08:11:23Z",
+      "last_success_at": "2026-11-26T08:11:23Z"
     },
     "github:goharbor/harbor": {
       "product": "Harbor",
       "status": "ok",
-      "checked_at": "2026-11-25T10:43:30Z",
-      "last_success_at": "2026-11-25T10:43:30Z"
+      "checked_at": "2026-11-26T08:11:23Z",
+      "last_success_at": "2026-11-26T08:11:23Z"
     },
     "github:coder/coder": {
       "product": "Coder",
       "status": "ok",
-      "checked_at": "2026-11-25T10:43:30Z",
-      "last_success_at": "2026-11-25T10:43:30Z"
+      "checked_at": "2026-11-26T08:11:23Z",
+      "last_success_at": "2026-11-26T08:11:23Z"
     },
     "github:akuity/kargo": {
       "product": "Kargo",
       "status": "ok",
-      "checked_at": "2026-11-25T10:43:30Z",
-      "last_success_at": "2026-11-25T10:43:30Z"
+      "checked_at": "2026-11-26T08:11:23Z",
+      "last_success_at": "2026-11-26T08:11:23Z"
     },
     "github:kubernetes/kubernetes": {
       "product": "Kubernetes",
       "status": "ok",
-      "checked_at": "2026-11-25T10:43:30Z",
-      "last_success_at": "2026-11-25T10:43:30Z"
+      "checked_at": "2026-11-26T08:11:23Z",
+      "last_success_at": "2026-11-26T08:11:23Z"
     }
   },
   "alerts": [
