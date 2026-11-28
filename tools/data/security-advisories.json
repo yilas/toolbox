@@ -1,58 +1,98 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-26T08:11:23Z",
+  "generated_at": "2026-11-28T07:42:54Z",
   "sources": {
     "aks": {
       "product": "AKS",
       "status": "error",
-      "checked_at": "2026-11-26T08:11:23Z",
+      "checked_at": "2026-11-28T07:42:54Z",
       "last_success_at": "2026-11-19T00:20:00Z",
       "error": "HTTP 404"
     },
     "github:argoproj/argo-cd": {
       "product": "Argo CD",
       "status": "ok",
-      "checked_at": "2026-11-26T08:11:23Z",
-      "last_success_at": "2026-11-26T08:11:23Z"
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
     },
     "github:cilium/cilium": {
       "product": "Cilium (OSS)",
       "status": "ok",
-      "checked_at": "2026-11-26T08:11:23Z",
-      "last_success_at": "2026-11-26T08:11:23Z"
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
     },
     "github:kyverno/kyverno": {
       "product": "Kyverno",
       "status": "ok",
-      "checked_at": "2026-11-26T08:11:23Z",
-      "last_success_at": "2026-11-26T08:11:23Z"
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
+    },
+    "github:kubernetes-sigs/external-dns": {
+      "product": "ExternalDNS",
+      "status": "ok",
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
+    },
+    "github:cert-manager/cert-manager": {
+      "product": "cert-manager",
+      "status": "ok",
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
     },
     "github:goharbor/harbor": {
       "product": "Harbor",
       "status": "ok",
-      "checked_at": "2026-11-26T08:11:23Z",
-      "last_success_at": "2026-11-26T08:11:23Z"
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
     },
     "github:coder/coder": {
       "product": "Coder",
       "status": "ok",
-      "checked_at": "2026-11-26T08:11:23Z",
-      "last_success_at": "2026-11-26T08:11:23Z"
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
     },
     "github:akuity/kargo": {
       "product": "Kargo",
       "status": "ok",
-      "checked_at": "2026-11-26T08:11:23Z",
-      "last_success_at": "2026-11-26T08:11:23Z"
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
     },
     "github:kubernetes/kubernetes": {
       "product": "Kubernetes",
       "status": "ok",
-      "checked_at": "2026-11-26T08:11:23Z",
-      "last_success_at": "2026-11-26T08:11:23Z"
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
+    },
+    "elastic:kibana": {
+      "product": "Kibana",
+      "status": "ok",
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
+    },
+    "elastic:elasticsearch": {
+      "product": "Elasticsearch",
+      "status": "ok",
+      "checked_at": "2026-11-28T07:42:54Z",
+      "last_success_at": "2026-11-28T07:42:54Z"
     }
   },
   "alerts": [
+    {
+      "id": "GHSA-4V5R-X3FQ-3XQ2",
+      "source": "github:akuity/kargo",
+      "product": "Kargo",
+      "title": "Missing Authentication Vulnerability in REST API Endpoints",
+      "url": "https://github.com/akuity/kargo/security/advisories/GHSA-4v5r-x3fq-3xq2",
+      "published_at": "2026-11-27T23:36:02Z",
+      "updated_at": "2026-11-27T23:36:02Z",
+      "severity": "unknown",
+      "cves": [],
+      "affected_versions": [
+        "ghcr.io/akuity/kargo-charts/kargo: >= v1.9.0",
+        "ghcr.io/akuity/kargo: >= v1.9.0"
+      ],
+      "patched_versions": []
+    },
     {
       "id": "GHSA-W7RW-FG89-2CJF",
       "source": "github:argoproj/argo-cd",
@@ -165,6 +205,261 @@
       "affected_versions": [
         "github.com/argoproj/argo-cd/v3: >= 3.1.0, < 3.4.15 || >= 3.5.0, < 3.5.9 || >= 3.6.0, < 3.6.3"
       ],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-WWMH-MQWJ",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana 9.5.7 Security Update (ESA-2026-wwmh-mqwj)",
+      "url": "https://discuss.elastic.co/t/kibana-9-5-7-security-update-esa-2026-wwmh-mqwj/391848",
+      "published_at": "2026-11-23T20:50:04Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-115296"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-R5J9-VPCF",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 8.19.26, 9.4.10, 9.5.7 Security Update (ESA-2026-r5j9-vpcf)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-8-19-26-9-4-10-9-5-7-security-update-esa-2026-r5j9-vpcf/391847",
+      "published_at": "2026-11-23T20:48:46Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133981"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-R2XP-MVHW",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 8.19.26, 9.4.10, 9.5.7 Security Update (ESA-2026-r2xp-mvhw)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-8-19-26-9-4-10-9-5-7-security-update-esa-2026-r2xp-mvhw/391846",
+      "published_at": "2026-11-23T20:47:29Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133925"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-PCHW-H75W",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana 8.19.24, 9.4.10, 9.5.6 Security Update (ESA-2026-pchw-h75w)",
+      "url": "https://discuss.elastic.co/t/kibana-8-19-24-9-4-10-9-5-6-security-update-esa-2026-pchw-h75w/391845",
+      "published_at": "2026-11-23T20:46:11Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133860"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-J72G-WHPG",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 9.5.7 Security Update (ESA-2026-j72g-whpg)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-9-5-7-security-update-esa-2026-j72g-whpg/391844",
+      "published_at": "2026-11-23T20:44:52Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133891"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-HH8V-HJ8F",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana 8.19.26, 9.5.7 Security Update (ESA-2026-hh8v-hj8f)",
+      "url": "https://discuss.elastic.co/t/kibana-8-19-26-9-5-7-security-update-esa-2026-hh8v-hj8f/391843",
+      "published_at": "2026-11-23T20:43:34Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-115291"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-GM9Q-8QVJ",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana 8.19.26, 9.4.10, 9.5.7 Security Update (ESA-2026-gm9q-8qvj)",
+      "url": "https://discuss.elastic.co/t/kibana-8-19-26-9-4-10-9-5-7-security-update-esa-2026-gm9q-8qvj/391842",
+      "published_at": "2026-11-23T20:02:57Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133858"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-CWQC-6MQX",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana 8.19.24, 9.4.9, 9.5.6 Security Update (ESA-2026-cwqc-6mqx)",
+      "url": "https://discuss.elastic.co/t/kibana-8-19-24-9-4-9-9-5-6-security-update-esa-2026-cwqc-6mqx/391841",
+      "published_at": "2026-11-23T20:01:39Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133984"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-CG7Q-C6WJ",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 8.19.24, 9.4.9, 9.5.6 Security Update (ESA-2026-cg7q-c6wj)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-8-19-24-9-4-9-9-5-6-security-update-esa-2026-cg7q-c6wj/391840",
+      "published_at": "2026-11-23T20:00:20Z",
+      "updated_at": null,
+      "severity": "high",
+      "cves": [
+        "CVE-2026-82303"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-9QV3-2RXX",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana and Elastic Agent 8.19.22, 8.19.25, 9.4.7, 9.4.10, 9.5.4, 9.5.7 Security Update (ESA-2026-9qv3-2rxx)",
+      "url": "https://discuss.elastic.co/t/kibana-and-elastic-agent-8-19-22-8-19-25-9-4-7-9-4-10-9-5-4-9-5-7-security-update-esa-2026-9qv3-2rxx/391839",
+      "published_at": "2026-11-23T19:59:03Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-134059"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-83RV-VM88",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 8.19.25, 9.4.9, 9.5.6 Security Update (ESA-2026-83rv-vm88)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-8-19-25-9-4-9-9-5-6-security-update-esa-2026-83rv-vm88/391838",
+      "published_at": "2026-11-23T19:57:46Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133930"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-776W-PJ56",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 8.19.24, 9.4.9, 9.5.6 Security Update (ESA-2026-776w-pj56)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-8-19-24-9-4-9-9-5-6-security-update-esa-2026-776w-pj56/391837",
+      "published_at": "2026-11-23T19:56:31Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133919"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-5V53-G435",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana 8.19.25, 9.5.7 Security Update (ESA-2026-5v53-g435)",
+      "url": "https://discuss.elastic.co/t/kibana-8-19-25-9-5-7-security-update-esa-2026-5v53-g435/391836",
+      "published_at": "2026-11-23T19:55:17Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133857"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-592X-2GXJ",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 9.5.6 Security Update (ESA-2026-592x-2gxj)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-9-5-6-security-update-esa-2026-592x-2gxj/391835",
+      "published_at": "2026-11-23T19:54:04Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133935"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-3XHW-23V3",
+      "source": "elastic:kibana",
+      "product": "Kibana",
+      "title": "Kibana 9.5.6 Security Update (ESA-2026-3xhw-23v3)",
+      "url": "https://discuss.elastic.co/t/kibana-9-5-6-security-update-esa-2026-3xhw-23v3/391834",
+      "published_at": "2026-11-23T19:52:51Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133926"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-2P9M-8QH4",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 9.5.7 Security Update (ESA-2026-2p9m-8qh4)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-9-5-7-security-update-esa-2026-2p9m-8qh4/391833",
+      "published_at": "2026-11-23T19:51:38Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133918"
+      ],
+      "affected_versions": [],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-28V3-QFVC",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 9.5.7 Security Update (ESA-2026-28v3-qfvc)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-9-5-7-security-update-esa-2026-28v3-qfvc/391832",
+      "published_at": "2026-11-23T19:50:23Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-133917"
+      ],
+      "affected_versions": [],
       "patched_versions": []
     },
     {
@@ -310,6 +605,21 @@
         "github.com/argoproj/argo-cd/v2: >= 2.0.0, < 2.6.13 || >= 2.7.0, < 2.7.8",
         "github.com/argoproj/argo-cd: >= 1.3.0, < 2.0.0"
       ],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-VPCG-Q2WH",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch, Logstash 8.19.26, 9.4.10, 9.5.7 and Elastic Cloud Enterprise 3.8.7, 4.2.2 (Java4Shell - CVE-2026-114938) Security Update (ESA-2026-vpcg-q2wh)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-logstash-8-19-26-9-4-10-9-5-7-and-elastic-cloud-enterprise-3-8-7-4-2-2-java4shell-cve-2026-114938-security-update-esa-2026-vpcg-q2wh/391703",
+      "published_at": "2026-11-18T22:01:58Z",
+      "updated_at": null,
+      "severity": "high",
+      "cves": [
+        "CVE-2026-114938"
+      ],
+      "affected_versions": [],
       "patched_versions": []
     },
     {
@@ -461,6 +771,21 @@
         "github.com/coder/coder/v2: >= 2.37.0, < 2.37.9",
         "github.com/coder/coder/v2: >= 2.38.0, < 2.38.5"
       ],
+      "patched_versions": []
+    },
+    {
+      "id": "ESA-2026-235",
+      "source": "elastic:elasticsearch",
+      "product": "Elasticsearch",
+      "title": "Elasticsearch 8.19.24, 9.4.9, 9.5.6 Security Update (ESA-2026-235)",
+      "url": "https://discuss.elastic.co/t/elasticsearch-8-19-24-9-4-9-9-5-6-security-update-esa-2026-235/391372",
+      "published_at": "2026-11-03T16:33:07Z",
+      "updated_at": null,
+      "severity": "moderate",
+      "cves": [
+        "CVE-2026-115715"
+      ],
+      "affected_versions": [],
       "patched_versions": []
     },
     {
@@ -1762,14 +2087,14 @@
       "title": "Privilege escalation via Generic Resource Creation API Endpoints ",
       "url": "https://github.com/akuity/kargo/security/advisories/GHSA-xx8h-gw9m-m95p",
       "published_at": "2026-07-15T00:15:13Z",
-      "updated_at": "2026-08-20T21:30:14Z",
+      "updated_at": "2026-11-27T20:44:40Z",
       "severity": "unknown",
       "cves": [
         "CVE-2026-77624"
       ],
       "affected_versions": [
-        "ghcr.io/akuity/kargo-charts/kargo: >= v0.1.0, < v1.11.0",
-        "ghcr.io/akuity/kargo: >= v0.1.0, < v1.11.0"
+        "ghcr.io/akuity/kargo-charts/kargo: >= v0.1.0, < v1.12.0",
+        "ghcr.io/akuity/kargo: >= v0.1.0, < v1.12.0"
       ],
       "patched_versions": []
     },
@@ -1780,14 +2105,14 @@
       "title": "Missing Authorization Vulnerability in Generic Resource Creation API Endpoints",
       "url": "https://github.com/akuity/kargo/security/advisories/GHSA-f72x-6fm6-94rq",
       "published_at": "2026-07-15T00:14:56Z",
-      "updated_at": "2026-08-20T21:30:09Z",
+      "updated_at": "2026-11-27T20:44:05Z",
       "severity": "unknown",
       "cves": [
         "CVE-2026-77623"
       ],
       "affected_versions": [
-        "ghcr.io/akuity/kargo-charts/kargo: >= v0.1.0, < v1.11.0",
-        "ghcr.io/akuity/kargo: >= v0.1.0, < v1.11.0"
+        "ghcr.io/akuity/kargo-charts/kargo: >= v0.1.0, < v1.12.0",
+        "ghcr.io/akuity/kargo: >= v0.1.0, < v1.12.0"
       ],
       "patched_versions": []
     },
@@ -1910,6 +2235,23 @@
       "affected_versions": [
         "ghcr.io/akuity/kargo-charts/kargo: >= v0.6.0",
         "ghcr.io/akuity/kargo: >= v0.6.0"
+      ],
+      "patched_versions": []
+    },
+    {
+      "id": "GHSA-8RVJ-MM4H-C258",
+      "source": "github:cert-manager/cert-manager",
+      "product": "cert-manager",
+      "title": "Direct ACME Challenge resources can bypass Issuer DNS01 solver policy and use ClusterIssuer DNS credentials",
+      "url": "https://github.com/cert-manager/cert-manager/security/advisories/GHSA-8rvj-mm4h-c258",
+      "published_at": "2026-06-25T18:48:47Z",
+      "updated_at": "2026-07-13T20:07:16Z",
+      "severity": "high",
+      "cves": [
+        "CVE-2026-62290"
+      ],
+      "affected_versions": [
+        "github.com/cert-manager/cert-manager: >= 1.18.0, <= 1.20.2"
       ],
       "patched_versions": []
     },
@@ -2690,6 +3032,23 @@
       "patched_versions": []
     },
     {
+      "id": "GHSA-GX3X-VQ4P-MHHV",
+      "source": "github:cert-manager/cert-manager",
+      "product": "cert-manager",
+      "title": "cert-manager-controller DoS via Specially Crafted DNS Response",
+      "url": "https://github.com/cert-manager/cert-manager/security/advisories/GHSA-gx3x-vq4p-mhhv",
+      "published_at": "2026-02-02T16:25:33Z",
+      "updated_at": "2026-02-03T00:51:25Z",
+      "severity": "unknown",
+      "cves": [
+        "CVE-2026-25518"
+      ],
+      "affected_versions": [
+        "github.com/cert-manager/cert-manager: v1.18.0,v1.18.1,v1.18.2,v1.18.3,v1.18.4,v1.19.0,v1.19.1,v1.19.2"
+      ],
+      "patched_versions": []
+    },
+    {
       "id": "GHSA-W5WV-WVRP-V5M5",
       "source": "github:akuity/kargo",
       "product": "Kargo",
@@ -2720,25 +3079,6 @@
       "affected_versions": [],
       "patched_versions": [],
       "summary": "This bulletin provides an update regarding a recent vulnerability in the Kubernetes kube-controller-manager when using the in-tree Portworx StorageClass. This issue allows authorized users to leak arbitrary information from unprotected endpoints in the control plane’s host network (including link-local or loopback serv"
-    },
-    {
-      "id": "GHSA-38PP-6GCP-RQVM",
-      "source": "github:cilium/cilium",
-      "product": "Cilium (OSS)",
-      "title": "Misconfigured toGroups in policies can lead to unrestricted egress traffic",
-      "url": "https://github.com/cilium/cilium/security/advisories/GHSA-38pp-6gcp-rqvm",
-      "published_at": "2025-11-27T11:00:41Z",
-      "updated_at": "2025-11-27T11:00:41Z",
-      "severity": "unknown",
-      "cves": [
-        "CVE-2025-64715"
-      ],
-      "affected_versions": [
-        "Cilium: < v1.16.17",
-        "Cilium: >= v1.17.0, < v1.17.10",
-        "Cilium: >= v1.18.0, < v1.18.4"
-      ],
-      "patched_versions": []
     }
   ]
 }
